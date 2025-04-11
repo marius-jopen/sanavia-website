@@ -4,7 +4,7 @@ import type * as prismic from "@prismicio/client";
 
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
-type PageDocumentDataSlicesSlice = RichTextSlice;
+type PageDocumentDataSlicesSlice = PopTextSlice | RichTextSlice;
 
 /**
  * Content for Page documents
@@ -79,15 +79,80 @@ export type PageDocument<Lang extends string = string> =
 export type AllDocumentTypes = PageDocument;
 
 /**
- * Primary content in *RichText → Primary*
+ * Primary content in *PopText → Default → Primary*
+ */
+export interface PopTextSliceDefaultPrimary {
+  /**
+   * Headline field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.headline
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  headline: prismic.KeyTextField;
+
+  /**
+   * Button Text field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.button_text
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  button_text: prismic.KeyTextField;
+
+  /**
+   * Rich Text field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.rich_text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  rich_text: prismic.RichTextField;
+}
+
+/**
+ * Default variation for PopText Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopTextSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<PopTextSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *PopText*
+ */
+type PopTextSliceVariation = PopTextSliceDefault;
+
+/**
+ * PopText Shared Slice
+ *
+ * - **API ID**: `pop_text`
+ * - **Description**: PopText
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopTextSlice = prismic.SharedSlice<
+  "pop_text",
+  PopTextSliceVariation
+>;
+
+/**
+ * Primary content in *RichText → Default → Primary*
  */
 export interface RichTextSliceDefaultPrimary {
   /**
-   * Content field in *RichText → Primary*
+   * Content field in *RichText → Default → Primary*
    *
    * - **Field Type**: Rich Text
    * - **Placeholder**: Lorem ipsum...
-   * - **API ID Path**: rich_text.primary.content
+   * - **API ID Path**: rich_text.default.primary.content
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   content: prismic.RichTextField;
@@ -131,12 +196,27 @@ declare module "@prismicio/client" {
     ): prismic.Client<AllDocumentTypes>;
   }
 
+  interface CreateWriteClient {
+    (
+      repositoryNameOrEndpoint: string,
+      options: prismic.WriteClientConfig,
+    ): prismic.WriteClient<AllDocumentTypes>;
+  }
+
+  interface CreateMigration {
+    (): prismic.Migration<AllDocumentTypes>;
+  }
+
   namespace Content {
     export type {
       PageDocument,
       PageDocumentData,
       PageDocumentDataSlicesSlice,
       AllDocumentTypes,
+      PopTextSlice,
+      PopTextSliceDefaultPrimary,
+      PopTextSliceVariation,
+      PopTextSliceDefault,
       RichTextSlice,
       RichTextSliceDefaultPrimary,
       RichTextSliceVariation,

@@ -3,5 +3,6 @@
 import dynamic from "next/dynamic";
 
 export const components = {
+  pop_text: dynamic(() => import("./PopText")),
   rich_text: dynamic(() => import("./RichText")),
 };
