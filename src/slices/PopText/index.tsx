@@ -5,6 +5,7 @@ import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import { initializeSlideElement } from "@/utils/animations/slideAnimations";
 import { animatePopTextOpen, animatePopTextClose } from "@/utils/animations/popTextAnimations";
+import { setupFadeInAnimation } from "@/utils/animations/intersectionAnimations";
 
 /**
  * Props for `PopText`.
@@ -27,6 +28,16 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
       initializeSlideElement(textBoxRef.current);
     }
     setIsInitialized(true);
+  }, []);
+
+  // Set up intersection observer for section animation
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    
+    const cleanup = setupFadeInAnimation(sectionRef.current);
+    
+    // Return cleanup function
+    return cleanup;
   }, []);
 
   useEffect(() => {
