@@ -27,6 +27,9 @@
         "fieldset": "Slice Zone",
         "config": {
           "choices": {
+            "headline": {
+              "type": "SharedSlice"
+            },
             "pop_text": {
               "type": "SharedSlice"
             },

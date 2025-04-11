@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { useToggle } from "./ExpandableSection";
 
@@ -15,7 +15,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   const textWidthRef = useRef<number>(0);
 
   // Calculate and store widths for animation
-  const saveWidths = () => {
+  const saveWidths = useCallback(() => {
     // Create temporary elements to measure widths
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
@@ -35,13 +35,13 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
 
     // Clean up
     document.body.removeChild(tempDiv);
-  };
+  }, [buttonText]);
 
   // Initialize on mount
   useEffect(() => {
     // Save the widths for animation
     saveWidths();
-  }, [buttonText]);
+  }, [saveWidths]);
 
   // Handle content change and button animation when toggling
   useEffect(() => {

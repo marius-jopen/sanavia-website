@@ -1,0 +1,37 @@
+{
+  "id": "headline",
+  "type": "SharedSlice",
+  "name": "Headline",
+  "description": "Headline",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "headline": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Headline",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
+          }
+        },
+        "sub_headline": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Sub headline",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "paragraph,preformatted,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl,heading6,heading5,heading4,heading3,heading2,heading1"
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

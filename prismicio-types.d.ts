@@ -4,7 +4,7 @@ import type * as prismic from "@prismicio/client";
 
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
-type PageDocumentDataSlicesSlice = PopTextSlice | RichTextSlice;
+type PageDocumentDataSlicesSlice = HeadlineSlice | PopTextSlice | RichTextSlice;
 
 /**
  * Content for Page documents
@@ -77,6 +77,61 @@ export type PageDocument<Lang extends string = string> =
   prismic.PrismicDocumentWithUID<Simplify<PageDocumentData>, "page", Lang>;
 
 export type AllDocumentTypes = PageDocument;
+
+/**
+ * Primary content in *Headline → Default → Primary*
+ */
+export interface HeadlineSliceDefaultPrimary {
+  /**
+   * Headline field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: headline.default.primary.headline
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  headline: prismic.RichTextField;
+
+  /**
+   * Sub headline field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: headline.default.primary.sub_headline
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  sub_headline: prismic.RichTextField;
+}
+
+/**
+ * Default variation for Headline Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type HeadlineSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<HeadlineSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *Headline*
+ */
+type HeadlineSliceVariation = HeadlineSliceDefault;
+
+/**
+ * Headline Shared Slice
+ *
+ * - **API ID**: `headline`
+ * - **Description**: Headline
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type HeadlineSlice = prismic.SharedSlice<
+  "headline",
+  HeadlineSliceVariation
+>;
 
 /**
  * Primary content in *PopText → Default → Primary*
@@ -213,6 +268,10 @@ declare module "@prismicio/client" {
       PageDocumentData,
       PageDocumentDataSlicesSlice,
       AllDocumentTypes,
+      HeadlineSlice,
+      HeadlineSliceDefaultPrimary,
+      HeadlineSliceVariation,
+      HeadlineSliceDefault,
       PopTextSlice,
       PopTextSliceDefaultPrimary,
       PopTextSliceVariation,
