@@ -28,14 +28,15 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
         overflow: "visible",
       });
       
-      // Simple slide in from left animation
+      // Slide in from left with bounce effect
       gsap.fromTo(textBoxRef.current, 
         { x: -300, opacity: 0 },
         { 
-          duration: 0.5, 
+          duration: 0.3, 
           x: 0, 
           opacity: 1,
-          ease: "power2.out" 
+          ease: "back.out(1.7)", // This creates the bounce effect
+          clearProps: "x" // Clear transform after animation
         }
       );
     } else {
@@ -44,7 +45,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
         duration: 0.3,
         x: -300,
         opacity: 0,
-        ease: "power2.in",
+        ease: "back.in(1.7)",
         onComplete: () => {
           gsap.set(textBoxRef.current, { 
             autoAlpha: 0,
@@ -73,9 +74,11 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
 
       <div 
         ref={textBoxRef}
-        className="bg-white rounded-r-4xl px-8 py-6 w-10/12 invisible"
+        className="bg-white rounded-r-4xl -ml-[100px] pl-[100px] w-10/12 invisible"
       >
-        <PrismicRichText field={slice.primary.rich_text} />
+        <div className="py-6 px-6">
+          <PrismicRichText field={slice.primary.rich_text} />
+        </div>
       </div>
     </section>
   );
