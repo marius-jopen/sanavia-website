@@ -9,10 +9,11 @@ interface ToggleButtonProps {
 
 const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   const { isToggled, toggle } = useToggle();
-  const [displayX, setDisplayX] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
-  const xIconWidthRef = useRef<number>(0);
+  const iconRef = useRef<HTMLDivElement>(null);
+  const iconWidthRef = useRef<number>(0);
   const textWidthRef = useRef<number>(0);
+  const hasText = !!buttonText;
 
   // Calculate and store widths for animation
   const saveWidths = useCallback(() => {
@@ -23,11 +24,11 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
     tempDiv.style.whiteSpace = 'nowrap';
     document.body.appendChild(tempDiv);
 
-    // Measure X icon width
+    // Measure icon width
     tempDiv.innerHTML = `
       <span class="inline-block w-4 h-4 relative"></span>
     `;
-    xIconWidthRef.current = tempDiv.offsetWidth + 48; // Add padding
+    iconWidthRef.current = tempDiv.offsetWidth + 48; // Add padding
 
     // Measure text width
     tempDiv.innerHTML = buttonText || '';
@@ -43,50 +44,79 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
     saveWidths();
   }, [saveWidths]);
 
-  // Handle content change and button animation when toggling
+  // Handle animation when toggling
   useEffect(() => {
-    if (!buttonRef.current) return;
+    if (!buttonRef.current || !iconRef.current) return;
     
     if (isToggled) {
-      // When opening: First change to X, then animate width
-      setDisplayX(true);
-      
-      // Wait a tiny bit for the DOM to update
-      setTimeout(() => {
-        // Then animate width to X size
+      // When toggling on
+      if (hasText) {
+        // If we have text, animate the width first
         gsap.to(buttonRef.current, {
-          width: xIconWidthRef.current,
-          duration: 0.1,
+          width: iconWidthRef.current,
+          duration: 0.2,
+          ease: "power2.inOut",
+          onComplete: () => {
+            // After width change, animate the icon rotation
+            gsap.to(iconRef.current, {
+              rotation: 45,
+              duration: 0.2,
+              ease: "power2.inOut"
+            });
+          }
+        });
+      } else {
+        // If no text (already showing +), just rotate
+        gsap.to(iconRef.current, {
+          rotation: 45,
+          duration: 0.3,
           ease: "power2.inOut"
         });
-      }, 10);
+      }
     } else {
-      // When closing: First animate width, then change to text
-      gsap.to(buttonRef.current, {
-        width: textWidthRef.current,
-        duration: 0.1,
-        ease: "power2.inOut",
-        onComplete: () => {
-          // After width animation, switch to text
-          setDisplayX(false);
-        }
-      });
+      // When toggling off
+      if (hasText) {
+        // First rotate back to +
+        gsap.to(iconRef.current, {
+          rotation: 0,
+          duration: 0.2,
+          ease: "power2.inOut",
+          onComplete: () => {
+            // Then animate width back to text width
+            gsap.to(buttonRef.current, {
+              width: textWidthRef.current,
+              duration: 0.2,
+              ease: "power2.inOut"
+            });
+          }
+        });
+      } else {
+        // If no text, just rotate back to +
+        gsap.to(iconRef.current, {
+          rotation: 0,
+          duration: 0.3,
+          ease: "power2.inOut"
+        });
+      }
     }
-  }, [isToggled]);
+  }, [isToggled, hasText]);
 
   return (
     <div 
       ref={buttonRef}
-      className="bg-white rounded-4xl px-6 py-6 cursor-pointer hover:bg-gray-50 transition-colors border border-[var(--color-border)] whitespace-nowrap"
+      className="bg-white rounded-4xl px-6 py-6 cursor-pointer hover:bg-black hover:text-white transition-colors border border-[var(--color-border)] whitespace-nowrap overflow-hidden"
+      style={{ width: hasText ? textWidthRef.current || 'auto' : iconWidthRef.current || 'auto' }}
       onClick={toggle}
     >
-      {displayX ? (
-        <span className="inline-block w-4 h-4 relative">
-          <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-black rotate-45 -translate-y-1/2"></span>
-          <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-black -rotate-45 -translate-y-1/2"></span>
-        </span>
+      {hasText && !isToggled ? (
+        <span className="whitespace-nowrap block">{buttonText}</span>
       ) : (
-        <span className="whitespace-nowrap">{buttonText}</span>
+        <div ref={iconRef} className="inline-block w-4 h-4 relative">
+          {/* Horizontal line (always visible) */}
+          <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2"></span>
+          {/* Vertical line (stays vertical in + mode, rotates to diagonal in X mode) */}
+          <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2 rotate-90"></span>
+        </div>
       )}
     </div>
   );
