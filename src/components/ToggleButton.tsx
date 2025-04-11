@@ -109,17 +109,23 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
       onClick={toggle}
     >
       {hasText && !isToggled ? (
-        <span className="whitespace-nowrap block">{buttonText}</span>
+        <h4>
+          <span className="whitespace-nowrap block">
+            {buttonText}
+          </span>
+        </h4>
       ) : (
         <div 
           ref={iconRef} 
           className="inline-block w-4 h-4 relative translate-y-[1.5px]"
           style={{ transform: hasText && isToggled ? 'rotate(45deg)' : 'none' }}
         >
-          {/* Horizontal line (always visible) */}
-          <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2"></span>
-          {/* Vertical line (stays vertical in + mode, rotates to diagonal in X mode) */}
-          <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2 rotate-90"></span>
+          <h4>
+            {/* Horizontal line (always visible) */}
+            <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2"></span>
+            {/* Vertical line (stays vertical in + mode, rotates to diagonal in X mode) */}
+            <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2 rotate-90"></span>
+          </h4>
         </div>
       )}
     </div>

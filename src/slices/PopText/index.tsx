@@ -21,12 +21,15 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
 
   return (
     <ExpandableSection
+      mobileHeadlineClickable={true}
       headerContent={
         <>
           <HeadlineBox>
             {slice.primary.headline}
           </HeadlineBox>
-          <ToggleButton buttonText={buttonText} />
+          <div className="md:block hidden">
+            <ToggleButton buttonText={buttonText} />
+          </div>
         </>
       }
     >

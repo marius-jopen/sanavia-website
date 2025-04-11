@@ -5,9 +5,17 @@
 }
 
 body {
-  @apply md:text-lg leading-7 antialiased;
+  @apply antialiased;
 }
 
 h1 {
-  @apply text-6xl font-normal leading-16;
+  @apply text-4xl md:text-5xl font-normal leading-11 md:leading-14;
+}
+
+h3 {
+  @apply text-xl font-bold;
+}
+
+h4 {
+  @apply text-xl font-medium;
 }

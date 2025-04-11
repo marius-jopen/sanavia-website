@@ -22,11 +22,13 @@ export const useToggle = () => useContext(ToggleContext);
 interface ExpandableSectionProps {
   headerContent: ReactNode;
   children: ReactNode;
+  mobileHeadlineClickable?: boolean;
 }
 
 const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   headerContent,
-  children
+  children,
+  mobileHeadlineClickable = true
 }) => {
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -75,6 +77,13 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
     }
   }, [isContentVisible]);
 
+  // Handle header click for mobile
+  const handleHeaderClick = () => {
+    if (mobileHeadlineClickable && window.innerWidth < 768) {
+      handleToggle();
+    }
+  };
+
   // Create the toggle context value
   const toggleContextValue = {
     isToggled: isContentVisible,
@@ -84,7 +93,11 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   return (
     <ToggleContext.Provider value={toggleContextValue}>
       <section className="mb-2" ref={sectionRef}>
-        <div className="flex gap-[2px]">
+        <div 
+          className="flex gap-[2px]" 
+          onClick={handleHeaderClick}
+          style={{ cursor: mobileHeadlineClickable ? 'pointer' : 'default' }}
+        >
           {headerContent}
         </div>
 
