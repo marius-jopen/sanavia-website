@@ -1,18 +1,14 @@
 "use client"
 import { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
+import { useToggle } from "./ExpandableSection";
 
 interface ToggleButtonProps {
   buttonText: string;
-  isToggled: boolean;
-  onToggle: () => void;
 }
 
-const ToggleButton: React.FC<ToggleButtonProps> = ({ 
-  buttonText, 
-  isToggled, 
-  onToggle 
-}) => {
+const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
+  const { isToggled, toggle } = useToggle();
   const [displayX, setDisplayX] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const xIconWidthRef = useRef<number>(0);
@@ -82,7 +78,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({
     <div 
       ref={buttonRef}
       className="bg-white rounded-4xl px-6 py-6 cursor-pointer hover:bg-gray-50 transition-colors border border-[var(--color-border)] whitespace-nowrap"
-      onClick={onToggle}
+      onClick={toggle}
     >
       {displayX ? (
         <span className="inline-block w-4 h-4 relative">
