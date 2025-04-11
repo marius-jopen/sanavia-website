@@ -15,7 +15,21 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
  */
 const PopText: FC<PopTextProps> = ({ slice }) => {
   const [isTextVisible, setIsTextVisible] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const textBoxRef = useRef<HTMLDivElement>(null);
+
+  // Initialize the element's hidden state on mount
+  useEffect(() => {
+    if (textBoxRef.current) {
+      gsap.set(textBoxRef.current, { 
+        autoAlpha: 0,
+        height: 0,
+        overflow: "hidden",
+        x: -300
+      });
+    }
+    setIsInitialized(true);
+  }, []);
 
   useEffect(() => {
     if (!textBoxRef.current) return;
@@ -74,7 +88,12 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
 
       <div 
         ref={textBoxRef}
-        className="bg-white rounded-r-4xl -ml-[100px] pl-[100px] w-10/12 invisible"
+        className="bg-white rounded-r-4xl -ml-[100px] pl-[100px] w-10/12"
+        style={{ 
+          display: isInitialized ? 'block' : 'none', 
+          height: 0,
+          overflow: 'hidden'
+        }}
       >
         <div className="py-6 px-6">
           <PrismicRichText field={slice.primary.rich_text} />
