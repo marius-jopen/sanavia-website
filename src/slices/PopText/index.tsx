@@ -42,7 +42,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
           </div>
         )}
 
-        <div className="md:w-10/12">
+        <div className={`md:${slice.primary.image.url ? 'w-10/12' : 'w-full'}`}>
           <PrismicRichText field={slice.primary.rich_text} />
         </div>
       </div>
