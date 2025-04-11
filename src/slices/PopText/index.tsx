@@ -40,12 +40,12 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
   return (
     <section className="mb-12" ref={sectionRef}>
       <div className="flex">
-        <div className="bg-white rounded-r-4xl px-8 py-6">
+        <div className="bg-white rounded-r-4xl px-8 py-6 border-y border-r border-[var(--color-border)]">
           {slice.primary.headline}
         </div>
 
         <div 
-          className="bg-white rounded-4xl px-8 py-6 cursor-pointer hover:bg-gray-50 transition-colors"
+          className="bg-white rounded-4xl px-8 py-6 cursor-pointer hover:bg-gray-50 transition-colors border border-[var(--color-border)]"
           onClick={() => setIsTextVisible(!isTextVisible)}
         >
           {slice.primary.button_text}
@@ -54,7 +54,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
 
       <div 
         ref={textBoxRef}
-        className="bg-white rounded-r-4xl -ml-[100px] pl-[100px] w-10/12"
+        className="bg-white rounded-r-4xl -ml-[100px] pl-[100px] w-10/12 border border-[var(--color-border)]"
         style={{ 
           display: isInitialized ? 'block' : 'none', 
           height: 0,
