@@ -105,13 +105,17 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
     <div 
       ref={buttonRef}
       className="bg-white rounded-4xl px-6 py-6 cursor-pointer hover:bg-black hover:text-white transition-colors border border-[var(--color-border)] whitespace-nowrap overflow-hidden"
-      style={{ width: hasText ? textWidthRef.current || 'auto' : iconWidthRef.current || 'auto' }}
+      style={{ width: hasText ? (isToggled ? iconWidthRef.current : textWidthRef.current) || 'auto' : iconWidthRef.current || 'auto' }}
       onClick={toggle}
     >
       {hasText && !isToggled ? (
         <span className="whitespace-nowrap block">{buttonText}</span>
       ) : (
-        <div ref={iconRef} className="inline-block w-4 h-4 relative">
+        <div 
+          ref={iconRef} 
+          className="inline-block w-4 h-4 relative"
+          style={{ transform: hasText && isToggled ? 'rotate(45deg)' : 'none' }}
+        >
           {/* Horizontal line (always visible) */}
           <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2"></span>
           {/* Vertical line (stays vertical in + mode, rotates to diagonal in X mode) */}
