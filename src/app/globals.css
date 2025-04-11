@@ -5,7 +5,11 @@
 }
 
 body {
-  @apply antialiased;
+  @apply antialiased text-lg leading-7;
+}
+
+p {
+  @apply pb-4;
 }
 
 h1 {

@@ -207,6 +207,16 @@ export interface PopTextSliceDefaultPrimary {
   button_text: prismic.KeyTextField;
 
   /**
+   * Image field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.image
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  image: prismic.ImageField<never>;
+
+  /**
    * Rich Text field in *PopText → Default → Primary*
    *
    * - **Field Type**: Rich Text

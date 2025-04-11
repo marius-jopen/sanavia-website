@@ -6,6 +6,7 @@ import { PrismicRichText } from "@prismicio/react";
 import ExpandableSection from "@/components/ExpandableSection";
 import HeadlineBox from "@/components/HeadlineBox";
 import ToggleButton from "@/components/ToggleButton";
+import { PrismicNextImage } from "@prismicio/next";
 
 /**
  * Props for `PopText`.
@@ -34,7 +35,16 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
       }
     >
       <div className="text-gray-800">
-        <PrismicRichText field={slice.primary.rich_text} />
+
+        {slice.primary.image.url && (
+          <div className="mb-6">
+            <PrismicNextImage className="w-full rounded-xl" field={slice.primary.image} />
+          </div>
+        )}
+
+        <div className="md:w-10/12">
+          <PrismicRichText field={slice.primary.rich_text} />
+        </div>
       </div>
     </ExpandableSection>
   );

@@ -22,17 +22,22 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
     tempDiv.style.position = 'absolute';
     tempDiv.style.visibility = 'hidden';
     tempDiv.style.whiteSpace = 'nowrap';
+    // Add font styles to match the actual rendered text
+    tempDiv.style.fontFamily = 'inherit';
+    tempDiv.style.fontSize = 'inherit';
+    tempDiv.style.fontWeight = 'inherit';
     document.body.appendChild(tempDiv);
 
     // Measure icon width
     tempDiv.innerHTML = `
-      <span class="inline-block w-4 h-4 relative"></span>
+      <span class="inline-block w-4 h-[22px] relative"></span>
     `;
     iconWidthRef.current = tempDiv.offsetWidth + 48; // Add padding
 
-    // Measure text width
-    tempDiv.innerHTML = buttonText || '';
-    textWidthRef.current = tempDiv.offsetWidth + 48; // Add padding
+    // Measure text width with better simulation of actual rendering
+    tempDiv.innerHTML = `<h4><span class="whitespace-nowrap">${buttonText || ''}</span></h4>`;
+    // Increase padding buffer to prevent text from being cut off
+    textWidthRef.current = tempDiv.offsetWidth + 48; // Increased padding from 48 to 64
 
     // Clean up
     document.body.removeChild(tempDiv);
@@ -117,7 +122,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
       ) : (
         <div 
           ref={iconRef} 
-          className="inline-block w-4 h-4 relative translate-y-[1.5px]"
+          className="inline-block w-4 h-[22px] relative translate-y-[3px]"
           style={{ transform: hasText && isToggled ? 'rotate(45deg)' : 'none' }}
         >
           <h4>

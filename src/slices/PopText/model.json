@@ -26,6 +26,14 @@
             "placeholder": ""
           }
         },
+        "image": {
+          "type": "Image",
+          "config": {
+            "label": "Image",
+            "constraint": {},
+            "thumbnails": []
+          }
+        },
         "rich_text": {
           "type": "StructuredText",
           "config": {
