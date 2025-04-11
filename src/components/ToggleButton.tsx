@@ -104,7 +104,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   return (
     <div 
       ref={buttonRef}
-      className="bg-white rounded-4xl px-6 py-6 cursor-pointer hover:bg-black hover:text-white transition-all duration-300 border border-[var(--color-border)] whitespace-nowrap overflow-hidden"
+      className="bg-white rounded-4xl px-6 py-4 cursor-pointer hover:bg-black hover:text-white transition-all duration-300 border border-[var(--color-border)] whitespace-nowrap overflow-hidden"
       style={{ width: hasText ? (isToggled ? iconWidthRef.current : textWidthRef.current) || 'auto' : iconWidthRef.current || 'auto' }}
       onClick={toggle}
     >
@@ -113,7 +113,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
       ) : (
         <div 
           ref={iconRef} 
-          className="inline-block w-4 h-4 relative"
+          className="inline-block w-4 h-4 relative translate-y-[1.5px]"
           style={{ transform: hasText && isToggled ? 'rotate(45deg)' : 'none' }}
         >
           {/* Horizontal line (always visible) */}

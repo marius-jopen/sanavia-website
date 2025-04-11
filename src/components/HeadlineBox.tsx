@@ -7,7 +7,7 @@ interface HeadlineBoxProps {
 
 const HeadlineBox: React.FC<HeadlineBoxProps> = ({ children }) => {
   return (
-    <div className="bg-white rounded-r-4xl px-6 py-6 border-y border-r border-[var(--color-border)]">
+    <div className="bg-white rounded-r-4xl px-4 py-4 border-y border-r border-[var(--color-border)]">
       {children}
     </div>
   );
