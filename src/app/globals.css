@@ -3,3 +3,11 @@
 :root {
   --color-border: #6a6a6a; /* Default color - you can change this to any color you want */
 }
+
+body {
+  @apply md:text-lg leading-7 antialiased;
+}
+
+h1 {
+  @apply text-6xl font-normal leading-16;
+}

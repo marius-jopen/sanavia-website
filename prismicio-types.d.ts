@@ -4,7 +4,11 @@ import type * as prismic from "@prismicio/client";
 
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
-type PageDocumentDataSlicesSlice = HeadlineSlice | PopTextSlice | RichTextSlice;
+type PageDocumentDataSlicesSlice =
+  | PopHeadlineSlice
+  | HeadlineSlice
+  | PopTextSlice
+  | RichTextSlice;
 
 /**
  * Content for Page documents
@@ -131,6 +135,51 @@ type HeadlineSliceVariation = HeadlineSliceDefault;
 export type HeadlineSlice = prismic.SharedSlice<
   "headline",
   HeadlineSliceVariation
+>;
+
+/**
+ * Primary content in *PopHeadline → Default → Primary*
+ */
+export interface PopHeadlineSliceDefaultPrimary {
+  /**
+   * Headline field in *PopHeadline → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_headline.default.primary.headline
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  headline: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for PopHeadline Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopHeadlineSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<PopHeadlineSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *PopHeadline*
+ */
+type PopHeadlineSliceVariation = PopHeadlineSliceDefault;
+
+/**
+ * PopHeadline Shared Slice
+ *
+ * - **API ID**: `pop_headline`
+ * - **Description**: PopHeadline
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopHeadlineSlice = prismic.SharedSlice<
+  "pop_headline",
+  PopHeadlineSliceVariation
 >;
 
 /**
@@ -272,6 +321,10 @@ declare module "@prismicio/client" {
       HeadlineSliceDefaultPrimary,
       HeadlineSliceVariation,
       HeadlineSliceDefault,
+      PopHeadlineSlice,
+      PopHeadlineSliceDefaultPrimary,
+      PopHeadlineSliceVariation,
+      PopHeadlineSliceDefault,
       PopTextSlice,
       PopTextSliceDefaultPrimary,
       PopTextSliceVariation,

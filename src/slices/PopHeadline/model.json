@@ -1,0 +1,26 @@
+{
+  "id": "pop_headline",
+  "type": "SharedSlice",
+  "name": "PopHeadline",
+  "description": "PopHeadline",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {
+        "headline": {
+          "type": "Text",
+          "config": {
+            "label": "Headline",
+            "placeholder": ""
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}

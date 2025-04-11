@@ -83,14 +83,14 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
 
   return (
     <ToggleContext.Provider value={toggleContextValue}>
-      <section className="mb-8" ref={sectionRef}>
-        <div className="flex gap-[2px] mb-[3px]">
+      <section className="mb-2" ref={sectionRef}>
+        <div className="flex gap-[2px]">
           {headerContent}
         </div>
 
         <div 
           ref={contentBoxRef}
-          className="bg-white rounded-r-2xl -ml-[100px] pl-[100px] w-10/12 mb-[3px]"
+          className="bg-white rounded-r-2xl -ml-[100px] pl-[100px] md:w-10/12 mt-2 mr-2"
           style={{ 
             display: isInitialized ? 'block' : 'none', 
             height: 0,

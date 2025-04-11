@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { Content } from "@prismicio/client";
-import { SliceComponentProps } from "@prismicio/react";
-
+import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 /**
  * Props for `Headline`.
  */
@@ -12,11 +11,14 @@ export type HeadlineProps = SliceComponentProps<Content.HeadlineSlice>;
  */
 const Headline: FC<HeadlineProps> = ({ slice }) => {
   return (
-    <section
-      data-slice-type={slice.slice_type}
-      data-slice-variation={slice.variation}
-    >
-      Placeholder component for headline (variation: {slice.variation}) Slices
+    <section className="text-center pt-24 pb-24">
+      <div className="mb-8 w-7/12 mx-auto text-gray-800">
+        <PrismicRichText field={slice.primary.headline} />
+      </div>
+
+      <div className="w-4/12 mx-auto text-gray-500">
+        <PrismicRichText field={slice.primary.sub_headline} />
+      </div>
     </section>
   );
 };

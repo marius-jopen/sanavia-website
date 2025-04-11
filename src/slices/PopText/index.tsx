@@ -30,7 +30,9 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
         </>
       }
     >
-      <PrismicRichText field={slice.primary.rich_text} />
+      <div className="text-gray-800">
+        <PrismicRichText field={slice.primary.rich_text} />
+      </div>
     </ExpandableSection>
   );
 };

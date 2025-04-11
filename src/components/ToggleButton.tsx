@@ -104,7 +104,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   return (
     <div 
       ref={buttonRef}
-      className="bg-white rounded-4xl px-6 py-4 cursor-pointer hover:bg-black hover:text-white transition-all duration-300 whitespace-nowrap overflow-hidden"
+      className="bg-white rounded-4xl px-6 py-4 cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden"
       style={{ width: hasText ? (isToggled ? iconWidthRef.current : textWidthRef.current) || 'auto' : iconWidthRef.current || 'auto' }}
       onClick={toggle}
     >
