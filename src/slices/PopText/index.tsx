@@ -6,6 +6,7 @@ import { PrismicRichText } from "@prismicio/react";
 import { initializeSlideElement } from "@/utils/animations/slideAnimations";
 import { animatePopTextOpen, animatePopTextClose } from "@/utils/animations/popTextAnimations";
 import { setupFadeInAnimation } from "@/utils/animations/intersectionAnimations";
+import { scrollElementToCenter } from "@/utils/animations/scrollAnimations";
 
 /**
  * Props for `PopText`.
@@ -48,6 +49,9 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
       const contentHeight = contentRef.current.offsetHeight;
       // Use the external animation function for opening
       animatePopTextOpen(textBoxRef.current, contentHeight);
+      
+      // Scroll the section to the center of the viewport
+      scrollElementToCenter(sectionRef.current);
     } else {
       // Use the external animation function for closing
       animatePopTextClose(textBoxRef.current);
