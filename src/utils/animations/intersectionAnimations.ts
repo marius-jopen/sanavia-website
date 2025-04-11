@@ -16,12 +16,8 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
   // Create observer with rootMargin that only detects bottom entries
   const observer = new IntersectionObserver(
     (entries) => {
-      // Get current scroll position
-      const currentScrollY = window.scrollY;
-      // Determine scroll direction (not used but kept for future reference)
-      // const isScrollingDown = currentScrollY > lastScrollY;
-      // Update last scroll position for next call
-      // lastScrollY = currentScrollY;
+      // Scroll direction tracking code removed to fix linting errors
+      // This was previously used to detect scroll direction
       
       entries.forEach(entry => {
         if (entry.isIntersecting && entry.boundingClientRect.top > 0) {
