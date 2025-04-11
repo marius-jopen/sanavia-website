@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { useToggle } from "./ExpandableSection";
 
