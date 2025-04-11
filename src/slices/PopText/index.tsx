@@ -4,6 +4,12 @@ import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+// Register ScrollTrigger plugin
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 /**
  * Props for `PopText`.
@@ -17,6 +23,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
   const [isTextVisible, setIsTextVisible] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const textBoxRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
   // Initialize the element's hidden state on mount
   useEffect(() => {
@@ -29,6 +36,54 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
       });
     }
     setIsInitialized(true);
+  }, []);
+
+  // Setup scroll trigger animation
+  useEffect(() => {
+    if (!sectionRef.current || typeof window === 'undefined') return;
+    
+    // Create the timeline but don't link ScrollTrigger yet
+    const tl = gsap.timeline({ paused: true });
+    
+    // Build animation sequence
+    tl.fromTo(sectionRef.current,
+      { y: 50, autoAlpha: 0 },
+      { autoAlpha: 1, duration: 0.3 }
+    )
+    .to(sectionRef.current, {
+      y: 0,
+      duration: 0.8,
+      ease: "elastic.out(1.2, 0.5)",
+    }, "-=0.1");
+    
+    // Create ScrollTrigger
+    const trigger = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: "top bottom",
+      onEnter: () => {
+        // Reset and play animation
+        tl.restart();
+      },
+      onEnterBack: () => {
+        // Also play when scrolling up
+        tl.restart();
+      },
+      onLeave: () => {
+        // Reset section to initial state when it leaves viewport
+        gsap.set(sectionRef.current, { y: 50, autoAlpha: 0 });
+      },
+      onLeaveBack: () => {
+        // Reset section to initial state when it leaves viewport while scrolling up
+        gsap.set(sectionRef.current, { y: 50, autoAlpha: 0 });
+      },
+      markers: process.env.NODE_ENV === 'development'
+    });
+    
+    // Cleanup
+    return () => {
+      trigger.kill();
+      tl.kill();
+    };
   }, []);
 
   useEffect(() => {
@@ -72,7 +127,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
   }, [isTextVisible]);
 
   return (
-    <section className="mb-12">
+    <section className="mb-12" ref={sectionRef}>
       <div className="flex">
         <div className="bg-white rounded-r-4xl px-8 py-6">
           {slice.primary.headline}
