@@ -3,7 +3,8 @@ import { FC, useState, useRef, useEffect } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
-import { initializeSlideElement, slideIn, slideOut } from "@/utils/animations/slideAnimations";
+import { initializeSlideElement } from "@/utils/animations/slideAnimations";
+import { animatePopTextOpen, animatePopTextClose } from "@/utils/animations/popTextAnimations";
 
 /**
  * Props for `PopText`.
@@ -18,6 +19,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const textBoxRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Initialize the element's hidden state on mount
   useEffect(() => {
@@ -28,12 +30,16 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
   }, []);
 
   useEffect(() => {
-    if (!textBoxRef.current) return;
+    if (!textBoxRef.current || !contentRef.current) return;
     
     if (isTextVisible) {
-      slideIn(textBoxRef.current);
+      // Get the height of the content
+      const contentHeight = contentRef.current.offsetHeight;
+      // Use the external animation function for opening
+      animatePopTextOpen(textBoxRef.current, contentHeight);
     } else {
-      slideOut(textBoxRef.current);
+      // Use the external animation function for closing
+      animatePopTextClose(textBoxRef.current);
     }
   }, [isTextVisible]);
 
@@ -58,10 +64,10 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
         style={{ 
           display: isInitialized ? 'block' : 'none', 
           height: 0,
-          overflow: 'hidden'
+          overflow: "hidden"
         }}
       >
-        <div className="py-6 px-6">
+        <div className="py-6 px-6" ref={contentRef}>
           <PrismicRichText field={slice.primary.rich_text} />
         </div>
       </div>
