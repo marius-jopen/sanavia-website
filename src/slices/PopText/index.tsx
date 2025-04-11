@@ -13,18 +13,18 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
  */
 const PopText: FC<PopTextProps> = ({ slice }) => {
   return (
-    <section>
-      <div>
-        <div>
+    <section className="mb-12">
+      <div className="flex">
+        <div className="bg-white rounded-r-4xl px-8 py-6">
           {slice.primary.headline}
         </div>
 
-        <div>
+        <div className="bg-white rounded-4xl px-8 py-6">
           {slice.primary.button_text}
         </div>
       </div>
 
-      <div>
+      <div className="bg-white rounded-r-4xl px-8 py-6 w-10/12">
         <PrismicRichText field={slice.primary.rich_text} />
       </div>
     </section>
