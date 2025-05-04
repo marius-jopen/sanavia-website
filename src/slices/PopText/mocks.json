@@ -13,39 +13,83 @@
 				"value": "determine",
 				"type": "Text"
 			},
-			"rich_text": {
-				"__TYPE__": "StructuredTextContent",
+			"items": {
+				"__TYPE__": "GroupContentType",
 				"value": [
 					{
-						"type": "paragraph",
-						"content": {
-							"text": "Irure culpa magna consequat eiusmod eu."
-						}
+						"__TYPE__": "GroupItemContent",
+						"value": [
+							[
+								"headline",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "plates",
+									"type": "Text"
+								}
+							],
+							[
+								"richtext",
+								{
+									"__TYPE__": "StructuredTextContent",
+									"value": [
+										{
+											"type": "paragraph",
+											"content": {
+												"text": "Commodo sit occaecat excepteur."
+											}
+										}
+									]
+								}
+							],
+							[
+								"image",
+								{
+									"origin": {
+										"id": "main",
+										"url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+										"width": 4076,
+										"height": 2712
+									},
+									"url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+									"width": 4076,
+									"height": 2712,
+									"edit": {
+										"zoom": 1,
+										"crop": {
+											"x": 0,
+											"y": 0
+										},
+										"background": "transparent"
+									},
+									"alt": "beat",
+									"credits": null,
+									"__TYPE__": "ImageContent",
+									"thumbnails": {}
+								}
+							],
+							[
+								"button",
+								{
+									"key": "c72b8157-2e15-4596-a9fd-98526d3138d2",
+									"__TYPE__": "LinkContent",
+									"value": {
+										"__TYPE__": "ExternalLink",
+										"url": "http://twitter.com",
+										"text": "circle"
+									}
+								}
+							],
+							[
+								"styling",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "image-2-columns",
+									"type": "Select"
+								}
+							]
+						]
 					}
 				]
-			},
-			"image": {
-				"origin": {
-					"id": "main",
-					"url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-					"width": 4076,
-					"height": 2712
-				},
-				"url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-				"width": 4076,
-				"height": 2712,
-				"edit": {
-					"zoom": 1,
-					"crop": {
-						"x": 0,
-						"y": 0
-					},
-					"background": "transparent"
-				},
-				"alt": "weight",
-				"credits": null,
-				"__TYPE__": "ImageContent",
-				"thumbnails": {}
 			}
 		},
 		"items": []

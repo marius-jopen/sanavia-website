@@ -183,6 +183,65 @@ export type PopHeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Item in *PopText → Default → Primary → Items*
+ */
+export interface PopTextSliceDefaultPrimaryItemsItem {
+  /**
+   * Styling field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Select
+   * - **Placeholder**: *None*
+   * - **Default Value**: 1-column
+   * - **API ID Path**: pop_text.default.primary.items[].styling
+   * - **Documentation**: https://prismic.io/docs/field#select
+   */
+  styling: prismic.SelectField<
+    "1-column" | "2-columns" | "2-columns-reversed" | "image-2-columns",
+    "filled"
+  >;
+
+  /**
+   * Headline field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.items[].headline
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  headline: prismic.KeyTextField;
+
+  /**
+   * Rich Text field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.items[].richtext
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  richtext: prismic.RichTextField;
+
+  /**
+   * Image field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.items[].image
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  image: prismic.ImageField<never>;
+
+  /**
+   * Button field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.items[].button
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  button: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
  * Primary content in *PopText → Default → Primary*
  */
 export interface PopTextSliceDefaultPrimary {
@@ -207,24 +266,14 @@ export interface PopTextSliceDefaultPrimary {
   button_text: prismic.KeyTextField;
 
   /**
-   * Image field in *PopText → Default → Primary*
+   * Items field in *PopText → Default → Primary*
    *
-   * - **Field Type**: Image
+   * - **Field Type**: Group
    * - **Placeholder**: *None*
-   * - **API ID Path**: pop_text.default.primary.image
-   * - **Documentation**: https://prismic.io/docs/field#image
+   * - **API ID Path**: pop_text.default.primary.items[]
+   * - **Documentation**: https://prismic.io/docs/field#group
    */
-  image: prismic.ImageField<never>;
-
-  /**
-   * Rich Text field in *PopText → Default → Primary*
-   *
-   * - **Field Type**: Rich Text
-   * - **Placeholder**: *None*
-   * - **API ID Path**: pop_text.default.primary.rich_text
-   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
-   */
-  rich_text: prismic.RichTextField;
+  items: prismic.GroupField<Simplify<PopTextSliceDefaultPrimaryItemsItem>>;
 }
 
 /**
@@ -336,6 +385,7 @@ declare module "@prismicio/client" {
       PopHeadlineSliceVariation,
       PopHeadlineSliceDefault,
       PopTextSlice,
+      PopTextSliceDefaultPrimaryItemsItem,
       PopTextSliceDefaultPrimary,
       PopTextSliceVariation,
       PopTextSliceDefault,

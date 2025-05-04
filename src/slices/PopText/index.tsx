@@ -2,11 +2,13 @@
 import { FC } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
-import { PrismicRichText } from "@prismicio/react";
 import ExpandableSection from "@/components/ExpandableSection";
 import HeadlineBox from "@/components/HeadlineBox";
 import ToggleButton from "@/components/ToggleButton";
-import { PrismicNextImage } from "@prismicio/next";
+import Item1Column from "./item-1-column";
+import Item2Columns from "./item-2-columns";
+import Item2ColumnsReversed from "./item-2-columns-reversed";
+import ItemImage2Columns from "./item-image-2-columns";
 
 /**
  * Props for `PopText`.
@@ -35,16 +37,32 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
       }
     >
       <div className="text-gray-800">
-
-        {slice.primary.image.url && (
-          <div className="mb-6">
-            <PrismicNextImage className="w-full rounded-xl" field={slice.primary.image} />
+        {slice.primary.items.map((item, index) => (
+          <div key={index}>
+            {/* Mobile view - always use Item1Column */}
+            <div className="md:hidden">
+              <Item1Column {...item} />
+            </div>
+            
+            {/* Desktop view - use specified layout */}
+            <div className="hidden md:block">
+              {(() => {
+                switch (item.styling) {
+                  case '1-column':
+                    return <Item1Column {...item} />;
+                  case '2-columns':
+                    return <Item2Columns {...item} />;
+                  case '2-columns-reversed':
+                    return <Item2ColumnsReversed {...item} />;
+                  case 'image-2-columns':
+                    return <ItemImage2Columns {...item} />;
+                  default:
+                    return <Item1Column {...item} />;
+                }
+              })()}
+            </div>
           </div>
-        )}
-
-        <div className={`md:${slice.primary.image.url ? 'w-10/12' : 'w-full'}`}>
-          <PrismicRichText field={slice.primary.rich_text} />
-        </div>
+        ))}
       </div>
     </ExpandableSection>
   );
