@@ -16,38 +16,11 @@ export type PopVideoProps = SliceComponentProps<Content.PopVideoSlice>;
  */
 const PopVideo: FC<PopVideoProps> = ({ slice }) => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showButton, setShowButton] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
+  
   useEffect(() => {
     const cleanup = setupFadeInAnimation(sectionRef.current);
     return cleanup;
   }, []);
-
-  const handlePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  // Mouse movement logic for button visibility
-  const handleMouseMove = () => {
-    setShowButton(true);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setShowButton(false), 2000);
-  };
-
-  const handleMouseLeave = () => {
-    setShowButton(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
-  };
 
   return (
     <section ref={sectionRef} className="w-full mb-4">

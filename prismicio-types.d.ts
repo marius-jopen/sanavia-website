@@ -241,11 +241,11 @@ export type PopHeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
- * Item in *PopContent → Default → Primary → Items*
+ * Item in *PopText → Default → Primary → Items*
  */
 export interface PopTextSliceDefaultPrimaryItemsItem {
   /**
-   * Styling field in *PopContent → Default → Primary → Items*
+   * Styling field in *PopText → Default → Primary → Items*
    *
    * - **Field Type**: Select
    * - **Placeholder**: *None*
@@ -259,7 +259,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   >;
 
   /**
-   * Headline field in *PopContent → Default → Primary → Items*
+   * Headline field in *PopText → Default → Primary → Items*
    *
    * - **Field Type**: Text
    * - **Placeholder**: *None*
@@ -269,7 +269,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   headline: prismic.KeyTextField;
 
   /**
-   * Rich Text field in *PopContent → Default → Primary → Items*
+   * Rich Text field in *PopText → Default → Primary → Items*
    *
    * - **Field Type**: Rich Text
    * - **Placeholder**: *None*
@@ -279,7 +279,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   richtext: prismic.RichTextField;
 
   /**
-   * Image field in *PopContent → Default → Primary → Items*
+   * Image field in *PopText → Default → Primary → Items*
    *
    * - **Field Type**: Image
    * - **Placeholder**: *None*
@@ -289,7 +289,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   image: prismic.ImageField<never>;
 
   /**
-   * Button field in *PopContent → Default → Primary → Items*
+   * Button field in *PopText → Default → Primary → Items*
    *
    * - **Field Type**: Link
    * - **Placeholder**: *None*
@@ -300,21 +300,11 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
 }
 
 /**
- * Primary content in *PopContent → Default → Primary*
+ * Primary content in *PopText → Default → Primary*
  */
 export interface PopTextSliceDefaultPrimary {
   /**
-   * Headline field in *PopContent → Default → Primary*
-   *
-   * - **Field Type**: Text
-   * - **Placeholder**: *None*
-   * - **API ID Path**: pop_text.default.primary.headline
-   * - **Documentation**: https://prismic.io/docs/field#key-text
-   */
-  headline: prismic.KeyTextField;
-
-  /**
-   * Button Text field in *PopContent → Default → Primary*
+   * Button Text field in *PopText → Default → Primary*
    *
    * - **Field Type**: Text
    * - **Placeholder**: *None*
@@ -324,7 +314,17 @@ export interface PopTextSliceDefaultPrimary {
   button_text: prismic.KeyTextField;
 
   /**
-   * Items field in *PopContent → Default → Primary*
+   * Headline field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_text.default.primary.headline
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  headline: prismic.RichTextField;
+
+  /**
+   * Items field in *PopText → Default → Primary*
    *
    * - **Field Type**: Group
    * - **Placeholder**: *None*
@@ -335,7 +335,7 @@ export interface PopTextSliceDefaultPrimary {
 }
 
 /**
- * Default variation for PopContent Slice
+ * Default variation for PopText Slice
  *
  * - **API ID**: `default`
  * - **Description**: Default
@@ -348,12 +348,12 @@ export type PopTextSliceDefault = prismic.SharedSliceVariation<
 >;
 
 /**
- * Slice variation for *PopContent*
+ * Slice variation for *PopText*
  */
 type PopTextSliceVariation = PopTextSliceDefault;
 
 /**
- * PopContent Shared Slice
+ * PopText Shared Slice
  *
  * - **API ID**: `pop_text`
  * - **Description**: PopText

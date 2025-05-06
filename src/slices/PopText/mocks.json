@@ -3,16 +3,6 @@
 		"__TYPE__": "SharedSliceContent",
 		"variation": "default",
 		"primary": {
-			"headline": {
-				"__TYPE__": "FieldContent",
-				"value": "troops",
-				"type": "Text"
-			},
-			"button_text": {
-				"__TYPE__": "FieldContent",
-				"value": "determine",
-				"type": "Text"
-			},
 			"items": {
 				"__TYPE__": "GroupContentType",
 				"value": [
@@ -88,6 +78,22 @@
 								}
 							]
 						]
+					}
+				]
+			},
+			"button_text": {
+				"__TYPE__": "FieldContent",
+				"value": "hunt",
+				"type": "Text"
+			},
+			"headline": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Consectetur ut consequat ea. Dolore aute minim eu cillum duis incididunt laboris duis amet reprehenderit laboris amet ea ullamco."
+						}
 					}
 				]
 			}

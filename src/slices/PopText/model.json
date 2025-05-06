@@ -1,7 +1,7 @@
 {
   "id": "pop_text",
   "type": "SharedSlice",
-  "name": "PopContent",
+  "name": "PopText",
   "description": "PopText",
   "variations": [
     {
@@ -12,18 +12,20 @@
       "description": "Default",
       "imageUrl": "",
       "primary": {
-        "headline": {
-          "type": "Text",
-          "config": {
-            "label": "Headline",
-            "placeholder": ""
-          }
-        },
         "button_text": {
           "type": "Text",
           "config": {
             "label": "Button Text",
             "placeholder": ""
+          }
+        },
+        "headline": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Headline",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
           }
         },
         "items": {

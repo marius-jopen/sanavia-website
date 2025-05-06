@@ -6,7 +6,7 @@ export const components = {
   headline: dynamic(() => import("./Headline")),
   pop_button: dynamic(() => import("./PopButton")),
   pop_headline: dynamic(() => import("./PopHeadline")),
-  pop_text: dynamic(() => import("./PopContent")),
+  pop_text: dynamic(() => import("./PopText")),
   pop_video: dynamic(() => import("./PopVideo")),
   video: dynamic(() => import("./Video")),
 };
