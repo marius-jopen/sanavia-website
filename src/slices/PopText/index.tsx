@@ -11,14 +11,14 @@ import Item2ColumnsReversed from "./item-2-columns-reversed";
 import ItemImage2Columns from "./item-image-2-columns";
 
 /**
- * Props for `PopContent`.
+ * Props for `PopText`.
  */
-export type PopContentProps = SliceComponentProps<Content.PopContentSlice>;
+export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
 
 /**
- * Component for "PopContent" Slices.
+ * Component for "PopText" Slices.
  */
-const PopContent: FC<PopContentProps> = ({ slice }) => {
+const PopText: FC<PopTextProps> = ({ slice }) => {
   // Convert KeyTextField to string
   const buttonText = slice.primary.button_text?.toString() || '';
 
@@ -68,4 +68,4 @@ const PopContent: FC<PopContentProps> = ({ slice }) => {
   );
 };
 
-export default PopContent;
+export default PopText;
