@@ -5,6 +5,8 @@ import type * as prismic from "@prismicio/client";
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
 type PageDocumentDataSlicesSlice =
+  | PopVideoSlice
+  | VideoSlice
   | PopButtonSlice
   | PopHeadlineSlice
   | HeadlineSlice
@@ -362,6 +364,113 @@ export type PopTextSlice = prismic.SharedSlice<
   PopTextSliceVariation
 >;
 
+/**
+ * Primary content in *PopVideo → Default → Primary*
+ */
+export interface PopVideoSliceDefaultPrimary {
+  /**
+   * Poster field in *PopVideo → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_video.default.primary.poster
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  poster: prismic.ImageField<never>;
+
+  /**
+   * Video Url field in *PopVideo → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_video.default.primary.video_url
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  video_url: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for PopVideo Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopVideoSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<PopVideoSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *PopVideo*
+ */
+type PopVideoSliceVariation = PopVideoSliceDefault;
+
+/**
+ * PopVideo Shared Slice
+ *
+ * - **API ID**: `pop_video`
+ * - **Description**: PopVideo
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopVideoSlice = prismic.SharedSlice<
+  "pop_video",
+  PopVideoSliceVariation
+>;
+
+/**
+ * Primary content in *Video → Default → Primary*
+ */
+export interface VideoSliceDefaultPrimary {
+  /**
+   * Poster field in *Video → Default → Primary*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: video.default.primary.poster
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  poster: prismic.ImageField<never>;
+
+  /**
+   * Video Url field in *Video → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: video.default.primary.video_url
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  video_url: prismic.KeyTextField;
+}
+
+/**
+ * Default variation for Video Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type VideoSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<VideoSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *Video*
+ */
+type VideoSliceVariation = VideoSliceDefault;
+
+/**
+ * Video Shared Slice
+ *
+ * - **API ID**: `video`
+ * - **Description**: Video
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type VideoSlice = prismic.SharedSlice<"video", VideoSliceVariation>;
+
 declare module "@prismicio/client" {
   interface CreateClient {
     (
@@ -404,6 +513,14 @@ declare module "@prismicio/client" {
       PopTextSliceDefaultPrimary,
       PopTextSliceVariation,
       PopTextSliceDefault,
+      PopVideoSlice,
+      PopVideoSliceDefaultPrimary,
+      PopVideoSliceVariation,
+      PopVideoSliceDefault,
+      VideoSlice,
+      VideoSliceDefaultPrimary,
+      VideoSliceVariation,
+      VideoSliceDefault,
     };
   }
 }
