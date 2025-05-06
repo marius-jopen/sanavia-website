@@ -1,5 +1,5 @@
 "use client"
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
@@ -16,7 +16,7 @@ export type PopVideoProps = SliceComponentProps<Content.PopVideoSlice>;
  */
 const PopVideo: FC<PopVideoProps> = ({ slice }) => {
   const sectionRef = useRef<HTMLElement>(null);
-  
+
   useEffect(() => {
     const cleanup = setupFadeInAnimation(sectionRef.current);
     return cleanup;
