@@ -1,0 +1,18 @@
+{
+  "id": "grid",
+  "type": "SharedSlice",
+  "name": "Grid",
+  "description": "Grid",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {},
+      "items": {}
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "team_advanced",
+  "type": "SharedSlice",
+  "name": "TeamAdvanced",
+  "description": "TeamAdvanced",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {},
+      "items": {}
+    }
+  ]
+}

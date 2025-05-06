@@ -1,0 +1,18 @@
+{
+  "id": "news",
+  "type": "SharedSlice",
+  "name": "News",
+  "description": "News",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {},
+      "items": {}
+    }
+  ]
+}

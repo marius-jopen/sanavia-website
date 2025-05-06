@@ -27,6 +27,24 @@
         "fieldset": "Slice Zone",
         "config": {
           "choices": {
+            "space": {
+              "type": "SharedSlice"
+            },
+            "team_advanced": {
+              "type": "SharedSlice"
+            },
+            "team": {
+              "type": "SharedSlice"
+            },
+            "slider": {
+              "type": "SharedSlice"
+            },
+            "news": {
+              "type": "SharedSlice"
+            },
+            "grid": {
+              "type": "SharedSlice"
+            },
             "pop_video": {
               "type": "SharedSlice"
             },

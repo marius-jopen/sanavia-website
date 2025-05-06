@@ -1,0 +1,18 @@
+{
+  "id": "space",
+  "type": "SharedSlice",
+  "name": "Space",
+  "description": "Space",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": "",
+      "primary": {},
+      "items": {}
+    }
+  ]
+}

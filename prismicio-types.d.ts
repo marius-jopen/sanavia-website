@@ -4,7 +4,129 @@ import type * as prismic from "@prismicio/client";
 
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
+/**
+ * Item in *Settings → Socials*
+ */
+export interface HeaderDocumentDataSocialsItem {
+  /**
+   * Icon field in *Settings → Socials*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.socials[].icon
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  icon: prismic.ImageField<never>;
+
+  /**
+   * Link field in *Settings → Socials*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.socials[].link
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  link: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Content for Settings documents
+ */
+interface HeaderDocumentData {
+  /**
+   * Logo field in *Settings*
+   *
+   * - **Field Type**: Image
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.logo
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#image
+   */
+  logo: prismic.ImageField<never>;
+
+  /**
+   * CTA field in *Settings*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.cta
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  cta: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+
+  /**
+   * Navigation Header field in *Settings*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.navigation_header
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  navigation_header: prismic.Repeatable<
+    prismic.LinkField<string, string, unknown, prismic.FieldState, never>
+  >;
+
+  /**
+   * Navigation Footer field in *Settings*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.navigation_footer
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  navigation_footer: prismic.Repeatable<
+    prismic.LinkField<string, string, unknown, prismic.FieldState, never>
+  >;
+
+  /**
+   * Socials field in *Settings*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.socials[]
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  socials: prismic.GroupField<Simplify<HeaderDocumentDataSocialsItem>>;
+
+  /**
+   * Footer Bottom Line field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.footer_bottom_line
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  footer_bottom_line: prismic.KeyTextField;
+}
+
+/**
+ * Settings document from Prismic
+ *
+ * - **API ID**: `header`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type HeaderDocument<Lang extends string = string> =
+  prismic.PrismicDocumentWithoutUID<
+    Simplify<HeaderDocumentData>,
+    "header",
+    Lang
+  >;
+
 type PageDocumentDataSlicesSlice =
+  | SpaceSlice
+  | TeamAdvancedSlice
+  | TeamSlice
+  | SliderSlice
+  | NewsSlice
+  | GridSlice
   | PopVideoSlice
   | VideoSlice
   | PopButtonSlice
@@ -82,7 +204,34 @@ interface PageDocumentData {
 export type PageDocument<Lang extends string = string> =
   prismic.PrismicDocumentWithUID<Simplify<PageDocumentData>, "page", Lang>;
 
-export type AllDocumentTypes = PageDocument;
+export type AllDocumentTypes = HeaderDocument | PageDocument;
+
+/**
+ * Default variation for Grid Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type GridSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *Grid*
+ */
+type GridSliceVariation = GridSliceDefault;
+
+/**
+ * Grid Shared Slice
+ *
+ * - **API ID**: `grid`
+ * - **Description**: Grid
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type GridSlice = prismic.SharedSlice<"grid", GridSliceVariation>;
 
 /**
  * Primary content in *Headline → Default → Primary*
@@ -149,6 +298,33 @@ export type HeadlineSlice = prismic.SharedSlice<
   "headline",
   HeadlineSliceVariation
 >;
+
+/**
+ * Default variation for News Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type NewsSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *News*
+ */
+type NewsSliceVariation = NewsSliceDefault;
+
+/**
+ * News Shared Slice
+ *
+ * - **API ID**: `news`
+ * - **Description**: News
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type NewsSlice = prismic.SharedSlice<"news", NewsSliceVariation>;
 
 /**
  * Primary content in *PopButton → Default → Primary*
@@ -420,6 +596,117 @@ export type PopVideoSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Default variation for Slider Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SliderSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *Slider*
+ */
+type SliderSliceVariation = SliderSliceDefault;
+
+/**
+ * Slider Shared Slice
+ *
+ * - **API ID**: `slider`
+ * - **Description**: Slider
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SliderSlice = prismic.SharedSlice<"slider", SliderSliceVariation>;
+
+/**
+ * Default variation for Space Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SpaceSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *Space*
+ */
+type SpaceSliceVariation = SpaceSliceDefault;
+
+/**
+ * Space Shared Slice
+ *
+ * - **API ID**: `space`
+ * - **Description**: Space
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SpaceSlice = prismic.SharedSlice<"space", SpaceSliceVariation>;
+
+/**
+ * Default variation for Team Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type TeamSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *Team*
+ */
+type TeamSliceVariation = TeamSliceDefault;
+
+/**
+ * Team Shared Slice
+ *
+ * - **API ID**: `team`
+ * - **Description**: Team
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type TeamSlice = prismic.SharedSlice<"team", TeamSliceVariation>;
+
+/**
+ * Default variation for TeamAdvanced Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type TeamAdvancedSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *TeamAdvanced*
+ */
+type TeamAdvancedSliceVariation = TeamAdvancedSliceDefault;
+
+/**
+ * TeamAdvanced Shared Slice
+ *
+ * - **API ID**: `team_advanced`
+ * - **Description**: TeamAdvanced
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type TeamAdvancedSlice = prismic.SharedSlice<
+  "team_advanced",
+  TeamAdvancedSliceVariation
+>;
+
+/**
  * Primary content in *Video → Default → Primary*
  */
 export interface VideoSliceDefaultPrimary {
@@ -492,14 +779,23 @@ declare module "@prismicio/client" {
 
   namespace Content {
     export type {
+      HeaderDocument,
+      HeaderDocumentData,
+      HeaderDocumentDataSocialsItem,
       PageDocument,
       PageDocumentData,
       PageDocumentDataSlicesSlice,
       AllDocumentTypes,
+      GridSlice,
+      GridSliceVariation,
+      GridSliceDefault,
       HeadlineSlice,
       HeadlineSliceDefaultPrimary,
       HeadlineSliceVariation,
       HeadlineSliceDefault,
+      NewsSlice,
+      NewsSliceVariation,
+      NewsSliceDefault,
       PopButtonSlice,
       PopButtonSliceDefaultPrimary,
       PopButtonSliceVariation,
@@ -517,6 +813,18 @@ declare module "@prismicio/client" {
       PopVideoSliceDefaultPrimary,
       PopVideoSliceVariation,
       PopVideoSliceDefault,
+      SliderSlice,
+      SliderSliceVariation,
+      SliderSliceDefault,
+      SpaceSlice,
+      SpaceSliceVariation,
+      SpaceSliceDefault,
+      TeamSlice,
+      TeamSliceVariation,
+      TeamSliceDefault,
+      TeamAdvancedSlice,
+      TeamAdvancedSliceVariation,
+      TeamAdvancedSliceDefault,
       VideoSlice,
       VideoSliceDefaultPrimary,
       VideoSliceVariation,

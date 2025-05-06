@@ -3,10 +3,16 @@
 import dynamic from "next/dynamic";
 
 export const components = {
+  grid: dynamic(() => import("./Grid")),
   headline: dynamic(() => import("./Headline")),
+  news: dynamic(() => import("./News")),
   pop_button: dynamic(() => import("./PopButton")),
   pop_headline: dynamic(() => import("./PopHeadline")),
   pop_text: dynamic(() => import("./PopText")),
   pop_video: dynamic(() => import("./PopVideo")),
+  slider: dynamic(() => import("./Slider")),
+  space: dynamic(() => import("./Space")),
+  team: dynamic(() => import("./Team")),
+  team_advanced: dynamic(() => import("./TeamAdvanced")),
   video: dynamic(() => import("./Video")),
 };
