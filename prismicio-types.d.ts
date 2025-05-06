@@ -5,10 +5,10 @@ import type * as prismic from "@prismicio/client";
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] };
 
 type PageDocumentDataSlicesSlice =
+  | PopButtonSlice
   | PopHeadlineSlice
   | HeadlineSlice
-  | PopTextSlice
-  | RichTextSlice;
+  | PopTextSlice;
 
 /**
  * Content for Page documents
@@ -149,6 +149,51 @@ export type HeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Primary content in *PopButton → Default → Primary*
+ */
+export interface PopButtonSliceDefaultPrimary {
+  /**
+   * Button field in *PopButton → Default → Primary*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: pop_button.default.primary.button
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  button: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Default variation for PopButton Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopButtonSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<PopButtonSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *PopButton*
+ */
+type PopButtonSliceVariation = PopButtonSliceDefault;
+
+/**
+ * PopButton Shared Slice
+ *
+ * - **API ID**: `pop_button`
+ * - **Description**: PopButton
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type PopButtonSlice = prismic.SharedSlice<
+  "pop_button",
+  PopButtonSliceVariation
+>;
+
+/**
  * Primary content in *PopHeadline → Default → Primary*
  */
 export interface PopHeadlineSliceDefaultPrimary {
@@ -194,11 +239,11 @@ export type PopHeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
- * Item in *PopText → Default → Primary → Items*
+ * Item in *PopContent → Default → Primary → Items*
  */
 export interface PopTextSliceDefaultPrimaryItemsItem {
   /**
-   * Styling field in *PopText → Default → Primary → Items*
+   * Styling field in *PopContent → Default → Primary → Items*
    *
    * - **Field Type**: Select
    * - **Placeholder**: *None*
@@ -212,7 +257,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   >;
 
   /**
-   * Headline field in *PopText → Default → Primary → Items*
+   * Headline field in *PopContent → Default → Primary → Items*
    *
    * - **Field Type**: Text
    * - **Placeholder**: *None*
@@ -222,7 +267,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   headline: prismic.KeyTextField;
 
   /**
-   * Rich Text field in *PopText → Default → Primary → Items*
+   * Rich Text field in *PopContent → Default → Primary → Items*
    *
    * - **Field Type**: Rich Text
    * - **Placeholder**: *None*
@@ -232,7 +277,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   richtext: prismic.RichTextField;
 
   /**
-   * Image field in *PopText → Default → Primary → Items*
+   * Image field in *PopContent → Default → Primary → Items*
    *
    * - **Field Type**: Image
    * - **Placeholder**: *None*
@@ -242,7 +287,7 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   image: prismic.ImageField<never>;
 
   /**
-   * Button field in *PopText → Default → Primary → Items*
+   * Button field in *PopContent → Default → Primary → Items*
    *
    * - **Field Type**: Link
    * - **Placeholder**: *None*
@@ -253,11 +298,11 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
 }
 
 /**
- * Primary content in *PopText → Default → Primary*
+ * Primary content in *PopContent → Default → Primary*
  */
 export interface PopTextSliceDefaultPrimary {
   /**
-   * Headline field in *PopText → Default → Primary*
+   * Headline field in *PopContent → Default → Primary*
    *
    * - **Field Type**: Text
    * - **Placeholder**: *None*
@@ -267,7 +312,7 @@ export interface PopTextSliceDefaultPrimary {
   headline: prismic.KeyTextField;
 
   /**
-   * Button Text field in *PopText → Default → Primary*
+   * Button Text field in *PopContent → Default → Primary*
    *
    * - **Field Type**: Text
    * - **Placeholder**: *None*
@@ -277,7 +322,7 @@ export interface PopTextSliceDefaultPrimary {
   button_text: prismic.KeyTextField;
 
   /**
-   * Items field in *PopText → Default → Primary*
+   * Items field in *PopContent → Default → Primary*
    *
    * - **Field Type**: Group
    * - **Placeholder**: *None*
@@ -288,7 +333,7 @@ export interface PopTextSliceDefaultPrimary {
 }
 
 /**
- * Default variation for PopText Slice
+ * Default variation for PopContent Slice
  *
  * - **API ID**: `default`
  * - **Description**: Default
@@ -301,12 +346,12 @@ export type PopTextSliceDefault = prismic.SharedSliceVariation<
 >;
 
 /**
- * Slice variation for *PopText*
+ * Slice variation for *PopContent*
  */
 type PopTextSliceVariation = PopTextSliceDefault;
 
 /**
- * PopText Shared Slice
+ * PopContent Shared Slice
  *
  * - **API ID**: `pop_text`
  * - **Description**: PopText
@@ -315,51 +360,6 @@ type PopTextSliceVariation = PopTextSliceDefault;
 export type PopTextSlice = prismic.SharedSlice<
   "pop_text",
   PopTextSliceVariation
->;
-
-/**
- * Primary content in *RichText → Default → Primary*
- */
-export interface RichTextSliceDefaultPrimary {
-  /**
-   * Content field in *RichText → Default → Primary*
-   *
-   * - **Field Type**: Rich Text
-   * - **Placeholder**: Lorem ipsum...
-   * - **API ID Path**: rich_text.default.primary.content
-   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
-   */
-  content: prismic.RichTextField;
-}
-
-/**
- * Default variation for RichText Slice
- *
- * - **API ID**: `default`
- * - **Description**: RichText
- * - **Documentation**: https://prismic.io/docs/slice
- */
-export type RichTextSliceDefault = prismic.SharedSliceVariation<
-  "default",
-  Simplify<RichTextSliceDefaultPrimary>,
-  never
->;
-
-/**
- * Slice variation for *RichText*
- */
-type RichTextSliceVariation = RichTextSliceDefault;
-
-/**
- * RichText Shared Slice
- *
- * - **API ID**: `rich_text`
- * - **Description**: RichText
- * - **Documentation**: https://prismic.io/docs/slice
- */
-export type RichTextSlice = prismic.SharedSlice<
-  "rich_text",
-  RichTextSliceVariation
 >;
 
 declare module "@prismicio/client" {
@@ -391,6 +391,10 @@ declare module "@prismicio/client" {
       HeadlineSliceDefaultPrimary,
       HeadlineSliceVariation,
       HeadlineSliceDefault,
+      PopButtonSlice,
+      PopButtonSliceDefaultPrimary,
+      PopButtonSliceVariation,
+      PopButtonSliceDefault,
       PopHeadlineSlice,
       PopHeadlineSliceDefaultPrimary,
       PopHeadlineSliceVariation,
@@ -400,10 +404,6 @@ declare module "@prismicio/client" {
       PopTextSliceDefaultPrimary,
       PopTextSliceVariation,
       PopTextSliceDefault,
-      RichTextSlice,
-      RichTextSliceDefaultPrimary,
-      RichTextSliceVariation,
-      RichTextSliceDefault,
     };
   }
 }

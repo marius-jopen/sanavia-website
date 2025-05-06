@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 export const components = {
   headline: dynamic(() => import("./Headline")),
+  pop_button: dynamic(() => import("./PopButton")),
   pop_headline: dynamic(() => import("./PopHeadline")),
-  pop_text: dynamic(() => import("./PopText")),
-  rich_text: dynamic(() => import("./RichText")),
+  pop_text: dynamic(() => import("./PopContent")),
 };

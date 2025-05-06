@@ -1,0 +1,18 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"button": {
+				"__TYPE__": "LinkContent",
+				"key": "1a156901-317e-4ff8-bb42-17cc3bdd6008",
+				"value": {
+					"__TYPE__": "ExternalLink",
+					"url": "http://google.com",
+					"text": "eye"
+				}
+			}
+		},
+		"items": []
+	}
+]

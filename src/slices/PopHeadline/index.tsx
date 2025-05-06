@@ -22,7 +22,7 @@ const PopHeadline: FC<PopHeadlineProps> = ({ slice }) => {
 
   return (
     <section ref={sectionRef}>
-      <div className="bg-white rounded-r-2xl px-4 py-4 w-fit font-bold mb-2 text-gray-800">
+      <div className="bg-white rounded-r-full pl-4 pr-6 py-4 w-fit font-bold mb-4 text-gray-800">
         <h3>
           {slice.primary.headline}
         </h3>

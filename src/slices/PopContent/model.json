@@ -1,7 +1,7 @@
 {
   "id": "pop_text",
   "type": "SharedSlice",
-  "name": "PopText",
+  "name": "PopContent",
   "description": "PopText",
   "variations": [
     {
