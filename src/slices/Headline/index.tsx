@@ -10,13 +10,17 @@ export type HeadlineProps = SliceComponentProps<Content.HeadlineSlice>;
  * Component for "Headline" Slices.
  */
 const Headline: FC<HeadlineProps> = ({ slice }) => {
+  const alignment = slice.primary.alignment === 'left' ? 'text-left' : 'text-center';
+  const headlineWidth = alignment === 'text-left' ? 'w-11/12 md:w-7/12' : 'w-8/12 mx-auto ';
+  const subHeadlineWidth = alignment === 'text-left' ? 'w-11/12 md:w-7/12' : 'w-8/12 md:w-4/12 mx-auto ';
+  
   return (
-    <section className="text-center pt-24 pb-24">
-      <div className="mb-8 w-11/12 md:w-7/12 mx-auto text-gray-800">
+    <section className={`${alignment} pt-24 pb-24 px-8`}>
+      <div className={`mb-8 ${headlineWidth} text-gray-800`}>
         <PrismicRichText field={slice.primary.headline} />
       </div>
 
-      <div className="w-8/12 md:w-4/12 mx-auto text-gray-500">
+      <div className={`${subHeadlineWidth} text-gray-500`}>
         <PrismicRichText field={slice.primary.sub_headline} />
       </div>
     </section>

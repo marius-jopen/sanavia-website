@@ -105,6 +105,17 @@ export interface HeadlineSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   sub_headline: prismic.RichTextField;
+
+  /**
+   * Alignment field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Select
+   * - **Placeholder**: *None*
+   * - **Default Value**: left
+   * - **API ID Path**: headline.default.primary.alignment
+   * - **Documentation**: https://prismic.io/docs/field#select
+   */
+  alignment: prismic.SelectField<"left" | "center", "filled">;
 }
 
 /**

@@ -29,6 +29,18 @@
             "allowTargetBlank": true,
             "multi": "paragraph,preformatted,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl,heading6,heading5,heading4,heading3,heading2,heading1"
           }
+        },
+        "alignment": {
+          "type": "Select",
+          "config": {
+            "label": "Alignment",
+            "placeholder": "",
+            "options": [
+              "left",
+              "center"
+            ],
+            "default_value": "left"
+          }
         }
       },
       "items": {}
