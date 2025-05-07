@@ -1,5 +1,5 @@
 "use client"
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import gsap from "gsap";
 
 type SimplePlusButtonProps = {
@@ -9,6 +9,28 @@ type SimplePlusButtonProps = {
 
 export default function SimplePlusButton({ onClick, className = "" }: SimplePlusButtonProps) {
   const iconRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update container width to match height
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.offsetHeight;
+        containerRef.current.style.width = `${height}px`;
+      }
+    };
+
+    // Initial update
+    updateContainerWidth();
+
+    // Create ResizeObserver to watch for height changes
+    const resizeObserver = new ResizeObserver(updateContainerWidth);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const handleMouseEnter = () => {
     if (iconRef.current) {
@@ -32,14 +54,15 @@ export default function SimplePlusButton({ onClick, className = "" }: SimplePlus
 
   return (
     <div 
-      className={`bg-white rounded-full px-6 py-4 cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 ${className}`}
+      ref={containerRef}
+      className={`bg-white rounded-full cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 flex items-center justify-center h-full aspect-square ${className}`}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <div 
         ref={iconRef} 
-        className="inline-block w-4 h-[22px] relative translate-y-[3px]"
+        className="inline-block w-4 h-full relative"
       >
         <h4>
           {/* Horizontal line (always visible) */}

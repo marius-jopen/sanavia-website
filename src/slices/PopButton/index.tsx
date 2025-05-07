@@ -18,6 +18,7 @@ export type PopButtonProps = SliceComponentProps<Content.PopButtonSlice>;
 const PopButton: FC<PopButtonProps> = ({ slice }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const cleanup = setupFadeInAnimation(sectionRef.current);
@@ -33,16 +34,37 @@ const PopButton: FC<PopButtonProps> = ({ slice }) => {
     });
   }, []);
 
+  // Update container width to match height
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.offsetHeight;
+        containerRef.current.style.width = `${height}px`;
+      }
+    };
+
+    // Initial update
+    updateContainerWidth();
+
+    // Create ResizeObserver to watch for height changes
+    const resizeObserver = new ResizeObserver(updateContainerWidth);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
   return (
     <section ref={sectionRef} className="flex gap-2">
-      <div className="bg-white rounded-r-full pl-4 pr-6 py-4 w-fit font-bold mb-4 text-gray-800">
-        <h3>
+      <div className="bg-white rounded-r-full pl-4 pr-12 pt-6 w-fit text-gray-800 ">
+        <h2>
           {slice.primary.button?.text}
-        </h3>
+        </h2>
       </div>
 
       <div ref={buttonRef} className="flex">
-        <div>
+        <div ref={containerRef} className="aspect-square">
           <PrismicNextLink field={slice.primary.button}>
             <SimplePlusButton />
           </PrismicNextLink>

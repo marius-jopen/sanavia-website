@@ -81,11 +81,6 @@
 					}
 				]
 			},
-			"button_text": {
-				"__TYPE__": "FieldContent",
-				"value": "hunt",
-				"type": "Text"
-			},
 			"headline": {
 				"__TYPE__": "StructuredTextContent",
 				"value": [

@@ -67,7 +67,7 @@ const Video: React.FC<VideoProps> = ({ url, poster }) => {
       <video
         ref={videoRef}
         src={url || ''}
-        className="w-full rounded-r-xl z-10 relative"
+        className="w-full rounded-r-2xl z-10 relative"
         onClick={handlePlay}
         playsInline
         controls={false}

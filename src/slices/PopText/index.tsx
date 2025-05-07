@@ -3,7 +3,7 @@ import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import ExpandableSection from "@/components/ExpandableSection";
-import ToggleButton from "@/components/ToggleButton";
+import SimplePlusButton from "@/components/SimplePlusButton";
 import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
 import Item2ColumnsReversed from "./item-2-columns-reversed";
@@ -20,7 +20,6 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
  */
 const PopText: FC<PopTextProps> = ({ slice }) => {
   // Convert KeyTextField to string
-  const buttonText = slice.primary.button_text?.toString() || '';
   const toggleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,9 +41,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
           </div>
           
           <div ref={toggleRef} className="md:block hidden">
-            <div>
-              <ToggleButton buttonText={buttonText} />
-            </div>
+            <SimplePlusButton />
           </div>
         </>
       }

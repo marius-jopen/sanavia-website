@@ -11,7 +11,23 @@
       "version": "initial",
       "description": "Default",
       "imageUrl": "",
-      "primary": {},
+      "primary": {
+        "height": {
+          "type": "Select",
+          "config": {
+            "label": "Height",
+            "placeholder": "",
+            "options": [
+              "xs",
+              "s",
+              "m",
+              "lg",
+              "xl",
+              "2xl"
+            ]
+          }
+        }
+      },
       "items": {}
     }
   ]

@@ -2,7 +2,13 @@
 	{
 		"__TYPE__": "SharedSliceContent",
 		"variation": "default",
-		"primary": {},
+		"primary": {
+			"height": {
+				"__TYPE__": "FieldContent",
+				"value": "2xl",
+				"type": "Select"
+			}
+		},
 		"items": []
 	}
 ]

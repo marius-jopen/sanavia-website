@@ -557,16 +557,6 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
  */
 export interface PopTextSliceDefaultPrimary {
   /**
-   * Button Text field in *PopText → Default → Primary*
-   *
-   * - **Field Type**: Text
-   * - **Placeholder**: *None*
-   * - **API ID Path**: pop_text.default.primary.button_text
-   * - **Documentation**: https://prismic.io/docs/field#key-text
-   */
-  button_text: prismic.KeyTextField;
-
-  /**
    * Headline field in *PopText → Default → Primary*
    *
    * - **Field Type**: Rich Text
@@ -730,6 +720,21 @@ type SliderSliceVariation = SliderSliceDefault;
 export type SliderSlice = prismic.SharedSlice<"slider", SliderSliceVariation>;
 
 /**
+ * Primary content in *Space → Default → Primary*
+ */
+export interface SpaceSliceDefaultPrimary {
+  /**
+   * Height field in *Space → Default → Primary*
+   *
+   * - **Field Type**: Select
+   * - **Placeholder**: *None*
+   * - **API ID Path**: space.default.primary.height
+   * - **Documentation**: https://prismic.io/docs/field#select
+   */
+  height: prismic.SelectField<"xs" | "s" | "m" | "lg" | "xl" | "2xl">;
+}
+
+/**
  * Default variation for Space Slice
  *
  * - **API ID**: `default`
@@ -738,7 +743,7 @@ export type SliderSlice = prismic.SharedSlice<"slider", SliderSliceVariation>;
  */
 export type SpaceSliceDefault = prismic.SharedSliceVariation<
   "default",
-  Record<string, never>,
+  Simplify<SpaceSliceDefaultPrimary>,
   never
 >;
 
@@ -1048,6 +1053,7 @@ declare module "@prismicio/client" {
       SliderSliceVariation,
       SliderSliceDefault,
       SpaceSlice,
+      SpaceSliceDefaultPrimary,
       SpaceSliceVariation,
       SpaceSliceDefault,
       TeamSlice,

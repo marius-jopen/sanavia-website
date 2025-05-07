@@ -7,101 +7,97 @@ interface ToggleButtonProps {
   buttonText: string;
 }
 
+const ANIMATION_CONFIG = {
+  duration: 0.2,
+  ease: "power2.inOut",
+} as const;
+
 const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   const { isToggled, toggle } = useToggle();
   const buttonRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLDivElement>(null);
   const iconWidthRef = useRef<number>(0);
   const textWidthRef = useRef<number>(0);
-  const hasText = !!buttonText;
+  const hasText = Boolean(buttonText);
 
-  // Calculate and store widths for animation
   const saveWidths = useCallback(() => {
-    // Create temporary elements to measure widths
     const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.visibility = 'hidden';
-    tempDiv.style.whiteSpace = 'nowrap';
-    // Add font styles to match the actual rendered text
-    tempDiv.style.fontFamily = 'inherit';
-    tempDiv.style.fontSize = 'inherit';
-    tempDiv.style.fontWeight = 'inherit';
+    tempDiv.style.cssText = `
+      position: absolute;
+      visibility: hidden;
+      white-space: nowrap;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+    `;
     document.body.appendChild(tempDiv);
 
-    // Measure icon width
-    tempDiv.innerHTML = `
-      <span class="inline-block w-4 h-[22px] relative"></span>
-    `;
-    iconWidthRef.current = tempDiv.offsetWidth + 48; // Add padding
+    // Measure icon width - use the height of the button to make it square
+    const buttonHeight = buttonRef.current?.offsetHeight || 48; // fallback to 48 if not available
+    iconWidthRef.current = buttonHeight; // Make it square by using height as width
 
-    // Measure text width with better simulation of actual rendering
+    // Measure text width
     tempDiv.innerHTML = `<h4><span class="whitespace-nowrap">${buttonText || ''}</span></h4>`;
-    // Increase padding buffer to prevent text from being cut off
-    textWidthRef.current = tempDiv.offsetWidth + 48; // Increased padding from 48 to 64
+    textWidthRef.current = tempDiv.offsetWidth + 48; // Using fixed padding for text width
 
-    // Clean up
     document.body.removeChild(tempDiv);
   }, [buttonText]);
 
-  // Initialize on mount
+  // Update widths when button height changes
   useEffect(() => {
-    // Save the widths for animation
+    const updateWidths = () => {
+      if (buttonRef.current) {
+        const buttonHeight = buttonRef.current.offsetHeight;
+        iconWidthRef.current = buttonHeight;
+      }
+    };
+
+    // Initial update
+    updateWidths();
     saveWidths();
+
+    // Create ResizeObserver to watch for height changes
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidths();
+      saveWidths();
+    });
+    if (buttonRef.current) {
+      resizeObserver.observe(buttonRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
   }, [saveWidths]);
 
-  // Handle animation when toggling
   useEffect(() => {
     if (!buttonRef.current || !iconRef.current) return;
-    
+
+    const animateIcon = (rotation: number) => {
+      gsap.to(iconRef.current, {
+        rotation,
+        ...ANIMATION_CONFIG,
+      });
+    };
+
+    const animateWidth = (width: number) => {
+      gsap.to(buttonRef.current, {
+        width,
+        ...ANIMATION_CONFIG,
+      });
+    };
+
     if (isToggled) {
-      // When toggling on
       if (hasText) {
-        // If we have text, animate the width first
-        gsap.to(buttonRef.current, {
-          width: iconWidthRef.current,
-          duration: 0.2,
-          ease: "power2.inOut",
-          onComplete: () => {
-            // After width change, animate the icon rotation
-            gsap.to(iconRef.current, {
-              rotation: 45,
-              duration: 0.2,
-              ease: "power2.inOut"
-            });
-          }
-        });
+        animateWidth(iconWidthRef.current);
+        setTimeout(() => animateIcon(45), ANIMATION_CONFIG.duration * 1000);
       } else {
-        // If no text (already showing +), just rotate
-        gsap.to(iconRef.current, {
-          rotation: 45,
-          duration: 0.3,
-          ease: "power2.inOut"
-        });
+        animateIcon(45);
       }
     } else {
-      // When toggling off
       if (hasText) {
-        // First rotate back to +
-        gsap.to(iconRef.current, {
-          rotation: 0,
-          duration: 0.2,
-          ease: "power2.inOut",
-          onComplete: () => {
-            // Then animate width back to text width
-            gsap.to(buttonRef.current, {
-              width: textWidthRef.current,
-              duration: 0.2,
-              ease: "power2.inOut"
-            });
-          }
-        });
+        animateIcon(0);
+        setTimeout(() => animateWidth(textWidthRef.current), ANIMATION_CONFIG.duration * 1000);
       } else {
-        // If no text, just rotate back to +
-        gsap.to(iconRef.current, {
-          rotation: 0,
-          duration: 0.3,
-          ease: "power2.inOut"
-        });
+        animateIcon(0);
       }
     }
   }, [isToggled, hasText]);
@@ -111,7 +107,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
       gsap.to(iconRef.current, {
         rotation: 45,
         duration: 0.3,
-        ease: "power2.inOut"
+        ease: "power2.inOut",
       });
     }
   };
@@ -121,38 +117,40 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
       gsap.to(iconRef.current, {
         rotation: 0,
         duration: 0.3,
-        ease: "power2.inOut"
+        ease: "power2.inOut",
       });
     }
   };
 
+  const buttonWidth = hasText 
+    ? (isToggled ? iconWidthRef.current : textWidthRef.current) || 'auto'
+    : iconWidthRef.current || 'auto';
+
   return (
     <div 
       ref={buttonRef}
-      className="bg-white rounded-4xl px-6 py-4 cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden"
-      style={{ width: hasText ? (isToggled ? iconWidthRef.current : textWidthRef.current) || 'auto' : iconWidthRef.current || 'auto' }}
+      className="bg-white rounded-full cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden h-full flex items-center justify-center"
+      style={{ width: buttonWidth }}
       onClick={toggle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {hasText && !isToggled ? (
-        <h4>
-          <span className="whitespace-nowrap block">
-            {buttonText}
-          </span>
-        </h4>
+        <h3>
+          <span className="whitespace-nowrap">{buttonText}</span>
+        </h3>
       ) : (
-        <div 
-          ref={iconRef} 
-          className="inline-block w-4 h-[22px] relative translate-y-[3px]"
-          style={{ transform: hasText && isToggled ? 'rotate(45deg)' : 'none' }}
-        >
-          <h4>
-            {/* Horizontal line (always visible) */}
-            <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2"></span>
-            {/* Vertical line (stays vertical in + mode, rotates to diagonal in X mode) */}
-            <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2 rotate-90"></span>
-          </h4>
+        <div className="h-full flex items-center justify-center aspect-square">
+          <div 
+            ref={iconRef} 
+            className="inline-block w-4 h-full relative"
+            style={{ transform: hasText && isToggled ? 'rotate(45deg)' : 'none' }}
+          >
+            <h3>
+              <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2"></span>
+              <span className="absolute top-1/2 left-0 w-full h-[1.5px] bg-current transform -translate-y-1/2 rotate-90"></span>
+            </h3>
+          </div>
         </div>
       )}
     </div>

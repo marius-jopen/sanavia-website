@@ -96,7 +96,6 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
         <div 
           className="flex gap-[2px]" 
           onClick={handleHeaderClick}
-          style={{ cursor: mobileHeadlineClickable ? 'pointer' : 'default' }}
         >
           {headerContent}
         </div>

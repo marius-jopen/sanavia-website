@@ -1,6 +1,9 @@
-import { FC } from "react";
+"use client"
+import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
+import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
+
 /**
  * Props for `Headline`.
  */
@@ -10,12 +13,18 @@ export type HeadlineProps = SliceComponentProps<Content.HeadlineSlice>;
  * Component for "Headline" Slices.
  */
 const Headline: FC<HeadlineProps> = ({ slice }) => {
+  const sectionRef = useRef<HTMLElement>(null);
   const alignment = slice.primary.alignment === 'left' ? 'text-left' : 'text-center';
   const headlineWidth = alignment === 'text-left' ? 'w-11/12 md:w-7/12' : 'w-8/12 mx-auto ';
   const subHeadlineWidth = alignment === 'text-left' ? 'w-11/12 md:w-7/12' : 'w-8/12 md:w-4/12 mx-auto ';
   
+  useEffect(() => {
+    const cleanup = setupFadeInAnimation(sectionRef.current);
+    return cleanup;
+  }, []);
+  
   return (
-    <section className={`${alignment} pt-4 pb-4 px-8`}>
+    <section ref={sectionRef} className={`${alignment} pt-4 pb-4 px-8`}>
       <div className={`mb-8 ${headlineWidth} text-gray-800`}>
         <PrismicRichText field={slice.primary.headline} />
       </div>

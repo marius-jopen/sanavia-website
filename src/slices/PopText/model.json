@@ -12,13 +12,6 @@
       "description": "Default",
       "imageUrl": "",
       "primary": {
-        "button_text": {
-          "type": "Text",
-          "config": {
-            "label": "Button Text",
-            "placeholder": ""
-          }
-        },
         "headline": {
           "type": "StructuredText",
           "config": {
