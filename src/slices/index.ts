@@ -3,9 +3,9 @@
 import dynamic from "next/dynamic";
 
 export const components = {
+  about_us: dynamic(() => import("./AboutUs")),
   grid: dynamic(() => import("./Grid")),
   headline: dynamic(() => import("./Headline")),
-  news: dynamic(() => import("./News")),
   pop_button: dynamic(() => import("./PopButton")),
   pop_headline: dynamic(() => import("./PopHeadline")),
   pop_text: dynamic(() => import("./PopText")),

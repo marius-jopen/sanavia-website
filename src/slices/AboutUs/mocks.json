@@ -14,13 +14,13 @@
 								{
 									"origin": {
 										"id": "main",
-										"url": "https://images.unsplash.com/photo-1471897488648-5eae4ac6686b",
-										"width": 3560,
-										"height": 5340
+										"url": "https://images.unsplash.com/photo-1587614295999-6c1c13675117",
+										"width": 3810,
+										"height": 5715
 									},
-									"url": "https://images.unsplash.com/photo-1471897488648-5eae4ac6686b",
-									"width": 3560,
-									"height": 5340,
+									"url": "https://images.unsplash.com/photo-1587614295999-6c1c13675117",
+									"width": 3810,
+									"height": 5715,
 									"edit": {
 										"zoom": 1,
 										"crop": {
@@ -29,7 +29,7 @@
 										},
 										"background": "transparent"
 									},
-									"alt": "mistake",
+									"alt": "stronger",
 									"credits": null,
 									"__TYPE__": "ImageContent",
 									"thumbnails": {}
@@ -39,7 +39,7 @@
 								"video_url",
 								{
 									"__TYPE__": "FieldContent",
-									"value": "truth",
+									"value": "musical",
 									"type": "Text"
 								}
 							],
@@ -47,7 +47,7 @@
 								"headline",
 								{
 									"__TYPE__": "FieldContent",
-									"value": "mine",
+									"value": "rose",
 									"type": "Text"
 								}
 							],
@@ -59,10 +59,18 @@
 										{
 											"type": "paragraph",
 											"content": {
-												"text": "Do minim qui laborum duis officia exercitation voluptate nisi exercitation deserunt eu. Amet mollit ullamco voluptate ea veniam qui fugiat minim Lorem reprehenderit."
+												"text": "Aute duis esse reprehenderit aliquip Lorem eiusmod id nostrud."
 											}
 										}
 									]
+								}
+							],
+							[
+								"category",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "The Team",
+									"type": "Select"
 								}
 							]
 						]

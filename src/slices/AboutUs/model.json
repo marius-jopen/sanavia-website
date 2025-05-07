@@ -1,8 +1,8 @@
 {
-  "id": "team_advanced",
+  "id": "about_us",
   "type": "SharedSlice",
-  "name": "TeamAdvanced",
-  "description": "TeamAdvanced",
+  "name": "AboutUs",
+  "description": "AboutUs",
   "variations": [
     {
       "id": "default",
@@ -47,6 +47,21 @@
                   "placeholder": "",
                   "allowTargetBlank": true,
                   "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
+                }
+              },
+              "category": {
+                "type": "Select",
+                "config": {
+                  "label": "Category",
+                  "placeholder": "",
+                  "options": [
+                    "Why",
+                    "What",
+                    "How",
+                    "Who",
+                    "The Team"
+                  ],
+                  "default_value": "Why"
                 }
               }
             }

@@ -3,22 +3,22 @@ import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 
 /**
- * Props for `News`.
+ * Props for `AboutUs`.
  */
-export type NewsProps = SliceComponentProps<Content.NewsSlice>;
+export type AboutUsProps = SliceComponentProps<Content.AboutUsSlice>;
 
 /**
- * Component for "News" Slices.
+ * Component for "AboutUs" Slices.
  */
-const News: FC<NewsProps> = ({ slice }) => {
+const AboutUs: FC<AboutUsProps> = ({ slice }) => {
   return (
     <section
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      Placeholder component for news (variation: {slice.variation}) Slices
+      Placeholder component for about_us (variation: {slice.variation}) Slices
     </section>
   );
 };
 
-export default News;
+export default AboutUs;
