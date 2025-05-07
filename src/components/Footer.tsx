@@ -14,7 +14,7 @@ export default function Footer({ data }: FooterProps) {
             <PrismicNextImage field={data.logo} fallbackAlt="" />
         )}
         
-        <Navigation links={data.navigation_footer} variant="footer" />
+        <Navigation links={data.navigation_footer} />
 
         <div>
           {data.socials.map((item, index) => (
