@@ -3,7 +3,6 @@ import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import ExpandableSection from "@/components/ExpandableSection";
-import HeadlineBox from "@/components/HeadlineBox";
 import ToggleButton from "@/components/ToggleButton";
 import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
