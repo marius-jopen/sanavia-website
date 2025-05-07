@@ -7,22 +7,23 @@ import Link from "next/link";
 
 type LogoProps = {
   logo?: Content.ImageFieldImage;
+  enableAnimation?: boolean;
 };
 
-export default function Logo({ logo }: LogoProps) {
+export default function Logo({ logo, enableAnimation = true }: LogoProps) {
   const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (logoRef.current) {
+    if (logoRef.current && enableAnimation) {
       setupFadeInAnimation(logoRef.current);
     }
-  }, []);
+  }, [enableAnimation]);
 
   if (!logo) return null;
 
   return (
     <Link href="/">
-      <div ref={logoRef} className="mt-2 mb-2 rounded-r-xl pl-8 pt-3 pb-4 w-40 pr-5 bg-white">
+      <div ref={logoRef} className="mt-4 mb-2 rounded-r-2xl pl-8 pt-3 pb-4 w-40 pr-5 bg-white">
         <PrismicNextImage field={logo} fallbackAlt="" />
       </div>
     </Link>

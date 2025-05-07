@@ -22,7 +22,7 @@ export const setupStaggeredAnimation = (
   const {
     duration = 0.6,
     stagger = 0.2,
-    y = 100,
+    y = 30,
     ease = "power2.out",
     threshold = [0, 0.1],
     rootMargin = "0px 0px 100px 0px"

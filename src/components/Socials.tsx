@@ -24,7 +24,7 @@ export default function Socials({ socials }: SocialsProps) {
     <div ref={socialsRef} className="flex gap-1">
       {socials.map((item, index) => (
         <div 
-          className={`${
+          className={`group ${
             index === 0 
               ? 'rounded-r-xl pl-8 pr-4 bg-white' 
               : 'bg-white rounded-xl px-4'
@@ -33,7 +33,11 @@ export default function Socials({ socials }: SocialsProps) {
         >
           <PrismicNextLink field={item.link}>
             {item.icon && (
-              <PrismicNextImage field={item.icon} fallbackAlt="" />
+              <PrismicNextImage 
+                field={item.icon} 
+                fallbackAlt="" 
+                className="group-hover:brightness-0 group-hover:invert"
+              />
             )}
           </PrismicNextLink>
         </div>

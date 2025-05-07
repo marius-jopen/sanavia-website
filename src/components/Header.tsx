@@ -1,29 +1,30 @@
 "use client"
 import { Content } from "@prismicio/client";
-import { PrismicNextLink } from "@prismicio/next";
 import Navigation from "./Navigation";
 import Logo from "./Logo";
+import Cta from "./Cta";
 
 type HeaderProps = {
   data: Content.HeaderDocumentData;
+  enableAnimation?: boolean;
 };
 
 export default function Header({ data }: HeaderProps) {
   return (
     <header>
-        {data.cta && (
-            <PrismicNextLink className="text-white bg-black rounded-xl px-4 py-2 fixed top-4 right-4" field={data.cta} >
-                {data.cta.text}
-            </PrismicNextLink>
-        )}
+        <Cta cta={data.cta} />
 
         <div>
-            <Logo logo={data.logo} />
+            <Logo logo={data.logo} enableAnimation={false} />
 
-            <Navigation links={data.navigation_header.map(link => ({
-              text: link.text || '',
-              link: link
-            }))} />
+            <Navigation 
+              enableStagger={false} 
+              enableAnimation={false}
+              links={data.navigation_header.map(link => ({
+                text: link.text || '',
+                link: link
+              }))} 
+            />
         </div>
     </header>
   );

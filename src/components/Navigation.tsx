@@ -5,19 +5,21 @@ import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 type NavigationProps = {
   links: { text: string; link: any }[];
+  enableStagger?: boolean;
+  enableAnimation?: boolean;
 };
 
-export default function Navigation({ links }: NavigationProps) {
+export default function Navigation({ links, enableStagger = true, enableAnimation = true }: NavigationProps) {
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!navRef.current) return;
+    if (!navRef.current || !enableAnimation) return;
     setupStaggeredAnimation(navRef.current, {
-      stagger: 0.1,
+      stagger: enableStagger ? 0.2 : 0,
       duration: 0.6,
       ease: "power2.out"
     });
-  }, []);
+  }, [enableStagger, enableAnimation]);
 
   return (
     <nav ref={navRef} className="flex gap-1 mb-2">
@@ -25,8 +27,8 @@ export default function Navigation({ links }: NavigationProps) {
         <div 
           className={`${
             index === 0 
-              ? 'rounded-r-xl pl-8 pr-4 bg-white' 
-              : 'bg-white rounded-xl px-4'
+              ? 'rounded-r-2xl pl-8 pr-4 bg-white' 
+              : 'bg-white rounded-2xl px-4'
           } py-2 hover:bg-black hover:text-white transition-colors`} 
           key={index}
         >

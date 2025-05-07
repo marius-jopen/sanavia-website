@@ -9,7 +9,7 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
   
   // Set initial state
   gsap.set(element, { 
-    y: 100,
+    y: 30,
     opacity: 0
   });
   
