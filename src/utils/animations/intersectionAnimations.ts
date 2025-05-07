@@ -52,4 +52,56 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
   return () => {
     observer.unobserve(element);
   };
+};
+
+/**
+ * Sets up an intersection observer that animates child elements with a stagger effect
+ * when the parent element comes into view from the bottom
+ */
+export const setupStaggeredFadeInAnimation = (element: HTMLElement | null) => {
+  if (!element) return;
+  
+  const items = element.children;
+  
+  // Set initial state
+  gsap.set(items, { 
+    y: 100,
+    opacity: 0
+  });
+  
+  // Create observer
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.boundingClientRect.top > 0) {
+          // Animate with stagger
+          gsap.to(items, {
+            duration: 0.6,
+            y: 0,
+            opacity: 1,
+            stagger: 0.2,
+            ease: "power2.out"
+          });
+        }
+        
+        if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight) {
+          // Reset for next entry
+          gsap.set(items, { 
+            y: 100,
+            opacity: 0
+          });
+        }
+      });
+    },
+    { 
+      threshold: [0, 0.1], 
+      rootMargin: "0px 0px 100px 0px"
+    }
+  );
+  
+  observer.observe(element);
+  
+  return () => {
+    observer.disconnect();
+  };
 }; 

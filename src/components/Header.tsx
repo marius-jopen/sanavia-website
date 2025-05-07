@@ -1,7 +1,8 @@
 "use client"
 import { Content } from "@prismicio/client";
-import { PrismicNextImage, PrismicNextLink } from "@prismicio/next";
+import { PrismicNextLink } from "@prismicio/next";
 import Navigation from "./Navigation";
+import Logo from "./Logo";
 
 type HeaderProps = {
   data: Content.HeaderDocumentData;
@@ -17,11 +18,7 @@ export default function Header({ data }: HeaderProps) {
         )}
 
         <div>
-            {data.logo && (
-                <div className="mt-2 mb-2 rounded-r-xl pl-8 pt-3 pb-4 w-40 pr-5 bg-white">
-                    <PrismicNextImage field={data.logo} fallbackAlt="" />
-                </div>
-            )}
+            <Logo logo={data.logo} />
 
             <Navigation links={data.navigation_header.map(link => ({
               text: link.text || '',
