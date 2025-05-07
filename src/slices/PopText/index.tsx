@@ -1,5 +1,5 @@
 "use client"
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import ExpandableSection from "@/components/ExpandableSection";
@@ -9,6 +9,7 @@ import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
 import Item2ColumnsReversed from "./item-2-columns-reversed";
 import ItemImage2Columns from "./item-image-2-columns";
+import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 /**
  * Props for `PopText`.
@@ -21,6 +22,16 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
 const PopText: FC<PopTextProps> = ({ slice }) => {
   // Convert KeyTextField to string
   const buttonText = slice.primary.button_text?.toString() || '';
+  const toggleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!toggleRef.current) return;
+    setupStaggeredAnimation(toggleRef.current, {
+      stagger: 0.2,
+      duration: 0.6,
+      ease: "power2.out"
+    });
+  }, []);
 
   return (
     <ExpandableSection
@@ -31,8 +42,10 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
             <PrismicRichText field={slice.primary.headline} />
           </div>
           
-          <div className="md:block hidden">
-            <ToggleButton buttonText={buttonText} />
+          <div ref={toggleRef} className="md:block hidden">
+            <div>
+              <ToggleButton buttonText={buttonText} />
+            </div>
           </div>
         </>
       }

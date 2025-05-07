@@ -106,12 +106,34 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
     }
   }, [isToggled, hasText]);
 
+  const handleMouseEnter = () => {
+    if (iconRef.current && !isToggled) {
+      gsap.to(iconRef.current, {
+        rotation: 45,
+        duration: 0.3,
+        ease: "power2.inOut"
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (iconRef.current && !isToggled) {
+      gsap.to(iconRef.current, {
+        rotation: 0,
+        duration: 0.3,
+        ease: "power2.inOut"
+      });
+    }
+  };
+
   return (
     <div 
       ref={buttonRef}
       className="bg-white rounded-4xl px-6 py-4 cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden"
       style={{ width: hasText ? (isToggled ? iconWidthRef.current : textWidthRef.current) || 'auto' : iconWidthRef.current || 'auto' }}
       onClick={toggle}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {hasText && !isToggled ? (
         <h4>
