@@ -1,5 +1,6 @@
 import { Content } from "@prismicio/client";
 import { PrismicNextImage, PrismicNextLink } from "@prismicio/next";
+import Navigation from "./Navigation";
 
 type FooterProps = {
   data: Content.HeaderDocumentData;
@@ -13,13 +14,7 @@ export default function Footer({ data }: FooterProps) {
             <PrismicNextImage field={data.logo} fallbackAlt="" />
         )}
         
-        <nav>
-          {data.navigation_footer.map((link, index) => (
-            <PrismicNextLink key={index} field={link} >
-              {link.text}
-            </PrismicNextLink>
-          ))}
-        </nav>
+        <Navigation links={data.navigation_footer} variant="footer" />
 
         <div>
           {data.socials.map((item, index) => (

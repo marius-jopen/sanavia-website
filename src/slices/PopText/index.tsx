@@ -27,9 +27,10 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
       mobileHeadlineClickable={true}
       headerContent={
         <>
-          <HeadlineBox>
+          <div className="bg-white rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-2">
             <PrismicRichText field={slice.primary.headline} />
-          </HeadlineBox>
+          </div>
+          
           <div className="md:block hidden">
             <ToggleButton buttonText={buttonText} />
           </div>
