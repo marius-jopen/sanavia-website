@@ -7,7 +7,7 @@ interface VideoProps {
 
 const Video: React.FC<VideoProps> = ({ url, poster }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showButton, setShowButton] = useState(false);
+  const [showPauseButton, setShowPauseButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -15,31 +15,42 @@ const Video: React.FC<VideoProps> = ({ url, poster }) => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
+        setShowPauseButton(false);
       } else {
         videoRef.current.play();
+        setShowPauseButton(true);
+        // Start the timer to hide the pause button after 2 seconds
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
       }
       setIsPlaying(!isPlaying);
     }
   };
 
-  // Mouse movement logic for button visibility
+  // Mouse movement logic for pause button visibility
   const handleMouseMove = () => {
-    setShowButton(true);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setShowButton(false), 2000);
+    if (isPlaying) {
+      setShowPauseButton(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
+    }
   };
 
   const handleMouseLeave = () => {
-    setShowButton(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (isPlaying) {
+      setShowPauseButton(false);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    }
   };
 
-  // Hide button on mobile (touch) after tap
+  // Hide pause button on mobile (touch) after tap
   useEffect(() => {
     const handleTouch = () => {
-      setShowButton(true);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setShowButton(false), 2000);
+      if (isPlaying) {
+        setShowPauseButton(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
+      }
     };
     const video = videoRef.current;
     if (video) {
@@ -50,7 +61,7 @@ const Video: React.FC<VideoProps> = ({ url, poster }) => {
         video.removeEventListener('touchstart', handleTouch);
       }
     };
-  }, []);
+  }, [isPlaying]);
 
   return (
     <div
@@ -75,7 +86,7 @@ const Video: React.FC<VideoProps> = ({ url, poster }) => {
       />
       <button
         onClick={handlePlay}
-        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-20 ${showButton ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-20 ${isPlaying && !showPauseButton ? 'opacity-0' : 'opacity-100'}`}
         style={{ outline: 'none' }}
         tabIndex={0}
         aria-label={isPlaying ? 'Pause video' : 'Play video'}
