@@ -1,8 +1,8 @@
-import { PrismicNextLink } from '@prismicio/next';
 import { PrismicRichText } from '@prismicio/react';
 import { PrismicNextImage } from '@prismicio/next';
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
+import Button from '@/components/Button';
 
 interface Item2ColumnsReversedProps {
   headline?: KeyTextField;
@@ -13,7 +13,7 @@ interface Item2ColumnsReversedProps {
 
 const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
   return (
-    <div className="pop-text-one-column flex gap-4 flex-row-reverse pb-16">
+    <div className="pop-text-one-column flex gap-8 flex-row-reverse py-4">
       {props.image && (
         <div className='w-1/2 flex justify-center flex-col'>
           <PrismicNextImage className="rounded-lg" field={props.image} fallbackAlt="" />
@@ -22,7 +22,7 @@ const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
 
       <div className='w-1/2 flex justify-center flex-col'>
         {props.headline && (
-          <h3 className=''>
+          <h3 className='mb-8'>
             {props.headline}
           </h3>
         )}
@@ -33,11 +33,9 @@ const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
           </div>
         )}
         
-        {props.button && (
-          <div className=''>
-            <PrismicNextLink field={props.button} />
-          </div>
-        )}
+        <div className='flex justify-center w-full'>
+            <Button className="mt-4" field={props.button} />
+        </div>
       </div>
     </div>
   );

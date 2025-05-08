@@ -1,4 +1,4 @@
-import { PrismicNextLink } from '@prismicio/next';
+import Button from '@/components/Button';
 import { PrismicRichText } from '@prismicio/react';
 import { PrismicNextImage } from '@prismicio/next';
 import React from 'react';
@@ -13,16 +13,16 @@ interface Item2ColumnsProps {
 
 const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
   return (
-    <div className="pop-text-one-column flex gap-4 pb-16">
+    <div className="pop-text-one-column flex gap-8 py-4">
       {props.image && (
         <div className='w-1/2 flex justify-center flex-col'>
-          <PrismicNextImage className="rounded-lg" field={props.image} fallbackAlt="" />
+          <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" />
         </div>
       )}
 
       <div className='w-1/2 flex justify-center flex-col'>
         {props.headline && (
-          <h3 className=''>
+          <h3 className='mb-8'>
             {props.headline}
           </h3>
         )}
@@ -33,11 +33,9 @@ const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
           </div>
         )}
         
-        {props.button && (
-          <div className=''>
-            <PrismicNextLink field={props.button} />
-          </div>
-        )}
+        <div className='flex justify-center w-full'>
+            <Button className="mt-4" field={props.button} />
+        </div>
       </div>
     </div>
   );
