@@ -3,6 +3,7 @@ import { PrismicNextImage, PrismicNextLink } from "@prismicio/next";
 import Navigation from "./Navigation";
 import Logo from "./Logo";
 import Socials from "./Socials";
+import BottomText from "./BottomText";
 
 type FooterProps = {
   data: Content.HeaderDocumentData;
@@ -18,11 +19,7 @@ export default function Footer({ data }: FooterProps) {
 
         <Socials socials={data.socials} />
 
-        {data.footer_bottom_line && (
-          <div>
-            {data.footer_bottom_line}
-          </div>
-        )}
+        <BottomText text={data.footer_bottom_line} />
       </div>
     </footer>
   );
