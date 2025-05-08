@@ -12,13 +12,24 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
     y: 30,
     opacity: 0
   });
+
+  // Check if element is already visible on page load
+  const rect = element.getBoundingClientRect();
+  const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+  
+  if (isVisible) {
+    // If element is already visible, animate it immediately
+    gsap.to(element, {
+      duration: 0.6,
+      y: 0,
+      opacity: 1,
+      ease: "power2.out"
+    });
+  }
   
   // Create observer with rootMargin that only detects bottom entries
   const observer = new IntersectionObserver(
     (entries) => {
-      // Scroll direction tracking code removed to fix linting errors
-      // This was previously used to detect scroll direction
-      
       entries.forEach(entry => {
         if (entry.isIntersecting && entry.boundingClientRect.top > 0) {
           // Only animate when entering from bottom (positive top value)
@@ -34,8 +45,8 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
         if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight) {
           // Reset for next entry
           gsap.set(element, { 
-            y: 100,
-            opacity: 1
+            y: 30,
+            opacity: 0
           });
         }
       });
