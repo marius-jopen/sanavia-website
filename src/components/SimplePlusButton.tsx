@@ -5,9 +5,10 @@ import gsap from "gsap";
 type SimplePlusButtonProps = {
   onClick?: () => void;
   className?: string;
+  big?: boolean;
 };
 
-export default function SimplePlusButton({ onClick, className = "" }: SimplePlusButtonProps) {
+export default function SimplePlusButton({ onClick, className = "", big = false }: SimplePlusButtonProps) {
   const iconRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +64,7 @@ export default function SimplePlusButton({ onClick, className = "" }: SimplePlus
       <div 
         ref={iconRef} 
         className="inline-block w-4 h-full relative"
+        style={{ transform: big ? 'scale(1.5)' : 'none' }}
       >
         <h4>
           {/* Horizontal line (always visible) */}

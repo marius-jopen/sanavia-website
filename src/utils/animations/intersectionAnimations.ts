@@ -35,7 +35,7 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
           // Reset for next entry
           gsap.set(element, { 
             y: 100,
-            opacity: 0
+            opacity: 1
           });
         }
       });
