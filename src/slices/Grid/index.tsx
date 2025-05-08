@@ -15,8 +15,16 @@ const Grid: FC<GridProps> = ({ slice }) => {
     <section
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
+      className="w-full h-full flex items-center justify-center"
     >
-      Placeholder component for grid (variation: {slice.variation}) Slices
+      <div className="grid grid-cols-5 md:grid-cols-20 gap-4 md:gap-4 px-8 w-full">
+        {Array.from({ length: 140 }).map((_, i) => (
+          <div
+            key={i}
+            className="aspect-square rounded-full bg-white w-full transition-transform duration-200 hover:scale-110"
+          />
+        ))}
+      </div>
     </section>
   );
 };
