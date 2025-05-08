@@ -7,43 +7,62 @@ import gsap from "gsap";
 export const setupFadeInAnimation = (element: HTMLElement | null) => {
   if (!element) return;
   
-  // Set initial state
-  gsap.set(element, { 
-    y: 30,
-    opacity: 0
-  });
+  let hasAnimated = false;
 
-  // Check if element is already visible on page load
-  const rect = element.getBoundingClientRect();
-  const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-  
-  if (isVisible) {
-    // If element is already visible, animate it immediately
-    gsap.to(element, {
-      duration: 0.6,
-      y: 0,
-      opacity: 1,
-      ease: "power2.out"
-    });
-  }
+  // Function to check and handle visibility
+  const checkVisibility = () => {
+    const rect = element.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+    
+    if (isVisible && !hasAnimated) {
+      // Set initial state only if not visible
+      gsap.set(element, { 
+        y: 30,
+        opacity: 0
+      });
+      
+      gsap.to(element, {
+        duration: 0.6,
+        y: 0,
+        opacity: 1,
+        ease: "power2.out"
+      });
+      hasAnimated = true;
+    } else if (isVisible && hasAnimated) {
+      // If already animated and visible, ensure it stays visible
+      gsap.set(element, {
+        y: 0,
+        opacity: 1
+      });
+    }
+  };
+
+  // Check visibility immediately and after a short delay to handle any layout shifts
+  checkVisibility();
+  setTimeout(checkVisibility, 100);
   
   // Create observer with rootMargin that only detects bottom entries
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && entry.boundingClientRect.top > 0) {
-          // Only animate when entering from bottom (positive top value)
+        if (entry.isIntersecting && entry.boundingClientRect.top > 0 && !hasAnimated) {
           gsap.to(element, {
             duration: 0.6,
             y: 0,
             opacity: 1,
             ease: "power2.out"
           });
-        } 
+          hasAnimated = true;
+        } else if (entry.isIntersecting && hasAnimated) {
+          // If already animated and intersecting, ensure it stays visible
+          gsap.set(element, {
+            y: 0,
+            opacity: 1
+          });
+        }
         
-        // When element is fully out of view below the viewport
-        if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight) {
-          // Reset for next entry
+        // Only reset if we're scrolling down and the element is completely out of view
+        if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight && !hasAnimated) {
           gsap.set(element, { 
             y: 30,
             opacity: 0
