@@ -20,7 +20,7 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
  */
 const PopText: FC<PopTextProps> = ({ slice }) => {
   // Convert KeyTextField to string
-  const buttonText = slice.primary.button_text?.toString() || '';
+  const buttonText = (slice.primary as any).button_text?.toString() || '';
   const toggleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
