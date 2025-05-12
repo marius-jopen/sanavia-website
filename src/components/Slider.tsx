@@ -14,9 +14,15 @@ interface SliderProps {
 export default function Slider({ images }: SliderProps) {
   const [splide, setSplide] = useState<SplideInstance | null>(null);
 
-  const goToSlide = (index: number) => {
+  const goToPrev = () => {
     if (splide) {
-      splide.go(index);
+      splide.go('<');
+    }
+  };
+
+  const goToNext = () => {
+    if (splide) {
+      splide.go('>');
     }
   };
 
@@ -24,11 +30,12 @@ export default function Slider({ images }: SliderProps) {
     <div className="relative">
       <Splide
         options={{
-          type: 'loop',
-          perPage: 1,
-          perMove: 1,
-          gap: '1rem',
-          pagination: false,
+            type: 'loop',
+            perPage: 1.6,
+            perMove: 1,
+            gap: '2rem',
+            pagination: false,
+            arrows: false,
         }}
         onMounted={(splideInstance: SplideInstance) => setSplide(splideInstance)}
         aria-label="Image Slider"
@@ -36,23 +43,29 @@ export default function Slider({ images }: SliderProps) {
         {images.map((image, index) => (
           <SplideSlide key={index}>
             <PrismicNextImage
-              field={image}
-              fallbackAlt="Slider image"
-              className="w-full h-auto object-cover px-8 rounded-2xl overflow-hidden"
+            field={image}
+            fallbackAlt=""
+            className="w-full h-auto object-cover rounded-2xl ml-8"
             />
           </SplideSlide>
         ))}
       </Splide>
-      
-      <div className="flex justify-center gap-4 mt-4">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className="w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-colors"
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+      {/* Navigation Buttons */}
+      <div className="flex justify-center gap-4 mt-8">
+        <button
+          onClick={goToPrev}
+          className="w-16 h-16 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors text-2xl"
+          aria-label="Previous slide"
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button
+          onClick={goToNext}
+          className="w-16 h-16 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors text-2xl"
+          aria-label="Next slide"
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
     </div>
   );
