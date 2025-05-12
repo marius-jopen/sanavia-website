@@ -1,5 +1,5 @@
 "use client"
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
@@ -14,11 +14,21 @@ export type AboutUsProps = SliceComponentProps<Content.AboutUsSlice> & {
   enableAnimation?: boolean;
 };
 
+const categories = ["All", "Why", "What", "How", "Who", "The Team"];
+
 /**
  * Component for "AboutUs" Slices.
  */
 const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // 1. State for selected category
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+
+  // 2. Filter items by selected category
+  const filteredItems = selectedCategory === "All"
+    ? slice.primary.items
+    : slice.primary.items?.filter((item) => item.category === selectedCategory);
 
   useEffect(() => {
     if (!gridRef.current || !enableAnimation) return;
@@ -35,9 +45,28 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
       data-slice-variation={slice.variation}
       className="py-6 w-10/12"
     >
-      <div className="">
+      {/* 3. Render filter buttons */}
+      <div className="flex gap-2 mb-8 justify-left">
+        {categories.map((cat, idx) => (
+          <button
+            key={cat}
+            className={`px-8 py-4 hover:bg-neutral-100 transition \
+              ${idx < 1 ? 'rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'} \
+              ${selectedCategory === cat
+                ? "bg-white text-black"
+                : "bg-white text-neutral-500"}
+            `}
+            onClick={() => setSelectedCategory(cat)}
+          >
+            <h3>
+              {cat}
+            </h3>
+          </button>
+        ))}
+      </div>
+      <div>
         <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {slice.primary.items?.map((item, index) => {
+          {filteredItems.map((item, index) => {
             const isFirstInRow = index % 3 === 0;
             return (
               <div 
