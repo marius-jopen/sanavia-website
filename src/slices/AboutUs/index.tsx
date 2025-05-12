@@ -1,10 +1,18 @@
 "use client"
 import { FC, useEffect, useRef, useState } from "react";
-import { Content } from "@prismicio/client";
+import { Content, KeyTextField, ImageField, RichTextField } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import VideoBasic from "@/components/VideoBasic";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
+
+type AboutUsItem = {
+  category?: KeyTextField;
+  video_url?: KeyTextField;
+  image?: ImageField;
+  headline?: KeyTextField;
+  richtext?: RichTextField;
+};
 
 /**
  * Props for `Team`.
@@ -44,14 +52,14 @@ const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => 
 const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<AboutUsItem | null>(null);
 
   // 2. Filter items by selected category
   const filteredItems = selectedCategory === "All"
     ? slice.primary.items
     : slice.primary.items?.filter((item) => item.category === selectedCategory);
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: AboutUsItem) => {
     setSelectedItem(item);
   };
 
