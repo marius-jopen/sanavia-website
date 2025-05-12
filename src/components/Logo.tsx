@@ -1,12 +1,12 @@
 "use client"
-import { Content } from "@prismicio/client";
+import { ImageField } from "@prismicio/client";
 import { PrismicNextImage } from "@prismicio/next";
 import { useEffect, useRef } from "react";
 import { setupFadeInAnimation } from "@/utils/animations/intersectionAnimations";
 import Link from "next/link";
 
 type LogoProps = {
-  logo?: Content.ImageFieldImage;
+  logo?: ImageField;
   enableAnimation?: boolean;
 };
 
