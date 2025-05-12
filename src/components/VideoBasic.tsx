@@ -1,15 +1,25 @@
 import React, { useRef, useState, useEffect } from "react";
+import { PrismicNextImage } from "@prismicio/next";
 
 interface VideoProps {
-  url: string;
-  poster: React.ReactNode;
+  url?: string;
+  poster?: any;
 }
 
-const Video: React.FC<VideoProps> = ({ url, poster }) => {
+const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPauseButton, setShowPauseButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // If no video URL is provided, just show the poster as an image
+  if (!url) {
+    return (
+      <div className="relative w-full">
+        {poster && <PrismicNextImage field={poster} alt="" />}
+      </div>
+    );
+  }
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -69,20 +79,14 @@ const Video: React.FC<VideoProps> = ({ url, poster }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Poster image, only show when not playing */}
-      {!isPlaying && (
-        <div className="absolute inset-0 w-full h-full z-0 pointer-events-none select-none">
-          {poster}
-        </div>
-      )}
       <video
         ref={videoRef}
-        src={url || ''}
-        className="w-full rounded-r-2xl z-10 relative"
+        src={url}
+        className="w-full z-10 relative"
         onClick={handlePlay}
         playsInline
         controls={false}
-        poster={undefined} // poster handled by overlay
+        poster={poster ? poster.url : undefined}
       />
       <button
         onClick={handlePlay}
@@ -113,4 +117,4 @@ const Video: React.FC<VideoProps> = ({ url, poster }) => {
   );
 };
 
-export default Video;
+export default VideoBasic;

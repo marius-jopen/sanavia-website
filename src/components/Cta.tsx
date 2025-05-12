@@ -11,7 +11,7 @@ export default function Cta({ cta }: CtaProps) {
 
   return (
     <PrismicNextLink 
-      className="text-white bg-black rounded-2xl px-6 py-2 fixed top-4 right-4 hover:bg-white hover:text-black transition-all duration-200" 
+      className="text-white bg-black rounded-2xl px-6 py-2 fixed top-4 right-4 hover:bg-white hover:text-black transition-all duration-200 z-20" 
       field={cta}
     >
       {cta.text}
