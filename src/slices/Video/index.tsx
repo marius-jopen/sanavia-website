@@ -27,7 +27,7 @@ const Video: FC<VideoProps> = ({ slice }) => {
       <div className="relative mx-auto w-10/12 rounded-2xl overflow-hidden">
         <VideoBasic
           url={slice.primary.video_url || ''}
-          poster={<PrismicNextImage field={slice.primary.poster} />}
+          poster={slice.primary.poster}
         />
       </div>
     </section>
