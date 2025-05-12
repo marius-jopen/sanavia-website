@@ -1,9 +1,9 @@
 "use client"
-import { Content } from "@prismicio/client";
 import { PrismicNextLink } from "@prismicio/next";
+import { LinkField } from "@prismicio/client";
 
 type CtaProps = {
-  cta?: Content.LinkField & { text?: string };
+  cta?: LinkField;
 };
 
 export default function Cta({ cta }: CtaProps) {
@@ -14,7 +14,7 @@ export default function Cta({ cta }: CtaProps) {
       className="text-white bg-black rounded-2xl px-6 py-2 fixed top-4 right-4 hover:bg-white hover:text-black transition-all duration-200 z-20" 
       field={cta}
     >
-      {cta.text}
+      {cta.text || "GET IN TOUCH"}
     </PrismicNextLink>
   );
 }
