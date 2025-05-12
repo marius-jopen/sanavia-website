@@ -1,5 +1,5 @@
 "use client"
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
@@ -19,6 +19,7 @@ export type TeamAdvancedProps = SliceComponentProps<Content.TeamAdvancedSlice> &
  */
 const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
+  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
 
   useEffect(() => {
     if (!gridRef.current || !enableAnimation) return;
@@ -29,22 +30,44 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
     });
   }, [enableStagger, enableAnimation]);
 
+  // Calculate the indices of the first card in each row of visible cards
+  const firstInRowIndices = selectedIndices.filter((_, i) => i % 4 === 0);
+
   return (
     <section
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
       className="py-6"
     >
+      <div className="mb-6 flex flex-wrap gap-3">
+        {slice.primary.items?.map((item, index) => {
+          return (
+            <button
+              key={index}
+              onClick={() => {
+                setSelectedIndices((prev) =>
+                  prev.includes(index)
+                    ? prev.filter((i) => i !== index)
+                    : [...prev, index]
+                );
+              }}
+              className={`py-2 bg-white hover:bg-neutral-100 duration-200 px-6 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'}`}
+            >
+              {item.headline}
+            </button>
+          );
+        })}
+      </div>
       <div className="">
         <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {slice.primary.items?.map((item, index) => {
-            const isFirstInRow = index % 4 === 0;
+          {selectedIndices.map((selectedIdx) => {
+            const item = slice.primary.items[selectedIdx];
+            const isFirstInRow = selectedIndices.indexOf(selectedIdx) % 4 === 0;
             return (
               <div 
-                key={index} 
-                className={`flex flex-col bg-white px-4 py-4 text-center ${
-                  isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
-                }`}
+                key={selectedIdx} 
+                className={`flex flex-col bg-white px-4 py-4 text-center fade-in-card ${isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
+                style={{ animation: 'fadeIn 0.6s' }}
               >
                 <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4">
                   <VideoBasic
@@ -65,6 +88,15 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
           })}
         </div>
       </div>
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-card {
+          animation: fadeIn 0.6s;
+        }
+      `}</style>
     </section>
   );
 };
