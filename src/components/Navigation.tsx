@@ -2,9 +2,10 @@
 import { PrismicNextLink } from "@prismicio/next";
 import { useEffect, useRef } from "react";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
+import { LinkField } from "@prismicio/client";
 
 type NavigationProps = {
-  links: { text: string; link: any }[];
+  links: { text: string; link: LinkField }[];
   enableStagger?: boolean;
   enableAnimation?: boolean;
 };

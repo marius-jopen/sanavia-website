@@ -29,6 +29,7 @@ export default function Slider({ images }: SliderProps) {
   return (
     <div className="relative">
       <Splide
+        className="pointer-events-none"
         options={{
             type: 'loop',
             perPage: 1.6,

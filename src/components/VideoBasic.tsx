@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
 import { PrismicNextImage } from "@prismicio/next";
+import { ImageField } from "@prismicio/client";
 
 interface VideoProps {
   url?: string;
-  poster?: any;
+  poster?: ImageField;
 }
 
 const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
@@ -11,6 +12,26 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
   const [showPauseButton, setShowPauseButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hide pause button on mobile (touch) after tap
+  useEffect(() => {
+    const handleTouch = () => {
+      if (isPlaying) {
+        setShowPauseButton(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
+      }
+    };
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('touchstart', handleTouch);
+    }
+    return () => {
+      if (video) {
+        video.removeEventListener('touchstart', handleTouch);
+      }
+    };
+  }, [isPlaying]);
 
   // If no video URL is provided, just show the poster as an image
   if (!url) {
@@ -53,26 +74,6 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
     }
   };
 
-  // Hide pause button on mobile (touch) after tap
-  useEffect(() => {
-    const handleTouch = () => {
-      if (isPlaying) {
-        setShowPauseButton(true);
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
-      }
-    };
-    const video = videoRef.current;
-    if (video) {
-      video.addEventListener('touchstart', handleTouch);
-    }
-    return () => {
-      if (video) {
-        video.removeEventListener('touchstart', handleTouch);
-      }
-    };
-  }, [isPlaying]);
-
   return (
     <div
       className="relative w-full group"
@@ -86,7 +87,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
         onClick={handlePlay}
         playsInline
         controls={false}
-        poster={poster ? poster.url : undefined}
+        poster={poster?.url || undefined}
       />
       <button
         onClick={handlePlay}
