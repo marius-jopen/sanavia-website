@@ -18,7 +18,7 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
 /**
  * Component for "PopText" Slices.
  */
-const PopText: FC<PopTextProps> = ({ slice }) => {
+const PopText = ({ slice }: PopTextProps) => {
   // Convert KeyTextField to string
   const toggleRef = useRef<HTMLDivElement>(null);
 
