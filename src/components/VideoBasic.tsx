@@ -36,8 +36,8 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
-      <div className="relative w-full">
-        {poster && <PrismicNextImage field={poster} alt="" />}
+      <div className="relative w-full h-full">
+        {poster && <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />}
       </div>
     );
   }

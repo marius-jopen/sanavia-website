@@ -1,19 +1,34 @@
 "use client"
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import VideoBasic from "@/components/VideoBasic";
+import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 /**
  * Props for `Team`.
  */
-export type TeamProps = SliceComponentProps<Content.TeamSlice>;
+export type TeamProps = SliceComponentProps<Content.TeamSlice> & {
+  enableStagger?: boolean;
+  enableAnimation?: boolean;
+};
 
 /**
  * Component for "Team" Slices.
  */
-const Team: FC<TeamProps> = ({ slice }) => {
+const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!gridRef.current || !enableAnimation) return;
+    setupStaggeredAnimation(gridRef.current, {
+      stagger: enableStagger ? 0.2 : 0,
+      duration: 0.6,
+      ease: "power2.out"
+    });
+  }, [enableStagger, enableAnimation]);
+
   return (
     <section
       data-slice-type={slice.slice_type}
@@ -21,9 +36,9 @@ const Team: FC<TeamProps> = ({ slice }) => {
       className="py-6"
     >
       <div className="">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {slice.primary.items?.map((item, index) => {
-            const isFirstInRow = index % 4 === 0; // Since we have 4 columns in lg breakpoint
+            const isFirstInRow = index % 4 === 0;
             return (
               <div 
                 key={index} 
