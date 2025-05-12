@@ -14,7 +14,12 @@ export default function Footer({ data }: FooterProps) {
       <div>
         <Logo logo={data.logo} />
         
-        <Navigation links={data.navigation_footer} />
+        <Navigation 
+          links={data.navigation_footer.map(link => ({
+            text: link.text || '',
+            link: link
+          }))} 
+        />
 
         <Socials socials={data.socials} />
 
