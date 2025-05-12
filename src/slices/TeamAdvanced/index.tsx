@@ -30,9 +30,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
     });
   }, [enableStagger, enableAnimation]);
 
-  // Calculate the indices of the first card in each row of visible cards
-  const firstInRowIndices = selectedIndices.filter((_, i) => i % 4 === 0);
-
+  
   return (
     <section
       data-slice-type={slice.slice_type}
