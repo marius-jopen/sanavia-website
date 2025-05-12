@@ -10,6 +10,12 @@ import Item2ColumnsReversed from "./item-2-columns-reversed";
 import ItemImage2Columns from "./item-image-2-columns";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
+interface PopTextPrimary {
+  headline: Content.RichTextField;
+  button_text?: Content.KeyTextField;
+  items: Content.GroupField<Content.PopTextSliceDefaultPrimaryItemsItem>;
+}
+
 /**
  * Props for `PopText`.
  */
@@ -20,7 +26,6 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
  */
 const PopText: FC<PopTextProps> = ({ slice }) => {
   // Convert KeyTextField to string
-  const buttonText = (slice.primary as any).button_text?.toString() || '';
   const toggleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +47,7 @@ const PopText: FC<PopTextProps> = ({ slice }) => {
           </div>
           
           <div ref={toggleRef} className="md:block hidden">
-            <ToggleButton buttonText={buttonText} />
+            <ToggleButton />
           </div>
         </>
       }
