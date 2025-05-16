@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 const Background: React.FC = () => {
   // Client-side only state - not used during initial render
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [showIndicator, setShowIndicator] = useState(true);
   const [mounted, setMounted] = useState(false);
   // Add state for random initial positions
   const [initialOffsets, setInitialOffsets] = useState({
@@ -82,22 +81,6 @@ const Background: React.FC = () => {
     mixBlendMode: 'normal' as const,
   };
   
-  // Indicator style
-  const indicatorStyle = {
-    position: 'fixed' as const,
-    width: '20px',
-    height: '20px',
-    borderRadius: '50%',
-    background: 'rgba(255, 100, 100, 0.8)',
-    border: '2px solid white',
-    transform: 'translate(-50%, -50%)',
-    pointerEvents: 'none' as const,
-    zIndex: 1000,
-    boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-    transition: 'opacity 0.3s ease',
-    opacity: showIndicator ? 1 : 0,
-  };
-  
   // Helper function to generate random offsets
   const generateRandomOffsets = () => {
     // Larger random values for more dramatic initial positions
@@ -129,14 +112,8 @@ const Background: React.FC = () => {
     let targetY = 0;
     let currentX = 0;
     let currentY = 0;
-    let clientMouseX = window.innerWidth / 2;
-    let clientMouseY = window.innerHeight / 2;
     
     const handleMouseMove = (e: MouseEvent) => {
-      // Store actual mouse position for indicator
-      clientMouseX = e.clientX;
-      clientMouseY = e.clientY;
-      
       // Use window dimensions
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
@@ -149,10 +126,6 @@ const Background: React.FC = () => {
     // Handle touch events for mobile
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
-        // Store actual touch position for indicator
-        clientMouseX = e.touches[0].clientX;
-        clientMouseY = e.touches[0].clientY;
-        
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         
@@ -170,13 +143,6 @@ const Background: React.FC = () => {
         x: currentX,
         y: currentY 
       });
-      
-      // Move the indicator to the exact mouse position
-      const indicator = document.getElementById('mouse-indicator');
-      if (indicator) {
-        indicator.style.left = `${clientMouseX}px`;
-        indicator.style.top = `${clientMouseY}px`;
-      }
       
       requestAnimationFrame(updatePosition);
     };
@@ -217,12 +183,8 @@ const Background: React.FC = () => {
     
     const autoAnimationId = requestAnimationFrame(autoAnimate);
     
-    // Key press to toggle indicator
+    // Key press to regenerate random positions
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'i' || e.key === 'I') {
-        setShowIndicator(prev => !prev);
-      }
-      
       // Press 'r' to regenerate random positions
       if (e.key === 'r' || e.key === 'R') {
         setInitialOffsets(generateRandomOffsets());
@@ -265,41 +227,30 @@ const Background: React.FC = () => {
     : `translate3d(${initialOffsets.gradient3.x}px, ${initialOffsets.gradient3.y}px, 0)`;
   
   return (
-    <>
-      <div ref={backgroundRef} style={gradientStyle}>
-        {/* Order matters for overlapping - bottom layer first */}
-        <div 
-          key="gradient3"
-          style={{
-            ...gradient3BaseStyle,
-            transform: gradient3Transform
-          }} 
-        />
-        <div 
-          key="gradient2"
-          style={{
-            ...gradient2BaseStyle,
-            transform: gradient2Transform
-          }} 
-        />
-        <div 
-          key="gradient1"
-          style={{
-            ...gradient1BaseStyle,
-            transform: gradient1Transform
-          }} 
-        />
-      </div>
-      {/* Mouse position indicator */}
+    <div ref={backgroundRef} style={gradientStyle}>
+      {/* Order matters for overlapping - bottom layer first */}
       <div 
-        id="mouse-indicator" 
+        key="gradient3"
         style={{
-          ...indicatorStyle,
-          left: `${window.innerWidth / 2}px`,
-          top: `${window.innerHeight / 2}px`,
-        }}
+          ...gradient3BaseStyle,
+          transform: gradient3Transform
+        }} 
       />
-    </>
+      <div 
+        key="gradient2"
+        style={{
+          ...gradient2BaseStyle,
+          transform: gradient2Transform
+        }} 
+      />
+      <div 
+        key="gradient1"
+        style={{
+          ...gradient1BaseStyle,
+          transform: gradient1Transform
+        }} 
+      />
+    </div>
   );
 };
 
