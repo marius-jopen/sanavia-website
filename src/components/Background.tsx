@@ -18,7 +18,7 @@ const Background: React.FC = () => {
   useEffect(() => {
     if (!isClient) return;
     
-    let startTime = Date.now();
+    const startTime = Date.now();
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
