@@ -41,7 +41,7 @@ const PopText = ({ slice }: PopTextProps) => {
           </div>
           
           <div ref={toggleRef} className="md:block hidden">
-            <ToggleButton buttonText="Read more" />
+            <ToggleButton className="px-2" buttonText="Learn more" />
           </div>
         </>
       }
