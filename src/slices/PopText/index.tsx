@@ -21,6 +21,7 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
 const PopText = ({ slice }: PopTextProps) => {
   // Convert KeyTextField to string
   const toggleRef = useRef<HTMLDivElement>(null);
+  const isClosed = slice.primary.closed ?? true; // Default to true if not set
 
   useEffect(() => {
     if (!toggleRef.current) return;
@@ -31,19 +32,25 @@ const PopText = ({ slice }: PopTextProps) => {
     });
   }, []);
 
+  // Check if we have a headline
+  const hasHeadline = slice.primary.headline && slice.primary.headline.length > 0;
+
   return (
     <ExpandableSection
       mobileHeadlineClickable={true}
+      defaultOpen={!isClosed}
       headerContent={
-        <>
-          <div className="bg-white rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-2">
-            <PrismicRichText field={slice.primary.headline} />
-          </div>
-          
-          <div ref={toggleRef} className="md:block hidden">
-            <ToggleButton  buttonText="Learn more" />
-          </div>
-        </>
+        hasHeadline ? (
+          <>
+            <div className="bg-white rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-2">
+              <PrismicRichText field={slice.primary.headline} />
+            </div>
+            
+            <div ref={toggleRef} className="md:block hidden">
+              <ToggleButton buttonText="Learn more" />
+            </div>
+          </>
+        ) : null
       }
     >
       <div className="text-gray-800">

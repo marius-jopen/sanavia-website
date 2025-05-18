@@ -23,14 +23,16 @@ interface ExpandableSectionProps {
   headerContent: ReactNode;
   children: ReactNode;
   mobileHeadlineClickable?: boolean;
+  defaultOpen?: boolean;
 }
 
 const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   headerContent,
   children,
-  mobileHeadlineClickable = true
+  mobileHeadlineClickable = true,
+  defaultOpen = false
 }) => {
-  const [isContentVisible, setIsContentVisible] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(defaultOpen);
   const [isInitialized, setIsInitialized] = useState(false);
   const contentBoxRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -69,13 +71,15 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
       // Use the external animation function for opening
       animatePopTextOpen(contentBoxRef.current, contentHeight);
       
-      // Scroll the section to the center of the viewport
-      scrollElementToCenter(sectionRef.current);
+      // Only scroll if not opened by default
+      if (!defaultOpen) {
+        scrollElementToCenter(sectionRef.current);
+      }
     } else {
       // Use the external animation function for closing
       animatePopTextClose(contentBoxRef.current);
     }
-  }, [isContentVisible]);
+  }, [isContentVisible, defaultOpen]);
 
   // Handle header click for mobile
   const handleHeaderClick = () => {
