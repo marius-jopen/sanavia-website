@@ -135,9 +135,9 @@ const Background: React.FC = () => {
     };
     
     const updatePosition = () => {
-      // Much smoother movement with lower easing factor
-      currentX += (targetX - currentX) * 0.05; // Reduced from 0.2 for smoother flow
-      currentY += (targetY - currentY) * 0.05; // Reduced from 0.2 for smoother flow
+      // Faster movement with higher easing factor
+      currentX += (targetX - currentX) * 0.15; // Increased from 0.05 for faster response
+      currentY += (targetY - currentY) * 0.15; // Increased from 0.05 for faster response
       
       setMousePosition({ 
         x: currentX,
@@ -213,17 +213,17 @@ const Background: React.FC = () => {
   // Dynamic styles with movements in different directions plus random offsets
   // Gradient 1 moves opposite to mouse X and with mouse Y
   const gradient1Transform = mounted 
-    ? `translate3d(${-mousePosition.x * 200 + initialOffsets.gradient1.x}px, ${mousePosition.y * 180 + initialOffsets.gradient1.y}px, 0)` 
+    ? `translate3d(${-mousePosition.x * 800 + initialOffsets.gradient1.x}px, ${mousePosition.y * 720 + initialOffsets.gradient1.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient1.x}px, ${initialOffsets.gradient1.y}px, 0)`;
     
   // Gradient 2 moves with mouse X and opposite to mouse Y
   const gradient2Transform = mounted 
-    ? `translate3d(${mousePosition.x * 180 + initialOffsets.gradient2.x}px, ${-mousePosition.y * 220 + initialOffsets.gradient2.y}px, 0)` 
+    ? `translate3d(${mousePosition.x * 720 + initialOffsets.gradient2.x}px, ${-mousePosition.y * 880 + initialOffsets.gradient2.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient2.x}px, ${initialOffsets.gradient2.y}px, 0)`;
     
   // Gradient 3 moves diagonally relative to mouse but in a slightly different angle
   const gradient3Transform = mounted 
-    ? `translate3d(${mousePosition.x * 210 + initialOffsets.gradient3.x}px, ${mousePosition.y * 160 + initialOffsets.gradient3.y}px, 0)` 
+    ? `translate3d(${mousePosition.x * 840 + initialOffsets.gradient3.x}px, ${mousePosition.y * 640 + initialOffsets.gradient3.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient3.x}px, ${initialOffsets.gradient3.y}px, 0)`;
   
   return (
