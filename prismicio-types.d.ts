@@ -567,6 +567,17 @@ export interface PopTextSliceDefaultPrimary {
   headline: prismic.RichTextField;
 
   /**
+   * Closed field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: pop_text.default.primary.closed
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  closed: prismic.BooleanField;
+
+  /**
    * Items field in *PopText → Default → Primary*
    *
    * - **Field Type**: Group
