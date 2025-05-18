@@ -13,6 +13,16 @@ const Background: React.FC = () => {
   });
   const backgroundRef = useRef<HTMLDivElement>(null);
   
+  // Add state for auto movement
+  const [autoMovement, setAutoMovement] = useState({ x: 0, y: 0 });
+  
+  // Add state for random delays
+  const [delays] = useState({
+    gradient1: Math.random() * 2000,
+    gradient2: Math.random() * 2000,
+    gradient3: Math.random() * 2000
+  });
+  
   // Basic styles that will be the same on server and client
   const gradientStyle = {
     opacity: 0.3,
@@ -23,21 +33,21 @@ const Background: React.FC = () => {
     height: '100%',
     zIndex: -1,
     overflow: 'hidden',
-    background: '#f9f9fb',
+    background: '#e5e5e7',
     pointerEvents: 'none' as const,
   };
   
   // Gradient 1: Pink/Purple
   const gradient1BaseStyle = {
     position: 'absolute' as const,
-    top: '0%',
-    left: '0%',
-    width: '120%', // Increased size to allow more movement space
-    height: '120%', // Increased size to allow more movement space
+    top: '-10%', // Adjusted to be more centered
+    left: '-10%', // Adjusted to be more centered
+    width: '140%', // Increased from 120%
+    height: '140%', // Increased from 120%
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
-      radial-gradient(circle at 30% 40%, rgba(255, 105, 128, 0.85) 0%, rgba(188, 143, 250, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
+      radial-gradient(circle at 50% 50%, rgba(255, 105, 128, 0.85) 0%, rgba(188, 143, 250, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
     `,
     filter: 'blur(60px)',
     opacity: 0.85,
@@ -48,14 +58,14 @@ const Background: React.FC = () => {
   // Gradient 2: Cyan/Blue
   const gradient2BaseStyle = {
     position: 'absolute' as const,
-    top: '0%',
-    left: '0%',
-    width: '120%', // Increased size
-    height: '120%', // Increased size
+    top: '-10%', // Adjusted to be more centered
+    left: '-10%', // Adjusted to be more centered
+    width: '140%', // Increased from 120%
+    height: '140%', // Increased from 120%
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
-      radial-gradient(circle at 70% 60%, rgba(64, 224, 208, 0.85) 0%, rgba(100, 180, 255, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
+      radial-gradient(circle at 50% 50%, rgba(64, 224, 208, 0.85) 0%, rgba(100, 180, 255, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
     `,
     filter: 'blur(60px)',
     opacity: 0.85,
@@ -66,14 +76,14 @@ const Background: React.FC = () => {
   // Gradient 3: Yellow/Orange
   const gradient3BaseStyle = {
     position: 'absolute' as const,
-    top: '0%',
-    left: '0%',
-    width: '120%', // Increased size
-    height: '120%', // Increased size
+    top: '-10%', // Adjusted to be more centered
+    left: '-10%', // Adjusted to be more centered
+    width: '140%', // Increased from 120%
+    height: '140%', // Increased from 120%
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
-      radial-gradient(circle at 50% 20%, rgba(255, 210, 100, 0.85) 0%, rgba(255, 140, 50, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
+      radial-gradient(circle at 50% 50%, rgba(255, 210, 100, 0.85) 0%, rgba(255, 140, 50, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
     `,
     filter: 'blur(60px)',
     opacity: 0.85,
@@ -83,19 +93,19 @@ const Background: React.FC = () => {
   
   // Helper function to generate random offsets
   const generateRandomOffsets = () => {
-    // Larger random values for more dramatic initial positions
+    // Smaller random values to keep gradients more centered
     return {
       gradient1: {
-        x: Math.random() * 300 - 150,
-        y: Math.random() * 300 - 150
+        x: Math.random() * 200 - 100, // Reduced from 300-150
+        y: Math.random() * 200 - 100  // Reduced from 300-150
       },
       gradient2: {
-        x: Math.random() * 300 - 150,
-        y: Math.random() * 300 - 150
+        x: Math.random() * 200 - 100, // Reduced from 300-150
+        y: Math.random() * 200 - 100  // Reduced from 300-150
       },
       gradient3: {
-        x: Math.random() * 300 - 150,
-        y: Math.random() * 300 - 150
+        x: Math.random() * 200 - 100, // Reduced from 300-150
+        y: Math.random() * 200 - 100  // Reduced from 300-150
       }
     };
   };
@@ -136,8 +146,8 @@ const Background: React.FC = () => {
     
     const updatePosition = () => {
       // Faster movement with higher easing factor
-      currentX += (targetX - currentX) * 0.15; // Increased from 0.05 for faster response
-      currentY += (targetY - currentY) * 0.15; // Increased from 0.05 for faster response
+      currentX += (targetX - currentX) * 0.15;
+      currentY += (targetY - currentY) * 0.15;
       
       setMousePosition({ 
         x: currentX,
@@ -152,7 +162,7 @@ const Background: React.FC = () => {
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     const animationId = requestAnimationFrame(updatePosition);
     
-    // Add subtle automatic movement even without mouse input
+    // Enhanced automatic movement
     let autoMoveX = 0;
     let autoMoveY = 0;
     let lastTimestamp = 0;
@@ -162,21 +172,21 @@ const Background: React.FC = () => {
       const delta = timestamp - lastTimestamp;
       lastTimestamp = timestamp;
       
-      // Very slow, subtle drift when no mouse movement
-      if (Math.abs(targetX) < 0.01 && Math.abs(targetY) < 0.01) {
-        autoMoveX += Math.sin(timestamp / 5000) * 0.001 * delta;
-        autoMoveY += Math.cos(timestamp / 7000) * 0.001 * delta;
-        
-        // Apply the auto movement if there's no significant mouse input
-        setMousePosition(prev => ({
-          x: prev.x + autoMoveX,
-          y: prev.y + autoMoveY
-        }));
-      } else {
-        // Reset auto movement when user moves mouse
-        autoMoveX = 0;
-        autoMoveY = 0;
+      // Continuous movement with different frequencies for each axis
+      autoMoveX += Math.sin(timestamp / 3000) * 0.002 * delta;
+      autoMoveY += Math.cos(timestamp / 4000) * 0.002 * delta;
+      
+      // Add some randomness to the movement
+      if (Math.random() < 0.01) {
+        autoMoveX += (Math.random() - 0.5) * 0.1;
+        autoMoveY += (Math.random() - 0.5) * 0.1;
       }
+      
+      // Keep the movement within bounds
+      autoMoveX = Math.max(Math.min(autoMoveX, 0.5), -0.5);
+      autoMoveY = Math.max(Math.min(autoMoveY, 0.5), -0.5);
+      
+      setAutoMovement({ x: autoMoveX, y: autoMoveY });
       
       requestAnimationFrame(autoAnimate);
     };
@@ -210,20 +220,66 @@ const Background: React.FC = () => {
     };
   }, []);
   
-  // Dynamic styles with movements in different directions plus random offsets
+  // Custom easing functions
+  const easeOutElastic = (x: number): number => {
+    const c4 = (2 * Math.PI) / 3;
+    return x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+  };
+
+  const easeInOutBack = (x: number): number => {
+    const c1 = 1.70158;
+    const c2 = c1 * 1.525;
+    return x < 0.5
+      ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+      : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+  };
+
+  const easeInOutQuart = (x: number): number => {
+    return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2;
+  };
+
+  // Apply easing to positions
+  const getEasedPosition = (position: number, delay: number, easing: (x: number) => number) => {
+    const timestamp = Date.now() + delay;
+    const cycle = Math.sin(timestamp / 3000) * 0.5 + 0.5; // Convert to 0-1 range
+    return position + easing(cycle) * 0.3; // Scale the effect
+  };
+
+  // Combine mouse position with auto movement and easing
+  const combinedPosition = {
+    x: mousePosition.x + autoMovement.x,
+    y: mousePosition.y + autoMovement.y
+  };
+
+  // Apply different easing effects to each gradient
+  const gradient1Position = {
+    x: getEasedPosition(combinedPosition.x, delays.gradient1, easeOutElastic),
+    y: getEasedPosition(combinedPosition.y, delays.gradient1, easeOutElastic)
+  };
+
+  const gradient2Position = {
+    x: getEasedPosition(combinedPosition.x, delays.gradient2, easeInOutBack),
+    y: getEasedPosition(combinedPosition.y, delays.gradient2, easeInOutBack)
+  };
+
+  const gradient3Position = {
+    x: getEasedPosition(combinedPosition.x, delays.gradient3, easeInOutQuart),
+    y: getEasedPosition(combinedPosition.y, delays.gradient3, easeInOutQuart)
+  };
+
   // Gradient 1 moves opposite to mouse X and with mouse Y
   const gradient1Transform = mounted 
-    ? `translate3d(${-mousePosition.x * 800 + initialOffsets.gradient1.x}px, ${mousePosition.y * 720 + initialOffsets.gradient1.y}px, 0)` 
+    ? `translate3d(${-gradient1Position.x * 800 + initialOffsets.gradient1.x}px, ${gradient1Position.y * 720 + initialOffsets.gradient1.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient1.x}px, ${initialOffsets.gradient1.y}px, 0)`;
     
   // Gradient 2 moves with mouse X and opposite to mouse Y
   const gradient2Transform = mounted 
-    ? `translate3d(${mousePosition.x * 720 + initialOffsets.gradient2.x}px, ${-mousePosition.y * 880 + initialOffsets.gradient2.y}px, 0)` 
+    ? `translate3d(${gradient2Position.x * 720 + initialOffsets.gradient2.x}px, ${-gradient2Position.y * 880 + initialOffsets.gradient2.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient2.x}px, ${initialOffsets.gradient2.y}px, 0)`;
     
   // Gradient 3 moves diagonally relative to mouse but in a slightly different angle
   const gradient3Transform = mounted 
-    ? `translate3d(${mousePosition.x * 840 + initialOffsets.gradient3.x}px, ${mousePosition.y * 640 + initialOffsets.gradient3.y}px, 0)` 
+    ? `translate3d(${gradient3Position.x * 840 + initialOffsets.gradient3.x}px, ${gradient3Position.y * 640 + initialOffsets.gradient3.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient3.x}px, ${initialOffsets.gradient3.y}px, 0)`;
   
   return (
