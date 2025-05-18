@@ -129,7 +129,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   return (
     <div 
       ref={buttonRef}
-      className="bg-white rounded-full cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden h-full flex items-center justify-center"
+      className="bg-white rounded-full cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all  duration-200 whitespace-nowrap overflow-hidden h-full flex items-center justify-center"
       style={{ width: buttonWidth }}
       onClick={toggle}
       onMouseEnter={handleMouseEnter}

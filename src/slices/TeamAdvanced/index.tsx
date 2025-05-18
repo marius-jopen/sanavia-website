@@ -49,7 +49,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
                     : [...prev, index]
                 );
               }}
-              className={`py-2 bg-white hover:bg-neutral-100 duration-200 px-6 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'}`}
+              className={`py-2 bg-white hover:bg-black hover:text-white duration-200 px-6 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'}`}
             >
               {item.headline}
             </button>

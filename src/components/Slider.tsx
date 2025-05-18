@@ -55,14 +55,14 @@ export default function Slider({ images }: SliderProps) {
       <div className="flex justify-center gap-4 mt-8">
         <button
           onClick={goToPrev}
-          className="w-16 h-16 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors text-2xl"
+          className="w-16 h-16 flex items-center justify-center rounded-full bg-white hover:bg-black hover:text-white transition-colors text-2xl"
           aria-label="Previous slide"
         >
           <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <button
           onClick={goToNext}
-          className="w-16 h-16 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors text-2xl"
+          className="w-16 h-16 flex items-center justify-center rounded-full bg-white hover:bg-black hover:text-white transition-colors text-2xl"
           aria-label="Next slide"
         >
           <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
