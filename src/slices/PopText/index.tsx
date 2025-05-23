@@ -2,8 +2,7 @@
 import { useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
-import ExpandableSection from "@/components/ExpandableSection";
-import ToggleButton from "@/components/ToggleButton";
+import ExpandableSection, { useToggle } from "@/components/ExpandableSection";
 import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
 import Item2ColumnsReversed from "./item-2-columns-reversed";
@@ -35,28 +34,37 @@ const PopText = ({ slice }: PopTextProps) => {
   // Check if we have a headline
   const hasHeadline = slice.primary.headline && slice.primary.headline.length > 0;
 
+  // Simple header component that can use the toggle hook
+  const HeaderContent = () => {
+    const { toggle, isToggled } = useToggle();
+
+    if (!hasHeadline) return null;
+
+    return (
+      <>
+        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-4 md:mr-2">
+          <PrismicRichText field={slice.primary.headline} />
+        </div>
+        
+        <div ref={toggleRef} className="hidden md:block">
+          <div 
+            onClick={toggle}
+            className=" bg-white rounded-full px-6 py-4 text-gray-800 mr-4 md:mr-2 hover:bg-black hover:text-white transition-all duration-200 cursor-pointer"
+          >
+            <h3>
+              {isToggled ? "Close" : "Learn more"}
+            </h3>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <ExpandableSection
       mobileHeadlineClickable={true}
       defaultOpen={!isClosed}
-      headerContent={
-        hasHeadline ? (
-          <>
-          
-            <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-4 md:mr-2">
-              <PrismicRichText field={slice.primary.headline} />
-
-              <div className="pt-5 pb-1">
-                <ToggleButton buttonText="Learn more" bgColor="bg-gray-100" py="py-1" toggledPy="py-2" />
-              </div>
-            </div>
-            
-            <div ref={toggleRef} className="hidden md:block">
-              <ToggleButton buttonText="Learn more" bgColor="bg-gray-100" py="py-2" toggledPy="py-3" />
-            </div>
-          </>
-        ) : null
-      }
+      headerContent={<HeaderContent />}
     >
       <div className="text-gray-800">
         {slice.primary.items.map((item, index) => (
