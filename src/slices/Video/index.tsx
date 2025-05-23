@@ -22,8 +22,8 @@ const Video: FC<VideoProps> = ({ slice }) => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="w-full mb-4">
-      <div className="relative mx-auto w-10/12 rounded-2xl overflow-hidden">
+    <section ref={sectionRef} className="w-full mb-4 px-4">
+      <div className="relative mx-auto md:w-10/12 rounded-2xl overflow-hidden">
         <VideoBasic
           url={slice.primary.video_url || ''}
           poster={slice.primary.poster}

@@ -4,6 +4,7 @@ import { Content, KeyTextField, ImageField, RichTextField } from "@prismicio/cli
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import VideoBasic from "@/components/VideoBasic";
+import SimplePlusButton from "@/components/SimplePlusButton";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 type AboutUsItem = {
@@ -28,17 +29,22 @@ const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="relative">
-          <button
-            onClick={onClose}
-            className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-700 z-10"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="absolute top-0 -right-12 z-10 w-10 h-10">
+            <SimplePlusButton 
+              onClick={onClose}
+              isActive={true}
+              className="w-full h-full"
+            />
+          </div>
           {children}
         </div>
       </div>
@@ -83,11 +89,11 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
         {categories.map((cat, idx) => (
           <button
             key={cat}
-            className={`px-8 py-4 hover:bg-neutral-100 transition \
+            className={`px-8 py-4 hover:bg-black hover:text-white transition \
               ${idx < 1 ? 'rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'} \
               ${selectedCategory === cat
-                ? "bg-white text-black"
-                : "bg-white text-neutral-500"}
+                ? "bg-black text-white"
+                : "bg-white text-black"}
             `}
             onClick={() => setSelectedCategory(cat)}
           >
@@ -104,7 +110,7 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
             return (
               <div 
                 key={index} 
-                className={`flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:bg-neutral-100 ${
+                className={` flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
                   isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl'
                 }`}
                 onClick={() => handleItemClick(item)}
@@ -116,17 +122,17 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
                   }
                 }}
               >
-                <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4">
+                <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4 cursor-pointer">
                   <VideoBasic
                     url={item.video_url || undefined}
                     poster={item.image}
                   />
                 </div>
                 {item.headline && (
-                  <h3 className="pt-2 pb-2 text-xl font-bold mb-2">{item.headline}</h3>
+                  <h3 className="pt-2 pb-2 text-xl font-bold mb-2 cursor-pointer">{item.headline}</h3>
                 )}
                 {item.richtext && (
-                  <div className="px-12 text-sm text-gray-500">
+                  <div className="px-12 text-sm text-gray-500 cursor-pointer">
                     <PrismicRichText field={item.richtext} />
                   </div>
                 )}
