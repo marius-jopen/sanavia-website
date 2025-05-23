@@ -5,7 +5,7 @@
 }
 
 body {
-  @apply antialiased text-lg leading-7;
+  @apply antialiased text-base md:text-lg leading-6 md:leading-7;
 }
 
 p {
@@ -21,9 +21,9 @@ h2 {
 }
 
 h3 {
-  @apply text-lg md:text-2xl font-normal leading-7 md:leading-[130%];
+  @apply text-base md:text-2xl font-normal leading-7 md:leading-[130%];
 }
 
 h4 {
-  @apply text-xl font-normal leading-10 md:leading-10;
+  @apply text-base font-normal leading-6 md:leading-10;
 }

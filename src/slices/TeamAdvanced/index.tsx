@@ -37,7 +37,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
       data-slice-variation={slice.variation}
       className="py-6"
     >
-      <div className="mb-6 flex flex-wrap gap-3">
+      <div className="mb-6 flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
         {slice.primary.items?.map((item, index) => {
           return (
             <button
@@ -49,7 +49,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
                     : [...prev, index]
                 );
               }}
-              className={`py-2 bg-white hover:bg-black hover:text-white duration-200 px-6 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'}`}
+              className={`py-2 bg-white hover:bg-black hover:text-white duration-200 px-6 whitespace-nowrap flex-shrink-0 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'} ${index === slice.primary.items.length - 1 ? 'mr-4' : ''}`}
             >
               {item.headline}
             </button>
@@ -93,6 +93,13 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
         }
         .fade-in-card {
           animation: fadeIn 0.6s;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </section>

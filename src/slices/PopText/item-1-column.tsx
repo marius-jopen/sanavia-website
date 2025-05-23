@@ -15,7 +15,7 @@ interface Item1ColumnProps {
 const Item1Column: React.FC<Item1ColumnProps> = (props) => {
   return (
     <div className="pop-text-one-column py-4">
-        {props.image && (
+        {props.image?.url && (
             <div className='pb-8'>
                 <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" />
             </div>
@@ -27,15 +27,17 @@ const Item1Column: React.FC<Item1ColumnProps> = (props) => {
             </h3>
         )}
 
-        {props.richtext && (
+        {props.richtext?.[0]?.text && (
             <div className="">
                 <PrismicRichText field={props.richtext} />
             </div>
         )}
 
-        <div className='flex justify-center w-full'>
-            <Button className="mt-4" field={props.button} />
-        </div>
+        {props.button?.text && (
+            <div className='flex justify-center w-full'>
+                <Button className="mt-4" field={props.button} />
+            </div>
+        )}
     </div>
   );
 };
