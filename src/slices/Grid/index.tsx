@@ -16,6 +16,7 @@ type PhysicsCircle = {
   body: Matter.Body;
   originalPosition: { x: number; y: number };
   color: string;
+  index: number;
 };
 
 /**
@@ -51,7 +52,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
     // Physics configuration
     PHYSICS: {
       // How strongly circles are repelled by the mouse
-      REPULSION_STRENGTH: 0.5,
+      REPULSION_STRENGTH: 0.1,
       
       // Maximum distance that the mouse affects circles
       REPULSION_RADIUS: 150,
@@ -69,8 +70,11 @@ const Grid: FC<GridProps> = ({ slice }) => {
   const engineRef = useRef<Matter.Engine | null>(null);
   const circlesRef = useRef<PhysicsCircle[]>([]);
   const mousePositionRef = useRef<{ x: number; y: number } | null>(null);
+  const isInitializedRef = useRef<boolean>(false);
+  const toggleRef = useRef<boolean>(false);
   
-  const [toggleOn, setToggleOn] = useState(false);
+  // This state is only for forcing UI updates, not for physics
+  const [toggleState, setToggleState] = useState(false);
   const [randomizedIndices, setRandomizedIndices] = useState<number[]>([]);
   const [gridDimensions, setGridDimensions] = useState({ 
     rows: 0, 
@@ -100,12 +104,12 @@ const Grid: FC<GridProps> = ({ slice }) => {
 
   // Get the set of blue indices based on toggle state
   const getBlueIndices = useCallback((indices: number[], totalCircles: number) => {
-    const percentage = toggleOn ? CONFIG.BLUE_PERCENTAGE_ON : CONFIG.BLUE_PERCENTAGE_OFF;
+    const percentage = toggleRef.current ? CONFIG.BLUE_PERCENTAGE_ON : CONFIG.BLUE_PERCENTAGE_OFF;
     const count = Math.floor(totalCircles * (percentage / 100));
     
     // Take first 'count' elements from our consistent randomized array
     return new Set(indices.slice(0, count));
-  }, [toggleOn, CONFIG.BLUE_PERCENTAGE_ON, CONFIG.BLUE_PERCENTAGE_OFF]);
+  }, [CONFIG.BLUE_PERCENTAGE_ON, CONFIG.BLUE_PERCENTAGE_OFF]);
 
   // Setup physics world with matter.js
   const setupPhysics = useCallback((
@@ -119,6 +123,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
     // Clean up existing engine if it exists
     if (engineRef.current) {
       Matter.Engine.clear(engineRef.current);
+      circlesRef.current = [];
     }
     
     // Initialize physics engine
@@ -155,7 +160,8 @@ const Grid: FC<GridProps> = ({ slice }) => {
         circles.push({
           body,
           originalPosition: { x, y },
-          color
+          color,
+          index
         });
         
         // Add body to the world
@@ -164,39 +170,39 @@ const Grid: FC<GridProps> = ({ slice }) => {
     }
     
     circlesRef.current = circles;
+    isInitializedRef.current = true;
     
     return engine;
   }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION]);
   
-  // Handle toggle button click
+  // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
-    setToggleOn(prev => !prev);
-  }, []);
-
-  // Update circle colors when toggle changes
-  useEffect(() => {
-    if (gridDimensions.totalCircles > 0 && circlesRef.current.length > 0) {
+    // Update our ref first (this is what physics will use)
+    toggleRef.current = !toggleRef.current;
+    
+    // Only force a UI update
+    setToggleState(toggleRef.current);
+    
+    // Directly update circle colors without any re-render
+    if (isInitializedRef.current && circlesRef.current.length > 0) {
       const { totalCircles } = gridDimensions;
-      
-      // Use the same randomized indices but change the count
       const indices = randomizedIndices.length === totalCircles 
         ? randomizedIndices 
         : initializeRandomIndices(totalCircles);
-        
+      
       const blueIndicesSet = getBlueIndices(indices, totalCircles);
       
-      // Update colors of circles
-      const circles = circlesRef.current;
-      for (let i = 0; i < circles.length; i++) {
-        circles[i].color = blueIndicesSet.has(i) ? CONFIG.COLORS.BLUE : CONFIG.COLORS.DEFAULT;
+      // Update colors without changing positions
+      for (const circle of circlesRef.current) {
+        circle.color = blueIndicesSet.has(circle.index) ? CONFIG.COLORS.BLUE : CONFIG.COLORS.DEFAULT;
       }
     }
-  }, [toggleOn, gridDimensions, randomizedIndices, initializeRandomIndices, getBlueIndices, CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT]);
+  }, [gridDimensions, randomizedIndices, initializeRandomIndices, getBlueIndices, CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT]);
 
   // Animation loop for physics simulation
   const animatePhysics = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !engineRef.current) return;
+    if (!canvas || !engineRef.current || !isInitializedRef.current) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -264,7 +270,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
     requestAnimationRef.current = requestAnimationFrame(animatePhysics);
   }, [CONFIG.PHYSICS.REPULSION_STRENGTH, CONFIG.PHYSICS.REPULSION_RADIUS, CONFIG.PHYSICS.SPRING_STRENGTH]);
 
-  // Handle resize and initial setup
+  // Handle resize and initial setup - ONLY RUNS ON RESIZE or FIRST MOUNT
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -278,6 +284,9 @@ const Grid: FC<GridProps> = ({ slice }) => {
         cancelAnimationFrame(requestAnimationRef.current);
         requestAnimationRef.current = null;
       }
+      
+      // We need to re-initialize physics on resize
+      isInitializedRef.current = false;
       
       // Get viewport width for truly full width canvas
       const viewportWidth = window.innerWidth;
@@ -376,8 +385,8 @@ const Grid: FC<GridProps> = ({ slice }) => {
         <button 
           onClick={handleToggle}
           style={{
-            backgroundColor: toggleOn ? CONFIG.COLORS.BLUE : 'white',
-            color: toggleOn ? 'white' : 'black',
+            backgroundColor: toggleState ? CONFIG.COLORS.BLUE : 'white',
+            color: toggleState ? 'white' : 'black',
             border: `2px solid ${CONFIG.COLORS.BLUE}`,
             padding: '10px 20px',
             borderRadius: '4px',
@@ -386,7 +395,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
             transition: 'all 0.3s ease'
           }}
         >
-          {toggleOn ? `${CONFIG.BLUE_PERCENTAGE_ON}% Black` : `${CONFIG.BLUE_PERCENTAGE_OFF}% Black`}
+          {toggleState ? `${CONFIG.BLUE_PERCENTAGE_ON}% Black` : `${CONFIG.BLUE_PERCENTAGE_OFF}% Black`}
         </button>
       </div>
       
