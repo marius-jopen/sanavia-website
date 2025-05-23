@@ -25,13 +25,27 @@ type PhysicsCircle = {
 const Grid: FC<GridProps> = ({ slice }) => {
   // Configuration variables - modify these to control the grid
   const CONFIG = useMemo(() => ({
-    // Number of columns in the grid
-    COLUMNS: 15,
+    // Mobile breakpoint
+    MOBILE_BREAKPOINT: 768,
     
-    // Aspect ratio (width:height) - 16:9 is widescreen
+    // Number of columns in the grid
+    COLUMNS: {
+      DESKTOP: 15,
+      MOBILE: 8
+    },
+    
+    // Aspect ratio (width:height)
     ASPECT_RATIO: {
-      WIDTH: 16,
-      HEIGHT: 9
+      // Desktop: 16:9 is widescreen
+      DESKTOP: {
+        WIDTH: 16,
+        HEIGHT: 9
+      },
+      // Mobile: 9:16 is portrait
+      MOBILE: {
+        WIDTH: 9,
+        HEIGHT: 16
+      }
     },
     
     // Spacing between circles in pixels
@@ -55,7 +69,10 @@ const Grid: FC<GridProps> = ({ slice }) => {
       REPULSION_STRENGTH: 0.1,
       
       // Maximum distance that the mouse affects circles
-      REPULSION_RADIUS: 150,
+      REPULSION_RADIUS: {
+        DESKTOP: 150,
+        MOBILE: 80
+      },
       
       // How quickly circles return to their original positions
       SPRING_STRENGTH: 0.001,
@@ -73,7 +90,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
   const requestAnimationRef = useRef<number | null>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const circlesRef = useRef<PhysicsCircle[]>([]);
-  const mousePositionRef = useRef<{ x: number; y: number } | null>(null);
+  const mousePositionRef = useRef<{ x: number; y: number; active: boolean } | null>(null);
   const isInitializedRef = useRef<boolean>(false);
   const toggleRef = useRef<boolean>(false);
   
@@ -82,9 +99,18 @@ const Grid: FC<GridProps> = ({ slice }) => {
   const [randomizedIndices, setRandomizedIndices] = useState<number[]>([]);
   const [gridDimensions, setGridDimensions] = useState({ 
     rows: 0, 
-    columns: CONFIG.COLUMNS, 
+    columns: 0, 
     totalCircles: 0 
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if device is mobile based on window width
+  const checkIfMobile = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < CONFIG.MOBILE_BREAKPOINT;
+    }
+    return false;
+  }, [CONFIG.MOBILE_BREAKPOINT]);
 
   // Generate initial random order of indices (only once)
   const initializeRandomIndices = useCallback((totalCircles: number) => {
@@ -217,37 +243,42 @@ const Grid: FC<GridProps> = ({ slice }) => {
     
     // Apply forces based on mouse position
     if (mousePositionRef.current) {
-      const { x: mouseX, y: mouseY } = mousePositionRef.current;
+      const { x: mouseX, y: mouseY, active } = mousePositionRef.current;
       const circles = circlesRef.current;
       const repulsionStrength = CONFIG.PHYSICS.REPULSION_STRENGTH;
-      const repulsionRadius = CONFIG.PHYSICS.REPULSION_RADIUS;
+      const repulsionRadius = isMobile ? 
+        CONFIG.PHYSICS.REPULSION_RADIUS.MOBILE : 
+        CONFIG.PHYSICS.REPULSION_RADIUS.DESKTOP;
       const springStrength = CONFIG.PHYSICS.SPRING_STRENGTH;
       
       for (const circle of circles) {
         const { body, originalPosition } = circle;
         const { position } = body;
         
-        // Calculate distance from mouse to circle
-        const dx = position.x - mouseX;
-        const dy = position.y - mouseY;
-        const distanceSquared = dx * dx + dy * dy;
-        
-        if (distanceSquared < repulsionRadius * repulsionRadius) {
-          // Apply repulsion force (stronger when closer)
-          const distance = Math.sqrt(distanceSquared);
-          const forceMagnitude = repulsionStrength * (1 - distance / repulsionRadius);
+        // Only apply mouse repulsion if mouse is active (inside canvas)
+        if (active) {
+          // Calculate distance from mouse to circle
+          const dx = position.x - mouseX;
+          const dy = position.y - mouseY;
+          const distanceSquared = dx * dx + dy * dy;
           
-          // Normalize direction vector
-          const forceX = (dx / distance) * forceMagnitude;
-          const forceY = (dy / distance) * forceMagnitude;
-          
-          Matter.Body.applyForce(body, position, {
-            x: forceX,
-            y: forceY
-          });
+          if (distanceSquared < repulsionRadius * repulsionRadius) {
+            // Apply repulsion force (stronger when closer)
+            const distance = Math.sqrt(distanceSquared);
+            const forceMagnitude = repulsionStrength * (1 - distance / repulsionRadius);
+            
+            // Normalize direction vector
+            const forceX = (dx / distance) * forceMagnitude;
+            const forceY = (dy / distance) * forceMagnitude;
+            
+            Matter.Body.applyForce(body, position, {
+              x: forceX,
+              y: forceY
+            });
+          }
         }
         
-        // Apply spring force to return to original position
+        // Always apply spring force to return to original position
         const springDx = originalPosition.x - position.x;
         const springDy = originalPosition.y - position.y;
         
@@ -273,7 +304,20 @@ const Grid: FC<GridProps> = ({ slice }) => {
     
     // Continue animation loop
     requestAnimationRef.current = requestAnimationFrame(animatePhysics);
-  }, [CONFIG.PHYSICS.REPULSION_STRENGTH, CONFIG.PHYSICS.REPULSION_RADIUS, CONFIG.PHYSICS.SPRING_STRENGTH]);
+  }, [CONFIG.PHYSICS.REPULSION_STRENGTH, CONFIG.PHYSICS.REPULSION_RADIUS, CONFIG.PHYSICS.SPRING_STRENGTH, isMobile]);
+
+  // Update mobile state on resize
+  useEffect(() => {
+    const handleResize = () => {
+      const mobileCheck = checkIfMobile();
+      setIsMobile(mobileCheck);
+    };
+
+    handleResize(); // Check initially
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [checkIfMobile]);
 
   // Handle resize and initial setup - ONLY RUNS ON RESIZE or FIRST MOUNT
   useEffect(() => {
@@ -293,12 +337,19 @@ const Grid: FC<GridProps> = ({ slice }) => {
       // We need to re-initialize physics on resize
       isInitializedRef.current = false;
       
+      // Check if mobile
+      const mobile = checkIfMobile();
+      setIsMobile(mobile);
+      
       // Get viewport width for truly full width canvas
       const viewportWidth = window.innerWidth;
       canvas.width = viewportWidth;
       
-      // Fixed number of columns from config
-      const columns = CONFIG.COLUMNS;
+      // Use responsive values based on device type
+      const columns = mobile ? CONFIG.COLUMNS.MOBILE : CONFIG.COLUMNS.DESKTOP;
+      const aspectRatio = mobile 
+        ? CONFIG.ASPECT_RATIO.MOBILE.WIDTH / CONFIG.ASPECT_RATIO.MOBILE.HEIGHT 
+        : CONFIG.ASPECT_RATIO.DESKTOP.WIDTH / CONFIG.ASPECT_RATIO.DESKTOP.HEIGHT;
       
       // Calculate spacing
       const spacing = CONFIG.SPACING;
@@ -308,8 +359,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
       // Circle size to fill columns
       const adjustedCircleSize = columnWidth - spacing;
       
-      // Calculate aspect ratio height
-      const aspectRatio = CONFIG.ASPECT_RATIO.WIDTH / CONFIG.ASPECT_RATIO.HEIGHT;
+      // Calculate height based on aspect ratio
       const baseHeight = viewportWidth / aspectRatio;
       
       // Calculate row height based on adjusted circle size
@@ -351,18 +401,30 @@ const Grid: FC<GridProps> = ({ slice }) => {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      // Update mouse position for physics simulation
-      mousePositionRef.current = { x, y };
+      // Update mouse position for physics simulation with active flag
+      mousePositionRef.current = { x, y, active: true };
     };
     
     // Handle mouse leaving the canvas
     const handleMouseLeave = () => {
-      mousePositionRef.current = null;
+      // Instead of setting to null, we keep the last position but mark as inactive
+      if (mousePositionRef.current) {
+        mousePositionRef.current.active = false;
+      }
+    };
+
+    // Handle mouse entering the canvas
+    const handleMouseEnter = () => {
+      // Reactivate mouse effect if we have a position
+      if (mousePositionRef.current) {
+        mousePositionRef.current.active = true;
+      }
     };
 
     window.addEventListener('resize', handleResize);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('mouseenter', handleMouseEnter);
     
     handleResize();
     
@@ -379,8 +441,9 @@ const Grid: FC<GridProps> = ({ slice }) => {
       window.removeEventListener('resize', handleResize);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
+      canvas.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [CONFIG.COLUMNS, CONFIG.SPACING, CONFIG.ASPECT_RATIO.WIDTH, CONFIG.ASPECT_RATIO.HEIGHT, CONFIG.PHYSICS.VERTICAL_PADDING, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics]);
+  }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile]);
 
   return (
     <div>
