@@ -11,12 +11,12 @@ export type SpaceProps = SliceComponentProps<Content.SpaceSlice>;
  * Height mapping for different sizes
  */
 const heightMap = {
-  xs: { desktop: "h-8", mobile: "h-4" },
-  s: { desktop: "h-16", mobile: "h-8" },
-  m: { desktop: "h-24", mobile: "h-8" },
-  lg: { desktop: "h-32", mobile: "h-12" },
-  xl: { desktop: "h-48", mobile: "h-12" },
-  "2xl": { desktop: "h-64", mobile: "h-16" },
+  "xs": { desktop: "h-8", mobile: "h-4" },
+  "s": { desktop: "h-16", mobile: "h-8" },
+  "m": { desktop: "h-24", mobile: "h-8" },
+  "lg": { desktop: "h-32", mobile: "h-12" },
+  "xl": { desktop: "h-52", mobile: "h-12" },
+  "2xl": { desktop: "h-80", mobile: "h-16" },
 };
 
 /**

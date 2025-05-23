@@ -51,10 +51,12 @@ export default function Slider({ images }: SliderProps) {
             768: {
               perPage: 1,
               gap: '0.5rem',
+              padding: '12vw'
             },
             480: {
               perPage: 1,
               gap: '0.5rem',
+              padding: '8vw'
             },
           },
         }}
