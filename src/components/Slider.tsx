@@ -27,16 +27,36 @@ export default function Slider({ images }: SliderProps) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full overflow-hidden">
       <Splide
-        className="pointer-events-none"
+        className="overflow-visible"
         options={{
-            type: 'loop',
-            perPage: 1.6,
-            perMove: 1,
-            gap: '2rem',
-            pagination: false,
-            arrows: false,
+          type: 'loop',
+          perPage: 1,
+          perMove: 1,
+          gap: '1rem',
+          pagination: false,
+          arrows: false,
+          drag: true,
+          padding: '20vw',
+          wheel: false,
+          releaseWheel: false,
+          keyboard: 'global',
+          speed: 600,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+          trimSpace: false,
+          focus: 0,
+          omitEnd: true,
+          breakpoints: {
+            768: {
+              perPage: 1,
+              gap: '0.5rem',
+            },
+            480: {
+              perPage: 1,
+              gap: '0.5rem',
+            },
+          },
         }}
         onMounted={(splideInstance: SplideInstance) => setSplide(splideInstance)}
         aria-label="Image Slider"
@@ -44,10 +64,10 @@ export default function Slider({ images }: SliderProps) {
         {images.map((image, index) => (
           <SplideSlide key={index}>
             <PrismicNextImage
-            field={image}
-            fallbackAlt=""
-            className="w-full h-auto object-cover rounded-2xl ml-8"
-            />
+                field={image}
+                fallbackAlt=""
+                className="w-full h-auto object-cover rounded-2xl pointer-events-none"
+              />
           </SplideSlide>
         ))}
       </Splide>
