@@ -6,9 +6,10 @@ type SimplePlusButtonProps = {
   onClick?: () => void;
   className?: string;
   big?: boolean;
+  isActive?: boolean;
 };
 
-export default function SimplePlusButton({ onClick, className = "", big = false }: SimplePlusButtonProps) {
+export default function SimplePlusButton({ onClick, className = "", big = false, isActive = false }: SimplePlusButtonProps) {
   const iconRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -33,8 +34,19 @@ export default function SimplePlusButton({ onClick, className = "", big = false 
     return () => resizeObserver.disconnect();
   }, []);
 
-  const handleMouseEnter = () => {
+  // Handle active state rotation
+  useEffect(() => {
     if (iconRef.current) {
+      gsap.to(iconRef.current, {
+        rotation: isActive ? 45 : 0,
+        duration: 0.3,
+        ease: "power2.inOut"
+      });
+    }
+  }, [isActive]);
+
+  const handleMouseEnter = () => {
+    if (iconRef.current && !isActive) {
       gsap.to(iconRef.current, {
         rotation: 45,
         duration: 0.3,
@@ -44,7 +56,7 @@ export default function SimplePlusButton({ onClick, className = "", big = false 
   };
 
   const handleMouseLeave = () => {
-    if (iconRef.current) {
+    if (iconRef.current && !isActive) {
       gsap.to(iconRef.current, {
         rotation: 0,
         duration: 0.3,

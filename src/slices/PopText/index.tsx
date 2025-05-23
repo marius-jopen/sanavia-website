@@ -44,12 +44,14 @@ const PopText = ({ slice }: PopTextProps) => {
     return (
       <>
       <div className="flex flex-row">
-        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-8 text-gray-800 mr-3 min-h-20 flex items-center">
+        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-8 text-gray-800 mr-3 min-h-20 flex items-center pt-4 md:pt-2 pb-4 md:pb-2">
           <PrismicRichText field={slice.primary.headline} />
         </div>
         
-        <div ref={toggleRef} className="h-20">
-          <SimplePlusButton />
+        <div className="flex items-center">
+          <div ref={toggleRef} className="h-20 mr-4">
+            <SimplePlusButton onClick={toggle} isActive={isToggled} />
+          </div>
         </div>
       </div>
       </>
