@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect, ReactNode, createContext, useContex
 import { initializeSlideElement } from "@/utils/animations/slideAnimations";
 import { animatePopTextOpen, animatePopTextClose } from "@/utils/animations/popTextAnimations";
 import { setupFadeInAnimation } from "@/utils/animations/intersectionAnimations";
-import { scrollElementToCenter } from "@/utils/animations/scrollAnimations";
 
 // Create a context for toggle state
 type ToggleContextType = {
@@ -24,28 +23,19 @@ interface ExpandableSectionProps {
   children: ReactNode;
   mobileHeadlineClickable?: boolean;
   defaultOpen?: boolean;
-  isControlledOpen?: boolean;
-  disableAutoScroll?: boolean;
-  onMobileHeaderClick?: () => void;
 }
 
 const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   headerContent,
   children,
   mobileHeadlineClickable = true,
-  defaultOpen = false,
-  isControlledOpen,
-  disableAutoScroll = false,
-  onMobileHeaderClick
+  defaultOpen = false
 }) => {
   const [isContentVisible, setIsContentVisible] = useState(defaultOpen);
   const [isInitialized, setIsInitialized] = useState(false);
   const contentBoxRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const contentInnerRef = useRef<HTMLDivElement>(null);
-
-  // Use controlled state if provided, otherwise use internal state
-  const actualIsVisible = isControlledOpen !== undefined ? isControlledOpen : isContentVisible;
 
   // Initialize the element's hidden state on mount
   useEffect(() => {
@@ -67,17 +57,14 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
 
   // Handle toggle button click
   const handleToggle = () => {
-    // Only toggle internal state if not controlled externally
-    if (isControlledOpen === undefined) {
-      setIsContentVisible(!isContentVisible);
-    }
+    setIsContentVisible(!isContentVisible);
   };
 
   // Handle content box animations
   useEffect(() => {
     if (!contentBoxRef.current || !contentInnerRef.current) return;
     
-    if (actualIsVisible) {
+    if (isContentVisible) {
       // Get the height of the content
       const contentHeight = contentInnerRef.current.offsetHeight;
       // Use the external animation function for opening
@@ -86,22 +73,18 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
       // Use the external animation function for closing
       animatePopTextClose(contentBoxRef.current);
     }
-  }, [actualIsVisible]);
+  }, [isContentVisible]);
 
   // Handle header click for mobile
   const handleHeaderClick = () => {
     if (mobileHeadlineClickable && window.innerWidth < 768) {
-      if (onMobileHeaderClick) {
-        onMobileHeaderClick();
-      } else {
-        handleToggle();
-      }
+      handleToggle();
     }
   };
 
   // Create the toggle context value
   const toggleContextValue = {
-    isToggled: actualIsVisible,
+    isToggled: isContentVisible,
     toggle: handleToggle
   };
 

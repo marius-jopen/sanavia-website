@@ -1,9 +1,8 @@
 "use client"
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import ExpandableSection, { useToggle } from "@/components/ExpandableSection";
-import { useAccordion } from "@/components/AccordionProvider";
 import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
 import Item2ColumnsReversed from "./item-2-columns-reversed";
@@ -22,30 +21,9 @@ export type PopTextProps = SliceComponentProps<Content.PopTextSlice>;
  * Component for "PopText" Slices.
  */
 const PopText = ({ slice }: PopTextProps) => {
-  // Generate a unique ID for this accordion instance
-  const accordionId = useMemo(() => 
-    `poptext-${slice.id || Math.random().toString(36).substr(2, 9)}`, 
-    [slice.id]
-  );
-  
-  // Get accordion context
-  const { openAccordion, isAccordionOpen } = useAccordion();
-  
   // Convert KeyTextField to string
   const toggleRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLDivElement>(null);
   const isClosed = slice.primary.closed ?? true; // Default to true if not set
-
-  // Check if this accordion should be open
-  const isOpen = isAccordionOpen(accordionId);
-  
-  // Determine default open state
-  const defaultOpen = !isClosed;
-
-  // Function to handle accordion clicks
-  const handleAccordionClick = () => {
-    openAccordion(accordionId);
-  };
 
   useEffect(() => {
     if (!toggleRef.current) return;
@@ -74,7 +52,7 @@ const PopText = ({ slice }: PopTextProps) => {
         
         <div className="flex items-center">
           <div ref={toggleRef} className="h-20 mr-4">
-            <SimplePlusButton onClick={handleAccordionClick} isActive={isOpen} />
+            <SimplePlusButton onClick={toggle} isActive={isToggled} />
           </div>
         </div>
       </div>
@@ -83,48 +61,44 @@ const PopText = ({ slice }: PopTextProps) => {
   };
 
   return (
-    <div ref={sectionRef}>
-      <ExpandableSection
-        mobileHeadlineClickable={true}
-        defaultOpen={defaultOpen}
-        isControlledOpen={isOpen}
-        onMobileHeaderClick={handleAccordionClick}
-        headerContent={<HeaderContent />}
-      >
-        <div className="text-gray-800">
-          {slice.primary.items.map((item, index) => (
-            <div key={index}>
-              {/* Mobile view - always use Item1Column */}
-              <div className="md:hidden">
-                <Item1Column {...item} />
-              </div>
-              
-              {/* Desktop view - use specified layout */}
-              <div className="hidden md:block">
-                {(() => {
-                  switch (item.styling) {
-                    case '1-column':
-                      return <Item1Column {...item} />;
-                    case '2-columns':
-                      return <Item2Columns {...item} />;
-                    case '2-columns-reversed':
-                      return <Item2ColumnsReversed {...item} />;
-                    case '2-columns-big-image':
-                      return <Item2ColumnsBigImage {...item} />;
-                    case '2-columns-big-image-reversed':
-                      return <Item2ColumnsBigImageReversed {...item} />;
-                    case 'image-2-columns':
-                      return <ItemImage2Columns {...item} />;
-                    default:
-                      return <Item1Column {...item} />;
-                  }
-                })()}
-              </div>
+    <ExpandableSection
+      mobileHeadlineClickable={true}
+      defaultOpen={!isClosed}
+      headerContent={<HeaderContent />}
+    >
+      <div className="text-gray-800">
+        {slice.primary.items.map((item, index) => (
+          <div key={index}>
+            {/* Mobile view - always use Item1Column */}
+            <div className="md:hidden">
+              <Item1Column {...item} />
             </div>
-          ))}
-        </div>
-      </ExpandableSection>
-    </div>
+            
+            {/* Desktop view - use specified layout */}
+            <div className="hidden md:block">
+              {(() => {
+                switch (item.styling) {
+                  case '1-column':
+                    return <Item1Column {...item} />;
+                  case '2-columns':
+                    return <Item2Columns {...item} />;
+                  case '2-columns-reversed':
+                    return <Item2ColumnsReversed {...item} />;
+                  case '2-columns-big-image':
+                    return <Item2ColumnsBigImage {...item} />;
+                  case '2-columns-big-image-reversed':
+                    return <Item2ColumnsBigImageReversed {...item} />;
+                  case 'image-2-columns':
+                    return <ItemImage2Columns {...item} />;
+                  default:
+                    return <Item1Column {...item} />;
+                }
+              })()}
+            </div>
+          </div>
+        ))}
+      </div>
+    </ExpandableSection>
   );
 };
 

@@ -1,6 +1,5 @@
 import { PrismicPreview } from "@prismicio/next";
 import { repositoryName, createClient } from "@/prismicio";
-import { AccordionProvider } from "@/components/AccordionProvider";
 import Background from "@/components/Background";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -17,12 +16,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="w-full overflow-x-hiden">
-        <AccordionProvider type="poptext">
-          <Header data={settings.data} />
-          {children}
-          <Footer data={settings.data} />
-          <Background />
-        </AccordionProvider>
+        <Header data={settings.data} />
+        {children}
+        <Footer data={settings.data} />
+        <Background />
       </body>
       <PrismicPreview repositoryName={repositoryName} />
     </html>
