@@ -1,5 +1,5 @@
 "use client";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState, useCallback } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 
@@ -16,6 +16,39 @@ const Grid: FC<GridProps> = ({ slice }) => {
   const [hoveredCircle, setHoveredCircle] = useState<number | null>(null);
   const [gridDimensions, setGridDimensions] = useState({ rows: 0, columns: 15, totalCircles: 0 });
 
+  // Define drawCircles as a memoized function to avoid recreating it on each render
+  const drawCircles = useCallback((
+    ctx: CanvasRenderingContext2D, 
+    canvas: HTMLCanvasElement,
+    circleSize: number, 
+    spacing: number, 
+    rows: number, 
+    columns: number
+  ) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Start position to distribute circles evenly across full width
+    const startX = spacing;
+    const startY = spacing;
+    
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        const i = row * columns + col;
+        
+        // Calculate center position of each circle
+        const x = startX + col * (circleSize + spacing) + circleSize / 2;
+        const y = startY + row * (circleSize + spacing) + circleSize / 2;
+        
+        ctx.beginPath();
+        const scale = hoveredCircle === i ? 1.1 : 1;
+        ctx.arc(x, y, (circleSize / 2) * scale, 0, Math.PI * 2);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+      }
+    }
+  }, [hoveredCircle]);
+
+  // Handle resize and initial setup
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -55,35 +88,11 @@ const Grid: FC<GridProps> = ({ slice }) => {
       const rows = estimatedRows;
       const totalCircles = rows * columns;
       
+      // Update grid dimensions
       setGridDimensions({ rows, columns, totalCircles });
       
-      drawCircles(adjustedCircleSize, spacing, rows, columns);
-    };
-
-    const drawCircles = (circleSize: number, spacing: number, rows: number, columns: number) => {
-      if (!ctx || !canvas) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Start position to distribute circles evenly across full width
-      const startX = spacing;
-      const startY = spacing;
-      
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-          const i = row * columns + col;
-          
-          // Calculate center position of each circle
-          const x = startX + col * (circleSize + spacing) + circleSize / 2;
-          const y = startY + row * (circleSize + spacing) + circleSize / 2;
-          
-          ctx.beginPath();
-          const scale = hoveredCircle === i ? 1.1 : 1;
-          ctx.arc(x, y, (circleSize / 2) * scale, 0, Math.PI * 2);
-          ctx.fillStyle = 'white';
-          ctx.fill();
-        }
-      }
+      // Draw circles
+      drawCircles(ctx, canvas, adjustedCircleSize, spacing, rows, columns);
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -91,7 +100,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      const { columns } = gridDimensions;
+      const { columns, totalCircles } = gridDimensions;
       
       // Use same spacing and size calculations as in drawCircles
       const spacing = 10; 
@@ -104,7 +113,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
       
       let hovered = null;
       
-      for (let i = 0; i < gridDimensions.totalCircles; i++) {
+      for (let i = 0; i < totalCircles; i++) {
         const col = i % columns;
         const row = Math.floor(i / columns);
         
@@ -134,8 +143,9 @@ const Grid: FC<GridProps> = ({ slice }) => {
       window.removeEventListener('resize', handleResize);
       canvas.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [hoveredCircle, gridDimensions]);
+  }, [drawCircles]); // Only depend on the drawCircles function
 
+  // Redraw when hover state changes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -145,41 +155,17 @@ const Grid: FC<GridProps> = ({ slice }) => {
     
     const { rows, columns } = gridDimensions;
     
-    // Use same spacing and size calculations as in the resize handler
+    // Use same spacing and size calculations
     const spacing = 10;
     
-    const drawCircles = () => {
-      if (!ctx || !canvas) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Start position to distribute circles evenly across full width
-      const startX = spacing;
-      const startY = spacing;
-      
-      // Adjust circle size to ensure they fill the full width
-      const adjustedCellWidth = (canvas.width - (spacing * 2)) / columns;
-      const adjustedCircleSize = adjustedCellWidth - spacing;
-      
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-          const i = row * columns + col;
-          
-          // Calculate center position of each circle
-          const x = startX + col * (adjustedCircleSize + spacing) + adjustedCircleSize / 2;
-          const y = startY + row * (adjustedCircleSize + spacing) + adjustedCircleSize / 2;
-          
-          ctx.beginPath();
-          const scale = hoveredCircle === i ? 1.1 : 1;
-          ctx.arc(x, y, (adjustedCircleSize / 2) * scale, 0, Math.PI * 2);
-          ctx.fillStyle = 'white';
-          ctx.fill();
-        }
-      }
-    };
-
-    drawCircles();
-  }, [hoveredCircle, gridDimensions]);
+    // Adjust circle size to ensure they fill the full width
+    const adjustedCellWidth = (canvas.width - (spacing * 2)) / columns;
+    const adjustedCircleSize = adjustedCellWidth - spacing;
+    
+    // Draw circles with current state
+    drawCircles(ctx, canvas, adjustedCircleSize, spacing, rows, columns);
+    
+  }, [hoveredCircle, gridDimensions, drawCircles]);
 
   return (
     <section
