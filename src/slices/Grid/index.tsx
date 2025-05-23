@@ -26,17 +26,60 @@ const Grid: FC<GridProps> = ({ slice }) => {
     // Spacing between circles in pixels
     SPACING: 10,
     
-    // Circle color
-    CIRCLE_COLOR: 'white'
+    // Circle colors
+    COLORS: {
+      DEFAULT: 'white',
+      BLUE: 'black' // Using black as requested
+    },
+    
+    // Percentage of blue circles when toggle is false (20%)
+    BLUE_PERCENTAGE_OFF: 20,
+    
+    // Percentage of blue circles when toggle is true (60%)
+    BLUE_PERCENTAGE_ON: 60
   }), []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredCircle, setHoveredCircle] = useState<number | null>(null);
+  const [toggleOn, setToggleOn] = useState(false);
+  
+  // Store all indices in a randomized but consistent order
+  const [randomizedIndices, setRandomizedIndices] = useState<number[]>([]);
+  
   const [gridDimensions, setGridDimensions] = useState({ 
     rows: 0, 
     columns: CONFIG.COLUMNS, 
     totalCircles: 0 
   });
+  
+  // Generate initial random order of indices (only once)
+  const initializeRandomIndices = useCallback((totalCircles: number) => {
+    // Only initialize if not already done or if total changes
+    if (randomizedIndices.length !== totalCircles) {
+      // Create array of all possible indices
+      const allIndices = Array.from({ length: totalCircles }, (_, i) => i);
+      
+      // Shuffle array (once)
+      for (let i = allIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
+      }
+      
+      setRandomizedIndices(allIndices);
+      return allIndices;
+    }
+    
+    return randomizedIndices;
+  }, [randomizedIndices]);
+
+  // Get the set of blue indices based on toggle state
+  const getBlueIndices = useCallback((indices: number[], totalCircles: number) => {
+    const percentage = toggleOn ? CONFIG.BLUE_PERCENTAGE_ON : CONFIG.BLUE_PERCENTAGE_OFF;
+    const count = Math.floor(totalCircles * (percentage / 100));
+    
+    // Take first 'count' elements from our consistent randomized array
+    return new Set(indices.slice(0, count));
+  }, [toggleOn, CONFIG.BLUE_PERCENTAGE_ON, CONFIG.BLUE_PERCENTAGE_OFF]);
 
   // Define drawCircles as a memoized function to avoid recreating it on each render
   const drawCircles = useCallback((
@@ -45,7 +88,8 @@ const Grid: FC<GridProps> = ({ slice }) => {
     circleSize: number, 
     spacing: number, 
     rows: number, 
-    columns: number
+    columns: number,
+    blueIndicesSet: Set<number>
   ) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -59,17 +103,52 @@ const Grid: FC<GridProps> = ({ slice }) => {
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
+        const index = row * columns + col;
+        
         // Calculate center position of each circle to span full width
         const x = (col * columnWidth) + (columnWidth / 2);
         const y = spacing + row * (adjustedCircleSize + spacing) + adjustedCircleSize / 2;
         
         ctx.beginPath();
         ctx.arc(x, y, adjustedCircleSize / 2, 0, Math.PI * 2);
-        ctx.fillStyle = CONFIG.CIRCLE_COLOR;
+        
+        // Set color based on whether this circle is in the blue indices
+        ctx.fillStyle = blueIndicesSet.has(index) ? CONFIG.COLORS.BLUE : CONFIG.COLORS.DEFAULT;
         ctx.fill();
       }
     }
-  }, [CONFIG.CIRCLE_COLOR]);
+  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT]);
+
+  // Handle toggle button click
+  const handleToggle = useCallback(() => {
+    setToggleOn(prev => !prev);
+  }, []);
+
+  // Update display when toggle changes (but keep same random indices)
+  useEffect(() => {
+    if (gridDimensions.totalCircles > 0) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const { rows, columns, totalCircles } = gridDimensions;
+          const spacing = CONFIG.SPACING;
+          const columnWidth = canvas.width / columns;
+          const adjustedCircleSize = columnWidth - spacing;
+          
+          // Use the same randomized indices but change the count
+          const indices = randomizedIndices.length === totalCircles 
+            ? randomizedIndices 
+            : initializeRandomIndices(totalCircles);
+            
+          const blueIndicesSet = getBlueIndices(indices, totalCircles);
+          
+          // Only draw the circles with updated blue percentage
+          drawCircles(ctx, canvas, adjustedCircleSize, spacing, rows, columns, blueIndicesSet);
+        }
+      }
+    }
+  }, [toggleOn, gridDimensions, CONFIG.SPACING, randomizedIndices, initializeRandomIndices, getBlueIndices, drawCircles]);
 
   // Handle resize and initial setup
   useEffect(() => {
@@ -117,8 +196,12 @@ const Grid: FC<GridProps> = ({ slice }) => {
       // Update grid dimensions
       setGridDimensions({ rows, columns, totalCircles });
       
-      // Draw circles with adjusted sizes
-      drawCircles(ctx, canvas, adjustedCircleSize, spacing, rows, columns);
+      // Make sure we have initialized our random indices
+      const indices = initializeRandomIndices(totalCircles);
+      const blueIndicesSet = getBlueIndices(indices, totalCircles);
+      
+      // Draw circles with initial blue indices
+      drawCircles(ctx, canvas, adjustedCircleSize, spacing, rows, columns, blueIndicesSet);
     };
 
     // Handle mouse movement for potential future interaction
@@ -165,36 +248,63 @@ const Grid: FC<GridProps> = ({ slice }) => {
       window.removeEventListener('resize', handleResize);
       canvas.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [CONFIG.COLUMNS, CONFIG.SPACING, CONFIG.ASPECT_RATIO.WIDTH, CONFIG.ASPECT_RATIO.HEIGHT, drawCircles]);
+  }, [CONFIG.COLUMNS, CONFIG.SPACING, CONFIG.ASPECT_RATIO.WIDTH, CONFIG.ASPECT_RATIO.HEIGHT, drawCircles, initializeRandomIndices, getBlueIndices]);
 
   return (
-    <section
-      data-slice-type={slice.slice_type}
-      data-slice-variation={slice.variation}
-      style={{ 
-        margin: 0, 
-        padding: 0,
-        width: '100vw',
-        maxWidth: '100vw',
-        overflow: 'hidden',
-        position: 'relative',
-        left: '50%',
-        right: '50%',
-        marginLeft: '-50vw',
-        marginRight: '-50vw'
-      }}
-    >
-      <canvas 
-        ref={canvasRef} 
+    <div>
+      {/* Toggle Button */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        margin: '20px 0',
+        width: '100%' 
+      }}>
+        <button 
+          onClick={handleToggle}
+          style={{
+            backgroundColor: toggleOn ? CONFIG.COLORS.BLUE : 'white',
+            color: toggleOn ? 'white' : 'black',
+            border: `2px solid ${CONFIG.COLORS.BLUE}`,
+            padding: '10px 20px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {toggleOn ? `${CONFIG.BLUE_PERCENTAGE_ON}% Black` : `${CONFIG.BLUE_PERCENTAGE_OFF}% Black`}
+        </button>
+      </div>
+      
+      {/* Grid Section */}
+      <section
+        data-slice-type={slice.slice_type}
+        data-slice-variation={slice.variation}
         style={{ 
-          display: 'block', 
           margin: 0, 
           padding: 0,
-          width: '100%',
-          maxWidth: '100%'
+          width: '100vw',
+          maxWidth: '100vw',
+          overflow: 'hidden',
+          position: 'relative',
+          left: '50%',
+          right: '50%',
+          marginLeft: '-50vw',
+          marginRight: '-50vw'
         }}
-      />
-    </section>
+      >
+        <canvas 
+          ref={canvasRef} 
+          style={{ 
+            display: 'block', 
+            margin: 0, 
+            padding: 0,
+            width: '100%',
+            maxWidth: '100%'
+          }}
+        />
+      </section>
+    </div>
   );
 };
 
