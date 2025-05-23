@@ -27,7 +27,7 @@ const Item1Column: React.FC<Item1ColumnProps> = (props) => {
             </h3>
         )}
 
-        {props.richtext?.[0]?.text && (
+        {props.richtext && props.richtext.length > 0 && (
             <div className="">
                 <PrismicRichText field={props.richtext} />
             </div>
