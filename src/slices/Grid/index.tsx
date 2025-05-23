@@ -61,7 +61,11 @@ const Grid: FC<GridProps> = ({ slice }) => {
       SPRING_STRENGTH: 0.001,
       
       // Friction to slow down circle movement
-      FRICTION: 1
+      FRICTION: 2,
+      
+      // Vertical padding (in pixels) to add at top and bottom of canvas
+      // to ensure circles don't disappear when they move outside the grid
+      VERTICAL_PADDING: 200
     }
   }), []);
 
@@ -118,7 +122,8 @@ const Grid: FC<GridProps> = ({ slice }) => {
     columns: number,
     spacing: number,
     circleSize: number,
-    blueIndicesSet: Set<number>
+    blueIndicesSet: Set<number>,
+    gridTopOffset: number
   ) => {
     // Clean up existing engine if it exists
     if (engineRef.current) {
@@ -141,9 +146,9 @@ const Grid: FC<GridProps> = ({ slice }) => {
       for (let col = 0; col < columns; col++) {
         const index = row * columns + col;
         
-        // Calculate center position
+        // Calculate center position - adjust y position to account for top padding
         const x = (col * columnWidth) + (columnWidth / 2);
-        const y = spacing + row * (circleSize + spacing) + circleSize / 2;
+        const y = gridTopOffset + spacing + row * (circleSize + spacing) + circleSize / 2;
         
         // Create a circular body
         const body = Matter.Bodies.circle(x, y, circleSize / 2, {
@@ -314,9 +319,13 @@ const Grid: FC<GridProps> = ({ slice }) => {
       const estimatedRows = Math.floor((baseHeight - spacing) / rowHeight);
       
       // Add extra padding at the bottom to ensure last row is fully visible
-      const totalHeight = (estimatedRows * rowHeight) + (spacing * 2);
+      const gridHeight = (estimatedRows * rowHeight) + (spacing * 2);
+      
+      // Add vertical padding for circles that move outside the grid
+      const verticalPadding = CONFIG.PHYSICS.VERTICAL_PADDING;
       
       // Set canvas height to accommodate all rows plus padding
+      const totalHeight = gridHeight + (verticalPadding * 2);
       canvas.height = totalHeight;
       
       const rows = estimatedRows;
@@ -329,8 +338,8 @@ const Grid: FC<GridProps> = ({ slice }) => {
       const indices = initializeRandomIndices(totalCircles);
       const blueIndicesSet = getBlueIndices(indices, totalCircles);
       
-      // Set up physics world
-      setupPhysics(canvas, rows, columns, spacing, adjustedCircleSize, blueIndicesSet);
+      // Set up physics world - pass the top padding offset so grid starts at the right position
+      setupPhysics(canvas, rows, columns, spacing, adjustedCircleSize, blueIndicesSet, verticalPadding);
       
       // Start animation loop
       requestAnimationRef.current = requestAnimationFrame(animatePhysics);
@@ -371,7 +380,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [CONFIG.COLUMNS, CONFIG.SPACING, CONFIG.ASPECT_RATIO.WIDTH, CONFIG.ASPECT_RATIO.HEIGHT, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics]);
+  }, [CONFIG.COLUMNS, CONFIG.SPACING, CONFIG.ASPECT_RATIO.WIDTH, CONFIG.ASPECT_RATIO.HEIGHT, CONFIG.PHYSICS.VERTICAL_PADDING, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics]);
 
   return (
     <div>
