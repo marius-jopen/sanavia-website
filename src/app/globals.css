@@ -21,7 +21,7 @@ h2 {
 }
 
 h3 {
-  @apply text-base md:text-2xl font-normal leading-7 md:leading-[130%];
+  @apply text-xl md:text-2xl font-normal leading-7 md:leading-[130%];
 }
 
 h4 {
