@@ -63,8 +63,7 @@ export default function SimplePlusButton({ onClick, className = "", big = false 
     >
       <div 
         ref={iconRef} 
-        className="inline-block w-4 h-full relative"
-        style={{ transform: big ? 'scale(0.5) md:scale(1.5)' : 'none' }}
+        className={`inline-block w-4 h-full relative ${big ? 'scale-75 md:scale-150' : ''}`}
       >
         <h4>
           {/* Horizontal line (always visible) */}
