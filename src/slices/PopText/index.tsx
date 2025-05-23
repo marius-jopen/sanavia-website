@@ -7,6 +7,8 @@ import { useAccordion } from "@/components/AccordionProvider";
 import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
 import Item2ColumnsReversed from "./item-2-columns-reversed";
+import Item2ColumnsBigImage from "./item-2-columns-big-image";
+import Item2ColumnsBigImageReversed from "./item-2-columns-big-image-reversed";
 import ItemImage2Columns from "./item-image-2-columns";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 import SimplePlusButton from "@/components/SimplePlusButton";
@@ -107,6 +109,10 @@ const PopText = ({ slice }: PopTextProps) => {
                       return <Item2Columns {...item} />;
                     case '2-columns-reversed':
                       return <Item2ColumnsReversed {...item} />;
+                    case '2-columns-big-image':
+                      return <Item2ColumnsBigImage {...item} />;
+                    case '2-columns-big-image-reversed':
+                      return <Item2ColumnsBigImageReversed {...item} />;
                     case 'image-2-columns':
                       return <ItemImage2Columns {...item} />;
                     default:

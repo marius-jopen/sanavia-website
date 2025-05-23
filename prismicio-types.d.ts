@@ -507,7 +507,12 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
    * - **Documentation**: https://prismic.io/docs/field#select
    */
   styling: prismic.SelectField<
-    "1-column" | "2-columns" | "2-columns-reversed" | "image-2-columns",
+    | "1-column"
+    | "image-2-columns"
+    | "2-columns"
+    | "2-columns-reversed"
+    | "2-columns-big-image"
+    | "2-columns-big-image-reversed",
     "filled"
   >;
 

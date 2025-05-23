@@ -43,9 +43,11 @@
                   "placeholder": "",
                   "options": [
                     "1-column",
+                    "image-2-columns",
                     "2-columns",
                     "2-columns-reversed",
-                    "image-2-columns"
+                    "2-columns-big-image",
+                    "2-columns-big-image-reversed"
                   ],
                   "default_value": "1-column"
                 }
