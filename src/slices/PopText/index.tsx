@@ -8,6 +8,7 @@ import Item2Columns from "./item-2-columns";
 import Item2ColumnsReversed from "./item-2-columns-reversed";
 import ItemImage2Columns from "./item-image-2-columns";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
+import SimplePlusButton from "@/components/SimplePlusButton";
 
 /**
  * Props for `PopText`.
@@ -42,20 +43,15 @@ const PopText = ({ slice }: PopTextProps) => {
 
     return (
       <>
-        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-4 md:mr-2">
+      <div className="flex flex-row">
+        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-8 text-gray-800 mr-3 min-h-20 flex items-center">
           <PrismicRichText field={slice.primary.headline} />
         </div>
         
-        <div ref={toggleRef} className="hidden md:block">
-          <div 
-            onClick={toggle}
-            className=" bg-white rounded-full px-6 py-4 text-gray-800 mr-4 md:mr-2 hover:bg-black hover:text-white transition-all duration-200 cursor-pointer"
-          >
-            <h3>
-              {isToggled ? "Close" : "Learn more"}
-            </h3>
-          </div>
+        <div ref={toggleRef} className="h-20">
+          <SimplePlusButton />
         </div>
+      </div>
       </>
     );
   };
