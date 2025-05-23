@@ -15,7 +15,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      <body className="w-full overflow-x-hiden">
         <Header data={settings.data} />
         {children}
         <Footer data={settings.data} />

@@ -64,7 +64,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
             return (
               <div 
                 key={selectedIdx} 
-                className={`flex flex-col bg-white px-4 py-4 text-center fade-in-card ${isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
+                className={`flex flex-col bg-white px-4 py-4 text-center fade-in-card mr-4 md:mr-0 ${isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
                 style={{ animation: 'fadeIn 0.6s' }}
               >
                 <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4">

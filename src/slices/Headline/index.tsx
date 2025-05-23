@@ -15,8 +15,8 @@ export type HeadlineProps = SliceComponentProps<Content.HeadlineSlice>;
 const Headline: FC<HeadlineProps> = ({ slice }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const alignment = slice.primary.alignment === 'left' ? 'text-left' : 'text-center';
-  const headlineWidth = alignment === 'text-left' ? 'w-11/12 md:w-7/12' : 'w-8/12 mx-auto ';
-  const subHeadlineWidth = alignment === 'text-left' ? 'w-11/12 md:w-7/12' : 'w-8/12 md:w-4/12 mx-auto ';
+  const headlineWidth = alignment === 'text-left' ? 'w-full md:w-7/12' : 'md:w-8/12 mx-auto ';
+  const subHeadlineWidth = alignment === 'text-left' ? 'w-full md:w-7/12' : 'md:w-8/12 md:w-4/12 mx-auto ';
   
   useEffect(() => {
     const cleanup = setupFadeInAnimation(sectionRef.current);
@@ -25,11 +25,11 @@ const Headline: FC<HeadlineProps> = ({ slice }) => {
   
   return (
     <section ref={sectionRef} className={`${alignment} pt-4 pb-4 px-8`}>
-      <div className={`mb-8 ${headlineWidth} text-gray-800`}>
+      <div className={`md:mb-8 ${headlineWidth} text-gray-800`}>
         <PrismicRichText field={slice.primary.headline} />
       </div>
 
-      <div className={`${subHeadlineWidth} text-gray-500`}>
+      <div className={`${subHeadlineWidth} text-gray-500 pt-6 md:pt-0`}>
         <PrismicRichText field={slice.primary.sub_headline} />
       </div>
     </section>

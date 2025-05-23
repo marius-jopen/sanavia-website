@@ -36,7 +36,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       className="py-6"
     >
       <div className="">
-        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mr-4 md:mr-0">
           {slice.primary.items?.map((item, index) => {
             const isFirstInRow = index % 4 === 0;
             return (

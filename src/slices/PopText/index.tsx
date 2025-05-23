@@ -42,12 +42,17 @@ const PopText = ({ slice }: PopTextProps) => {
       headerContent={
         hasHeadline ? (
           <>
-            <div className="bg-white rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-2">
+          
+            <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-6 py-4 text-gray-800 mr-4 md:mr-2">
               <PrismicRichText field={slice.primary.headline} />
+
+              <div className="pt-5 pb-1">
+                <ToggleButton buttonText="Learn more" bgColor="bg-gray-100" py="py-1" toggledPy="py-2" />
+              </div>
             </div>
             
-            <div ref={toggleRef} className="md:block hidden">
-              <ToggleButton buttonText="Learn more" />
+            <div ref={toggleRef} className="hidden md:block">
+              <ToggleButton buttonText="Learn more" bgColor="bg-gray-100" py="py-2" toggledPy="py-3" />
             </div>
           </>
         ) : null

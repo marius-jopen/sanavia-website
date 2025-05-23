@@ -13,15 +13,15 @@ p {
 }
 
 h1 {
-  @apply text-4xl md:text-6xl font-normal leading-11 md:leading-16;
+  @apply text-2xl md:text-6xl font-normal leading-8 md:leading-16;
 }
 
 h2 {
-  @apply text-4xl md:text-5xl font-normal leading-11 md:leading-16;
+  @apply text-2xl md:text-5xl font-normal leading-8 md:leading-16;
 }
 
 h3 {
-  @apply text-2xl font-normal leading-10 md:leading-[130%];
+  @apply text-lg md:text-2xl font-normal leading-7 md:leading-[130%];
 }
 
 h4 {

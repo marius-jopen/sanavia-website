@@ -57,7 +57,7 @@ const PopButton: FC<PopButtonProps> = ({ slice }) => {
 
   return (
     <section ref={sectionRef} className="flex gap-2">
-      <div className="bg-white rounded-r-full pl-4 pr-12 pt-6 pb-6 w-fit text-gray-800 ">
+      <div className="bg-white rounded-r-full pl-4 pr-12 pt-3 md:pt-6 pb-3 md:pb-6 w-fit text-gray-800 ">
         <h2>
           {slice.primary.button?.text}
         </h2>

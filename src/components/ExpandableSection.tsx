@@ -106,7 +106,7 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
 
         <div 
           ref={contentBoxRef}
-          className="bg-white rounded-r-2xl -ml-[100px] pl-[100px] md:w-full mt-2 mr-2"
+          className="bg-white rounded-r-2xl -ml-[100px] pl-[100px] md:w-full mt-2 mr-4 md:mr-2"
           style={{ 
             display: isInitialized ? 'block' : 'none', 
             height: 0,

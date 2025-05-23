@@ -5,6 +5,10 @@ import { useToggle } from "./ExpandableSection";
 
 interface ToggleButtonProps {
   buttonText: string;
+  bgColor?: string;
+  py?: string;
+  toggledPy?: string;
+  className?: string;
 }
 
 const ANIMATION_CONFIG = {
@@ -12,7 +16,13 @@ const ANIMATION_CONFIG = {
   ease: "power2.inOut",
 } as const;
 
-const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
+const ToggleButton: React.FC<ToggleButtonProps> = ({ 
+  buttonText, 
+  bgColor = "bg-white", 
+  py = "", 
+  toggledPy = "", 
+  className = "" 
+}) => {
   const { isToggled, toggle } = useToggle();
   const buttonRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLDivElement>(null);
@@ -129,7 +139,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ buttonText }) => {
   return (
     <div 
       ref={buttonRef}
-      className="bg-white rounded-full cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all  duration-200 whitespace-nowrap overflow-hidden h-full flex items-center justify-center"
+      className={`${bgColor} ${isToggled ? toggledPy : py} rounded-full cursor-pointer text-gray-800 hover:bg-black hover:text-white transition-all duration-200 whitespace-nowrap overflow-hidden h-full flex items-center justify-center ${className}`}
       style={{ width: buttonWidth }}
       onClick={toggle}
       onMouseEnter={handleMouseEnter}

@@ -76,10 +76,10 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
     <section
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
-      className="py-6 w-10/12"
+      className="py-6 md:w-10/12 mr-4 md:mr-0"
     >
       {/* 3. Render filter buttons */}
-      <div className="flex gap-2 mb-8 justify-left">
+      <div className="hidden md:flex gap-2 mb-8 justify-left">
         {categories.map((cat, idx) => (
           <button
             key={cat}
