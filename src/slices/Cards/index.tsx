@@ -66,21 +66,6 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
           })}
         </div>
       </div>
-
-      <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
-        {selectedItem && (
-          <div className="p-8">
-            {selectedItem.headline && (
-              <h2 className="text-2xl font-bold mb-4">{selectedItem.headline}</h2>
-            )}
-            {selectedItem.text && (
-              <div className="text-gray-600">
-                <PrismicRichText field={selectedItem.text} />
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
     </section>
   );
 };
