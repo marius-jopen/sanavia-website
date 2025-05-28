@@ -446,31 +446,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
   }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile]);
 
   return (
-    <div>
-      {/* Toggle Button */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        margin: '20px 0',
-        width: '100%' 
-      }}>
-        <button 
-          onClick={handleToggle}
-          style={{
-            backgroundColor: toggleState ? CONFIG.COLORS.BLUE : 'white',
-            color: toggleState ? 'white' : 'black',
-            border: `2px solid ${CONFIG.COLORS.BLUE}`,
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          {toggleState ? `${CONFIG.BLUE_PERCENTAGE_ON}% Black` : `${CONFIG.BLUE_PERCENTAGE_OFF}% Black`}
-        </button>
-      </div>
-      
+    <div>      
       {/* Grid Section */}
       <section
         data-slice-type={slice.slice_type}
@@ -488,6 +464,31 @@ const Grid: FC<GridProps> = ({ slice }) => {
           marginRight: '-50vw'
         }}
       >
+        {/* Toggle Button - positioned above the circles */}
+        <button 
+          onClick={handleToggle}
+          className={`
+            bg-white text-black hover:bg-black hover:text-white
+            pl-6 pr-10 py-6
+            rounded-r-full
+            cursor-pointer
+            font-bold
+            transition-all duration-300 ease-in-out
+            focus:outline-none
+            cursor-pointer
+            z-20
+            absolute
+            left-0
+          `}
+          style={{
+            top: `${CONFIG.PHYSICS.VERTICAL_PADDING - 150}px` // Position 60px above where circles start
+          }}
+        >
+          <h2>
+            {toggleState ? `Our solution` : `The problem`}
+          </h2>
+        </button>
+        
         <canvas 
           ref={canvasRef} 
           style={{ 
