@@ -213,7 +213,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
     isInitializedRef.current = true;
     
     return engine;
-  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION.DESKTOP, isMobile]);
+  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION.DESKTOP, CONFIG.PHYSICS.FRICTION.MOBILE, isMobile]);
   
   // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
