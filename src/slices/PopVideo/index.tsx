@@ -23,7 +23,7 @@ const PopVideo: FC<PopVideoProps> = ({ slice }) => {
 
   return (
     <section ref={sectionRef} className="w-full mb-4">
-      <div className="relative w-10/12 rounded-r-2xl overflow-hidden">
+      <div className="relative md:w-10/12 rounded-r-2xl overflow-hidden mr-4">
         <VideoBasic
           url={slice.primary.video_url || undefined}
           poster={slice.primary.poster}

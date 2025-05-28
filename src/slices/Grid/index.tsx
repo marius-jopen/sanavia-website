@@ -469,7 +469,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
           onClick={handleToggle}
           className={`
             bg-white text-black hover:bg-black hover:text-white
-            pl-6 pr-10 py-6
+            pl-6 pr-10 py-3 md:py-6
             rounded-r-full
             cursor-pointer
             font-bold
@@ -481,7 +481,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
             left-0
           `}
           style={{
-            top: `${CONFIG.PHYSICS.VERTICAL_PADDING - 150}px` // Position 60px above where circles start
+            top: `${CONFIG.PHYSICS.VERTICAL_PADDING - (isMobile ? 80 : 150)}px` // Closer on mobile
           }}
         >
           <h2>
