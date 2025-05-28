@@ -44,7 +44,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
       // Mobile: 9:16 is portrait
       MOBILE: {
         WIDTH: 9,
-        HEIGHT: 16
+        HEIGHT: 5
       }
     },
     
