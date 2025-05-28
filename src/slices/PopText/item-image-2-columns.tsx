@@ -13,7 +13,7 @@ interface ItemImage2ColumnsProps {
 
 const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
   return (
-    <div className="pop-text-one-column py-4">
+    <div className="pop-text-one-column md:py-4">
       {props.image && (
         <div className='pb-8'>
           <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" />

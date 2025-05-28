@@ -13,7 +13,7 @@ interface Item2ColumnsBigImageReversedProps {
 
 const Item2ColumnsBigImageReversed: React.FC<Item2ColumnsBigImageReversedProps> = (props) => {
   return (
-    <div className="pop-text-one-column flex gap-8 flex-row-reverse py-4">
+    <div className="pop-text-one-column flex gap-8 flex-row-reverse md:py-4">
       {props.image && (
         <div className='w-7/12 flex justify-center flex-col'>
           <PrismicNextImage className="rounded-lg" field={props.image} fallbackAlt="" />
