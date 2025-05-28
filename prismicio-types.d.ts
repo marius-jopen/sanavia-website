@@ -121,6 +121,7 @@ export type HeaderDocument<Lang extends string = string> =
   >;
 
 type PageDocumentDataSlicesSlice =
+  | CardsSlice
   | AboutUsSlice
   | SpaceSlice
   | TeamAdvancedSlice
@@ -309,6 +310,73 @@ export type AboutUsSlice = prismic.SharedSlice<
   "about_us",
   AboutUsSliceVariation
 >;
+
+/**
+ * Item in *Cards → Default → Primary → Items*
+ */
+export interface CardsSliceDefaultPrimaryItemsItem {
+  /**
+   * Headline field in *Cards → Default → Primary → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: cards.default.primary.items[].headline
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  headline: prismic.KeyTextField;
+
+  /**
+   * Text field in *Cards → Default → Primary → Items*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: cards.default.primary.items[].text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  text: prismic.RichTextField;
+}
+
+/**
+ * Primary content in *Cards → Default → Primary*
+ */
+export interface CardsSliceDefaultPrimary {
+  /**
+   * Items field in *Cards → Default → Primary*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: cards.default.primary.items[]
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  items: prismic.GroupField<Simplify<CardsSliceDefaultPrimaryItemsItem>>;
+}
+
+/**
+ * Default variation for Cards Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CardsSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<CardsSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *Cards*
+ */
+type CardsSliceVariation = CardsSliceDefault;
+
+/**
+ * Cards Shared Slice
+ *
+ * - **API ID**: `cards`
+ * - **Description**: Cards
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
 
 /**
  * Default variation for Grid Slice
@@ -1039,6 +1107,11 @@ declare module "@prismicio/client" {
       AboutUsSliceDefaultPrimary,
       AboutUsSliceVariation,
       AboutUsSliceDefault,
+      CardsSlice,
+      CardsSliceDefaultPrimaryItemsItem,
+      CardsSliceDefaultPrimary,
+      CardsSliceVariation,
+      CardsSliceDefault,
       GridSlice,
       GridSliceVariation,
       GridSliceDefault,
