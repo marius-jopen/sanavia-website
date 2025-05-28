@@ -3,7 +3,6 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
-import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 /**
@@ -19,7 +18,6 @@ export type CardsProps = SliceComponentProps<Content.CardsSlice> & {
  */
 const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
-  const [selectedItem, setSelectedItem] = useState<Content.CardsSlice['primary']['items'][0] | null>(null);
 
   useEffect(() => {
     if (!gridRef.current || !enableAnimation) return;
