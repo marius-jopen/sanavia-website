@@ -1,23 +1,85 @@
 "use client"
 import { PrismicNextLink } from "@prismicio/next";
-import { useState } from "react";
-import { LinkField } from "@prismicio/client";
+import { useState, useEffect, useRef } from "react";
+import { LinkField, ImageField } from "@prismicio/client";
+import { gsap } from "gsap";
+import Logo from "./Logo";
 
 type MobileNavProps = {
   links: { text: string; link: LinkField }[];
   cta?: LinkField;
+  logo?: ImageField;
 };
 
-export default function MobileNav({ links, cta }: MobileNavProps) {
+export default function MobileNav({ links, cta, logo }: MobileNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const linksRef = useRef<HTMLDivElement[]>([]);
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (!isMobileMenuOpen) {
+      setIsMobileMenuOpen(true);
+    } else {
+      closeMobileMenu();
+    }
   };
 
   const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
+    if (overlayRef.current && menuRef.current) {
+      // Animate out
+      const tl = gsap.timeline({
+        onComplete: () => setIsMobileMenuOpen(false)
+      });
+      
+      tl.to(linksRef.current, {
+        opacity: 0,
+        y: -20,
+        duration: 0.2,
+        stagger: 0.05
+      })
+      .to(menuRef.current, {
+        opacity: 0,
+        y: -30,
+        duration: 0.3
+      }, "-=0.1")
+      .to(overlayRef.current, {
+        opacity: 0,
+        duration: 0.2
+      }, "-=0.2");
+    }
   };
+
+  // Animate in when menu opens
+  useEffect(() => {
+    if (isMobileMenuOpen && overlayRef.current && menuRef.current) {
+      // Set initial states
+      gsap.set(overlayRef.current, { opacity: 0 });
+      gsap.set(menuRef.current, { opacity: 0, y: -30 });
+      gsap.set(linksRef.current, { opacity: 0, y: -20 });
+
+      // Animate in
+      const tl = gsap.timeline();
+      
+      tl.to(overlayRef.current, {
+        opacity: 1,
+        duration: 0.3
+      })
+      .to(menuRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.4,
+        ease: "power2.out"
+      }, "-=0.1")
+      .to(linksRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        stagger: 0.1,
+        ease: "power2.out"
+      }, "-=0.2");
+    }
+  }, [isMobileMenuOpen]);
 
   return (
     <div className="md:hidden">
@@ -34,29 +96,31 @@ export default function MobileNav({ links, cta }: MobileNavProps) {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50" onClick={closeMobileMenu}>
-          <div className="fixed inset-0 bg-white shadow-lg transform transition-transform duration-300 flex flex-col">
-            {/* Close button */}
-            <div className="flex justify-end p-4">
-              <button
-                onClick={closeMobileMenu}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
-                aria-label="Close menu"
-              >
-                <span className="text-2xl">&times;</span>
-              </button>
-            </div>
-            
+        <div 
+          ref={overlayRef}
+          className="fixed inset-0 z-40" 
+          onClick={closeMobileMenu}
+        >
+          {/* Fixed Logo when menu is open */}
+            {logo && <Logo logo={logo} fixed={true} enableAnimation={false} />}
+          
+          <div 
+            ref={menuRef}
+            className="fixed inset-0 bg-white shadow-lg flex flex-col"
+          >
             {/* Mobile Navigation Links */}
-            <nav className="px-4 pb-4 flex-1">
+            <nav className="px-4 pb-4 flex-1 pt-20">
               {links.map((link, index) => (
                 <div 
+                  ref={(el) => {
+                    if (el) linksRef.current[index] = el;
+                  }}
                   className="mb-2 mt-2"
                   key={index}
                 >
                   <PrismicNextLink 
                     field={link.link}
-                    className="block w-full px-4 py-3 bg-gray-50 rounded-2xl hover:bg-black hover:text-white transition-colors"
+                    className="block w-full px-4 py-3 bg-gray-50 rounded-2xl hover:bg-black hover:text-white transition-colors text-center text-lg"
                     onClick={closeMobileMenu}
                   >
                     {link.text}

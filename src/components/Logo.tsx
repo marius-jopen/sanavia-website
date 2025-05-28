@@ -8,9 +8,10 @@ import Link from "next/link";
 type LogoProps = {
   logo?: ImageField;
   enableAnimation?: boolean;
+  fixed?: boolean;
 };
 
-export default function Logo({ logo, enableAnimation = true }: LogoProps) {
+export default function Logo({ logo, enableAnimation = true, fixed = false }: LogoProps) {
   const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,7 +24,13 @@ export default function Logo({ logo, enableAnimation = true }: LogoProps) {
 
   return (
     <Link href="/">
-      <div ref={logoRef} className="mt-4 mb-2 rounded-r-2xl pl-8 pt-3 pb-4 w-40 pr-5 bg-white">
+      <div 
+        ref={logoRef} 
+        className={`
+          rounded-r-2xl pl-4 pt-3 pb-4 w-34 pr-5 bg-white
+          ${fixed ? 'fixed top-4 left-0 z-50' : 'mt-4 mb-2'}
+        `}
+      >
         <PrismicNextImage field={logo} fallbackAlt="" />
       </div>
     </Link>

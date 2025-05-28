@@ -31,7 +31,7 @@ export default function Header({ data }: HeaderProps) {
             />
 
             {/* Mobile Navigation */}
-            <MobileNav links={navigationLinks} cta={data.cta} />
+            <MobileNav links={navigationLinks} cta={data.cta} logo={data.logo} />
         </div>
     </header>
   );
