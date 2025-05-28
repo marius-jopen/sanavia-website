@@ -23,7 +23,7 @@ export default function Navigation({ links, enableStagger = true, enableAnimatio
   }, [enableStagger, enableAnimation]);
 
   return (
-    <nav ref={navRef} className="flex gap-1 mb-2">
+    <nav ref={navRef} className="hidden md:flex gap-1 mb-2">
       {links.map((link, index) => (
         <div 
           className={`${
