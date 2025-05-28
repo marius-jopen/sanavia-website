@@ -66,7 +66,10 @@ const Grid: FC<GridProps> = ({ slice }) => {
     // Physics configuration
     PHYSICS: {
       // How strongly circles are repelled by the mouse
-      REPULSION_STRENGTH: 0.1,
+      REPULSION_STRENGTH: {
+        DESKTOP: 0.1,
+        MOBILE: 0.15
+      },
       
       // Maximum distance that the mouse affects circles
       REPULSION_RADIUS: {
@@ -75,10 +78,16 @@ const Grid: FC<GridProps> = ({ slice }) => {
       },
       
       // How quickly circles return to their original positions
-      SPRING_STRENGTH: 0.001,
+      SPRING_STRENGTH: {
+        DESKTOP: 0.001,
+        MOBILE: 0.0002
+      },
       
       // Friction to slow down circle movement
-      FRICTION: 2,
+      FRICTION: {
+        DESKTOP: 2,
+        MOBILE: 2.2
+      },
       
       // Vertical padding (in pixels) to add at top and bottom of canvas
       // to ensure circles don't disappear when they move outside the grid
@@ -179,7 +188,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
         // Create a circular body
         const body = Matter.Bodies.circle(x, y, circleSize / 2, {
           isStatic: false,
-          friction: CONFIG.PHYSICS.FRICTION,
+          friction: isMobile ? CONFIG.PHYSICS.FRICTION.MOBILE : CONFIG.PHYSICS.FRICTION.DESKTOP,
           restitution: 0.3,
           frictionAir: 0.03
         });
@@ -204,7 +213,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
     isInitializedRef.current = true;
     
     return engine;
-  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION]);
+  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION.DESKTOP, isMobile]);
   
   // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
@@ -245,11 +254,15 @@ const Grid: FC<GridProps> = ({ slice }) => {
     if (mousePositionRef.current) {
       const { x: mouseX, y: mouseY, active } = mousePositionRef.current;
       const circles = circlesRef.current;
-      const repulsionStrength = CONFIG.PHYSICS.REPULSION_STRENGTH;
+      const repulsionStrength = isMobile ? 
+        CONFIG.PHYSICS.REPULSION_STRENGTH.MOBILE : 
+        CONFIG.PHYSICS.REPULSION_STRENGTH.DESKTOP;
       const repulsionRadius = isMobile ? 
         CONFIG.PHYSICS.REPULSION_RADIUS.MOBILE : 
         CONFIG.PHYSICS.REPULSION_RADIUS.DESKTOP;
-      const springStrength = CONFIG.PHYSICS.SPRING_STRENGTH;
+      const springStrength = isMobile ? 
+        CONFIG.PHYSICS.SPRING_STRENGTH.MOBILE : 
+        CONFIG.PHYSICS.SPRING_STRENGTH.DESKTOP;
       
       for (const circle of circles) {
         const { body, originalPosition } = circle;
@@ -404,10 +417,30 @@ const Grid: FC<GridProps> = ({ slice }) => {
       // Update mouse position for physics simulation with active flag
       mousePositionRef.current = { x, y, active: true };
     };
+
+    // Handle touch movement
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // Prevent scrolling
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      
+      // Update position for physics simulation with active flag
+      mousePositionRef.current = { x, y, active: true };
+    };
     
     // Handle mouse leaving the canvas
     const handleMouseLeave = () => {
       // Instead of setting to null, we keep the last position but mark as inactive
+      if (mousePositionRef.current) {
+        mousePositionRef.current.active = false;
+      }
+    };
+
+    // Handle touch end
+    const handleTouchEnd = () => {
+      // Mark as inactive when touch ends
       if (mousePositionRef.current) {
         mousePositionRef.current.active = false;
       }
@@ -421,10 +454,24 @@ const Grid: FC<GridProps> = ({ slice }) => {
       }
     };
 
+    // Handle touch start
+    const handleTouchStart = (e: TouchEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      
+      // Set initial touch position and mark as active
+      mousePositionRef.current = { x, y, active: true };
+    };
+
     window.addEventListener('resize', handleResize);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
     canvas.addEventListener('mouseenter', handleMouseEnter);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchstart', handleTouchStart);
     
     handleResize();
     
@@ -442,6 +489,9 @@ const Grid: FC<GridProps> = ({ slice }) => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
       canvas.removeEventListener('mouseenter', handleMouseEnter);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchstart', handleTouchStart);
     };
   }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile]);
 
