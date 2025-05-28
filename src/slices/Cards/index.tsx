@@ -30,9 +30,7 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
     });
   }, [enableStagger, enableAnimation]);
 
-  const handleItemClick = (item: Content.CardsSlice['primary']['items'][0]) => {
-    setSelectedItem(item);
-  };
+
 
   return (
     <section
@@ -54,20 +52,7 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
                 tabIndex={0}
            
               >
-              {/* <div 
-                key={index} 
-                className={`flex flex-col bg-white px-4 py-4 cursor-pointer transition-all duration-300 hover:cursor-pointer ${
-                  isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
-                }`}
-                onClick={() => handleItemClick(item)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    handleItemClick(item);
-                  }
-                }}
-              > */}
+
                 {item.headline && (
                   <h3 className="pt-2 pb-10 text-xl font-bold mb-2">{item.headline}</h3>
                 )}
