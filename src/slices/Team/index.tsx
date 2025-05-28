@@ -1,9 +1,10 @@
 "use client"
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import VideoBasic from "@/components/VideoBasic";
+import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 /**
@@ -19,6 +20,7 @@ export type TeamProps = SliceComponentProps<Content.TeamSlice> & {
  */
 const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
+  const [selectedItem, setSelectedItem] = useState<Content.TeamSlice['primary']['items'][0] | null>(null);
 
   useEffect(() => {
     if (!gridRef.current || !enableAnimation) return;
@@ -28,6 +30,10 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       ease: "power2.out"
     });
   }, [enableStagger, enableAnimation]);
+
+  const handleItemClick = (item: Content.TeamSlice['primary']['items'][0]) => {
+    setSelectedItem(item);
+  };
 
   return (
     <section
@@ -42,9 +48,17 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
             return (
               <div 
                 key={index} 
-                className={`flex flex-col bg-white px-4 py-4 text-center ${
+                className={`flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
                   isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
                 }`}
+                onClick={() => handleItemClick(item)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleItemClick(item);
+                  }
+                }}
               >
                 <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4">
                   <VideoBasic
@@ -65,6 +79,27 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
           })}
         </div>
       </div>
+
+      <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
+        {selectedItem && (
+          <div className="p-8">
+            <div className="overflow-hidden rounded-2xl aspect-[16/9] mb-6">
+              <VideoBasic
+                url={selectedItem.video_url || undefined}
+                poster={selectedItem.image}
+              />
+            </div>
+            {selectedItem.headline && (
+              <h2 className="text-2xl font-bold mb-4">{selectedItem.headline}</h2>
+            )}
+            {selectedItem.richtext && (
+              <div className="text-gray-600">
+                <PrismicRichText field={selectedItem.richtext} />
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </section>
   );
 };

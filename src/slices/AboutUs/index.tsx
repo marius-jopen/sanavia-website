@@ -4,7 +4,7 @@ import { Content, KeyTextField, ImageField, RichTextField } from "@prismicio/cli
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import VideoBasic from "@/components/VideoBasic";
-import SimplePlusButton from "@/components/SimplePlusButton";
+import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 type AboutUsItem = {
@@ -24,33 +24,6 @@ export type AboutUsProps = SliceComponentProps<Content.AboutUsSlice> & {
 };
 
 const categories = ["All", "Why", "What", "How", "Who", "The Team"];
-
-const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="relative">
-          <div className="absolute top-0 -right-12 z-10 w-10 h-10">
-            <SimplePlusButton 
-              onClick={onClose}
-              isActive={true}
-              className="w-full h-full"
-            />
-          </div>
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /**
  * Component for "AboutUs" Slices.
