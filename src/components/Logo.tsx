@@ -27,7 +27,7 @@ export default function Logo({ logo, enableAnimation = true, fixed = false }: Lo
       <div 
         ref={logoRef} 
         className={`
-          rounded-r-2xl pl-8 pt-3 pb-4 w-34 pr-5 bg-white
+          rounded-r-2xl pl-8 pt-3 pb-4 w-40 pr-5 bg-white
           ${fixed ? 'fixed top-4 left-0 z-50' : 'mt-4 mb-2'}
         `}
       >
