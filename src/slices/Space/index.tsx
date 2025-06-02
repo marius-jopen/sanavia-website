@@ -15,7 +15,7 @@ const heightMap = {
   "s": "h-2 md:h-16", 
   "m": "h-2 md:h-24",
   "lg": "h-4 md:h-32",
-  "xl": "h-8 md:h-52",
+  "xl": "h-24 md:h-52",
   "2xl": "h-40 md:h-64",
 };
 

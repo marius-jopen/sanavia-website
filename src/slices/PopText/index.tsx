@@ -46,7 +46,7 @@ const PopText = ({ slice }: PopTextProps) => {
     return (
       <>
       <div className="flex flex-row">
-        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-4 pr-8 text-gray-800 mr-3 min-h-20 flex items-center pt-4 md:pt-2 pb-4 md:pb-2">
+        <div className="bg-white rounded-r-2xl md:rounded-r-full pl-8 pr-8 text-gray-800 mr-3 min-h-20 flex items-center pt-4 md:pt-2 pb-4 md:pb-2">
           <PrismicRichText field={slice.primary.headline} />
         </div>
         

@@ -49,7 +49,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
               <div 
                 key={index} 
                 className={`flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
-                  isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
+                  isFirstInRow ? 'pl-8 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
                 }`}
                 onClick={() => handleItemClick(item)}
                 role="button"

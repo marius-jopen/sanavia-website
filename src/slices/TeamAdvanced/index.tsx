@@ -54,7 +54,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
                     : [index, ...prev]
                 );
               }}
-              className={`py-2 bg-white hover:bg-black hover:text-white duration-200 px-6 whitespace-nowrap flex-shrink-0 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'} ${index === slice.primary.items.length - 1 ? 'mr-4' : ''}`}
+              className={`py-2 bg-white hover:bg-black hover:text-white duration-200 px-8 whitespace-nowrap flex-shrink-0 ${index < 1 ? ' rounded-l-0 rounded-r-full' : 'rounded-l-full rounded-r-full'} ${index === slice.primary.items.length - 1 ? 'mr-4' : ''}`}
             >
               {item.headline}
             </button>
@@ -69,7 +69,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
             return (
               <div 
                 key={selectedIdx} 
-                className={`flex flex-col bg-white px-4 py-4 text-center fade-in-card mr-4 md:mr-0 cursor-pointer transition-all duration-300 hover:cursor-pointer ${isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
+                className={`flex flex-col bg-white px-4 py-4 text-center fade-in-card mr-4 md:mr-0 cursor-pointer transition-all duration-300 hover:cursor-pointer ${isFirstInRow ? 'pl-8 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
                 style={{ animation: 'fadeIn 0.6s' }}
                 onClick={() => handleItemClick(item)}
                 role="button"
