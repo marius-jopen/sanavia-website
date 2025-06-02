@@ -20,15 +20,19 @@ export default function Header({ data }: HeaderProps) {
     <header>
         <Cta cta={data.cta} />
 
-        <div className="fixed z-50 w-full">
-            <Logo logo={data.logo} enableAnimation={false} />
+        <div>
+            <div className="fixed z-50 top-0">
+                <Logo logo={data.logo} enableAnimation={false} />
+            </div>
 
             {/* Desktop Navigation */}
-            <Navigation 
-              enableStagger={false} 
-              enableAnimation={false}
-              links={navigationLinks} 
-            />
+            <div className="fixed z-50 top-0 mt-20">
+              <Navigation 
+                enableStagger={false} 
+                enableAnimation={false}
+                links={navigationLinks} 
+              />
+            </div>
 
             {/* Mobile Navigation */}
             <MobileNav links={navigationLinks} cta={data.cta} logo={data.logo} />
