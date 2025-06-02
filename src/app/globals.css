@@ -13,7 +13,7 @@ p {
 }
 
 h1 {
-  @apply text-2xl md:text-6xl font-normal leading-8 md:leading-16;
+  @apply text-3xl md:text-6xl font-normal leading-9 md:leading-16;
 }
 
 h2 {
