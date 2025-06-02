@@ -20,7 +20,7 @@ export default function Header({ data }: HeaderProps) {
     <header>
         <Cta cta={data.cta} />
 
-        <div>
+        <div className="fixed z-50 w-full">
             <Logo logo={data.logo} enableAnimation={false} />
 
             {/* Desktop Navigation */}

@@ -23,7 +23,7 @@ export type AboutUsProps = SliceComponentProps<Content.AboutUsSlice> & {
   enableAnimation?: boolean;
 };
 
-const categories = ["All", "Why", "What", "How", "Who", "The Team"];
+const categories = ["All", "Why", "What", "How", "Who"];
 
 /**
  * Component for "AboutUs" Slices.

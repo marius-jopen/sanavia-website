@@ -8,15 +8,15 @@ import { SliceComponentProps } from "@prismicio/react";
 export type SpaceProps = SliceComponentProps<Content.SpaceSlice>;
 
 /**
- * Height mapping for different sizes
+ * Height mapping for different sizes using Tailwind responsive classes
  */
 const heightMap = {
-  "xs": { desktop: "h-8", mobile: "h-4" },
-  "s": { desktop: "h-16", mobile: "h-8" },
-  "m": { desktop: "h-24", mobile: "h-8" },
-  "lg": { desktop: "h-32", mobile: "h-12" },
-  "xl": { desktop: "h-52", mobile: "h-12" },
-  "2xl": { desktop: "h-80", mobile: "h-16" },
+  "xs": "h-4 md:h-8",
+  "s": "h-8 md:h-16", 
+  "m": "h-8 md:h-24",
+  "lg": "h-12 md:h-32",
+  "xl": "h-12 md:h-52",
+  "2xl": "h-16 md:h-64",
 };
 
 /**
@@ -24,13 +24,13 @@ const heightMap = {
  */
 const Space: FC<SpaceProps> = ({ slice }) => {
   const height = slice.primary.height || "m";
-  const { desktop, mobile } = heightMap[height];
+  const heightClasses = heightMap[height];
 
   return (
     <section
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
-      className={`w-full ${mobile} md:${desktop}`}
+      className={`w-full ${heightClasses}`}
     />
   );
 };

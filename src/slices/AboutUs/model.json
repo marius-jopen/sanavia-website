@@ -58,8 +58,7 @@
                     "Why",
                     "What",
                     "How",
-                    "Who",
-                    "The Team"
+                    "Who"
                   ],
                   "default_value": "Why"
                 }

@@ -260,10 +260,7 @@ export interface AboutUsSliceDefaultPrimaryItemsItem {
    * - **API ID Path**: about_us.default.primary.items[].category
    * - **Documentation**: https://prismic.io/docs/field#select
    */
-  category: prismic.SelectField<
-    "Why" | "What" | "How" | "Who" | "The Team",
-    "filled"
-  >;
+  category: prismic.SelectField<"Why" | "What" | "How" | "Who", "filled">;
 }
 
 /**
