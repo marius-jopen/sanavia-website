@@ -1007,6 +1007,17 @@ export interface TeamAdvancedSliceDefaultPrimaryItemsItem {
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   richtext: prismic.RichTextField;
+
+  /**
+   * Autopopulate field in *TeamAdvanced → Default → Primary → Items*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: team_advanced.default.primary.items[].autopopulate
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  autopopulate: prismic.BooleanField;
 }
 
 /**

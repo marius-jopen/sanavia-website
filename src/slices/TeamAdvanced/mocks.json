@@ -64,6 +64,13 @@
 										}
 									]
 								}
+							],
+							[
+								"autopopulate",
+								{
+									"__TYPE__": "BooleanContent",
+									"value": true
+								}
 							]
 						]
 					}
