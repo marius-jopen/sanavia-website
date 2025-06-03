@@ -7,6 +7,7 @@ import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/c
 interface ItemImage2ColumnsProps {
   headline?: KeyTextField;
   richtext?: RichTextField;
+  rich_text_2?: RichTextField;
   image?: ImageField;
   button?: LinkField;
 }
