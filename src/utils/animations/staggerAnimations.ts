@@ -25,23 +25,58 @@ export const setupStaggeredAnimation = (
     y = 30,
     ease = "power2.out",
     threshold = [0, 0.1],
-    rootMargin = "0px 0px 100px 0px"
+    rootMargin = "100px 0px 100px 0px"
   } = options;
 
   const items = element.children;
+  let hasAnimated = false;
+
+  // Function to check if element is in viewport
+  const isElementVisible = () => {
+    const rect = element.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  };
+
+  // Set initial state and handle elements already in view
+  const initializeElement = () => {
+    const isVisible = isElementVisible();
+    
+    if (isVisible) {
+      // If already visible, show items immediately without animation
+      gsap.set(items, {
+        y: 0,
+        opacity: 1
+      });
+      hasAnimated = true;
+    } else {
+      // If not visible, set initial hidden state
+      gsap.set(items, { 
+        y,
+        opacity: 0
+      });
+    }
+  };
+
+  // Initialize immediately
+  initializeElement();
   
-  // Set initial state
-  gsap.set(items, { 
-    y,
-    opacity: 0
-  });
+  // Also check after a short delay to handle any layout shifts
+  setTimeout(() => {
+    if (!hasAnimated && isElementVisible()) {
+      gsap.set(items, {
+        y: 0,
+        opacity: 1
+      });
+      hasAnimated = true;
+    }
+  }, 100);
   
   // Create observer
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && entry.boundingClientRect.top > 0) {
-          // Animate with stagger
+        if (entry.isIntersecting && !hasAnimated) {
+          // Animate with stagger when element comes into view from any direction
           gsap.to(items, {
             duration,
             y: 0,
@@ -49,14 +84,22 @@ export const setupStaggeredAnimation = (
             stagger,
             ease
           });
+          hasAnimated = true;
         }
         
-        if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight) {
-          // Reset for next entry
-          gsap.set(items, { 
-            y,
-            opacity: 0
-          });
+        // Reset when element is completely out of view (either direction)
+        if (!entry.isIntersecting) {
+          const rect = entry.boundingClientRect;
+          const isCompletelyOutOfView = rect.bottom < 0 || rect.top > window.innerHeight;
+          
+          if (isCompletelyOutOfView && hasAnimated) {
+            // Reset animation state when completely out of view
+            hasAnimated = false;
+            gsap.set(items, { 
+              y,
+              opacity: 0
+            });
+          }
         }
       });
     },

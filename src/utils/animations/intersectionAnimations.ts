@@ -9,43 +9,52 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
   
   let hasAnimated = false;
 
-  // Function to check and handle visibility
-  const checkVisibility = () => {
+  // Function to check if element is in viewport
+  const isElementVisible = () => {
     const rect = element.getBoundingClientRect();
-    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  };
+
+  // Set initial state and handle elements already in view
+  const initializeElement = () => {
+    const isVisible = isElementVisible();
     
-    if (isVisible && !hasAnimated) {
-      // Set initial state only if not visible
-      gsap.set(element, { 
-        y: 30,
-        opacity: 0
-      });
-      
-      gsap.to(element, {
-        duration: 0.6,
-        y: 0,
-        opacity: 1,
-        ease: "power2.out"
-      });
-      hasAnimated = true;
-    } else if (isVisible && hasAnimated) {
-      // If already animated and visible, ensure it stays visible
+    if (isVisible) {
+      // If already visible, show it immediately without animation
       gsap.set(element, {
         y: 0,
         opacity: 1
       });
+      hasAnimated = true;
+    } else {
+      // If not visible, set initial hidden state
+      gsap.set(element, { 
+        y: 30,
+        opacity: 0
+      });
     }
   };
 
-  // Check visibility immediately and after a short delay to handle any layout shifts
-  checkVisibility();
-  setTimeout(checkVisibility, 100);
+  // Initialize immediately
+  initializeElement();
   
-  // Create observer with rootMargin that only detects bottom entries
+  // Also check after a short delay to handle any layout shifts
+  setTimeout(() => {
+    if (!hasAnimated && isElementVisible()) {
+      gsap.set(element, {
+        y: 0,
+        opacity: 1
+      });
+      hasAnimated = true;
+    }
+  }, 100);
+  
+  // Create observer with rootMargin that detects entries from both directions
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && entry.boundingClientRect.top > 0 && !hasAnimated) {
+        if (entry.isIntersecting && !hasAnimated) {
+          // Animate when element comes into view from any direction
           gsap.to(element, {
             duration: 0.6,
             y: 0,
@@ -61,18 +70,25 @@ export const setupFadeInAnimation = (element: HTMLElement | null) => {
           });
         }
         
-        // Only reset if we're scrolling down and the element is completely out of view
-        if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight && !hasAnimated) {
-          gsap.set(element, { 
-            y: 30,
-            opacity: 0
-          });
+        // Reset when element is completely out of view (either direction)
+        if (!entry.isIntersecting) {
+          const rect = entry.boundingClientRect;
+          const isCompletelyOutOfView = rect.bottom < 0 || rect.top > window.innerHeight;
+          
+          if (isCompletelyOutOfView && hasAnimated) {
+            // Reset animation state when completely out of view
+            hasAnimated = false;
+            gsap.set(element, { 
+              y: 30,
+              opacity: 0
+            });
+          }
         }
       });
     },
     { 
       threshold: [0, 0.1], 
-      rootMargin: "0px 0px 100px 0px" // Add margin to bottom of viewport
+      rootMargin: "100px 0px 100px 0px" // Add margin to top and bottom of viewport
     }
   );
   
@@ -92,19 +108,54 @@ export const setupStaggeredFadeInAnimation = (element: HTMLElement | null) => {
   if (!element) return;
   
   const items = element.children;
+  let hasAnimated = false;
+
+  // Function to check if element is in viewport
+  const isElementVisible = () => {
+    const rect = element.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  };
+
+  // Set initial state and handle elements already in view
+  const initializeElement = () => {
+    const isVisible = isElementVisible();
+    
+    if (isVisible) {
+      // If already visible, show items immediately without animation
+      gsap.set(items, {
+        y: 0,
+        opacity: 1
+      });
+      hasAnimated = true;
+    } else {
+      // If not visible, set initial hidden state
+      gsap.set(items, { 
+        y: 100,
+        opacity: 0
+      });
+    }
+  };
+
+  // Initialize immediately
+  initializeElement();
   
-  // Set initial state
-  gsap.set(items, { 
-    y: 100,
-    opacity: 0
-  });
+  // Also check after a short delay to handle any layout shifts
+  setTimeout(() => {
+    if (!hasAnimated && isElementVisible()) {
+      gsap.set(items, {
+        y: 0,
+        opacity: 1
+      });
+      hasAnimated = true;
+    }
+  }, 100);
   
   // Create observer
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && entry.boundingClientRect.top > 0) {
-          // Animate with stagger
+        if (entry.isIntersecting && !hasAnimated) {
+          // Animate with stagger when element comes into view from any direction
           gsap.to(items, {
             duration: 0.6,
             y: 0,
@@ -112,20 +163,28 @@ export const setupStaggeredFadeInAnimation = (element: HTMLElement | null) => {
             stagger: 0.2,
             ease: "power2.out"
           });
+          hasAnimated = true;
         }
         
-        if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight) {
-          // Reset for next entry
-          gsap.set(items, { 
-            y: 100,
-            opacity: 0
-          });
+        // Reset when element is completely out of view (either direction)
+        if (!entry.isIntersecting) {
+          const rect = entry.boundingClientRect;
+          const isCompletelyOutOfView = rect.bottom < 0 || rect.top > window.innerHeight;
+          
+          if (isCompletelyOutOfView && hasAnimated) {
+            // Reset animation state when completely out of view
+            hasAnimated = false;
+            gsap.set(items, { 
+              y: 100,
+              opacity: 0
+            });
+          }
         }
       });
     },
     { 
       threshold: [0, 0.1], 
-      rootMargin: "0px 0px 100px 0px"
+      rootMargin: "100px 0px 100px 0px" // Add margin to top and bottom of viewport
     }
   );
   
