@@ -5,6 +5,8 @@ import { SliceZone } from "@prismicio/react";
 
 import { createClient } from "@/prismicio";
 import { components } from "@/slices";
+import { SliceComponentProps } from "@prismicio/react";
+import { Content } from "@prismicio/client";
 
 export default async function Home() {
   const client = createClient();
@@ -16,7 +18,7 @@ export default async function Home() {
   // Create enhanced components that include settings data
   const enhancedComponents = {
     ...components,
-    grid: (props: any) => {
+    grid: (props: SliceComponentProps<Content.GridSlice>) => {
       const GridComponent = components.grid;
       return <GridComponent {...props} settings={settings.data} />;
     }

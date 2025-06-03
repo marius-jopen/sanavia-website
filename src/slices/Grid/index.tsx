@@ -9,8 +9,8 @@ import Matter from 'matter-js';
  */
 export type GridProps = SliceComponentProps<Content.GridSlice> & {
   settings?: {
-    grid_problem?: string;
-    grid_solution?: string;
+    grid_problem?: string | null;
+    grid_solution?: string | null;
   };
 };
 
@@ -48,7 +48,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         WIDTH: 16,
         HEIGHT: 9
       },
-      // Tablet: 16:6 is intermediate
+      // Tablet: 16:9 is intermediate
       TABLET: {
         WIDTH: 16,
         HEIGHT: 9
@@ -127,7 +127,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     columns: 0, 
     totalCircles: 0 
   });
-  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
 
   // Check device type based on window width
   const getDeviceType = useCallback((): 'mobile' | 'tablet' | 'desktop' => {
@@ -243,7 +242,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     isInitializedRef.current = true;
     
     return engine;
-  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION, getDeviceType]);
+  }, [CONFIG, getDeviceType]);
   
   // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
@@ -267,7 +266,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         circle.color = blueIndicesSet.has(circle.index) ? CONFIG.COLORS.BLUE : CONFIG.COLORS.DEFAULT;
       }
     }
-  }, [gridDimensions, randomizedIndices, initializeRandomIndices, getBlueIndices, CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT]);
+  }, [gridDimensions, randomizedIndices, initializeRandomIndices, getBlueIndices, CONFIG]);
 
   // Animation loop for physics simulation
   const animatePhysics = useCallback(() => {
@@ -344,7 +343,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Continue animation loop
     requestAnimationRef.current = requestAnimationFrame(animatePhysics);
-  }, [CONFIG.PHYSICS.REPULSION_STRENGTH, CONFIG.PHYSICS.REPULSION_RADIUS, CONFIG.PHYSICS.SPRING_STRENGTH, getDeviceType]);
+  }, [CONFIG, getDeviceType]);
 
   // Handle resize and initial setup - ONLY RUNS ON RESIZE or FIRST MOUNT
   useEffect(() => {
@@ -366,7 +365,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       
       // Check if mobile
       const currentDeviceType = getDeviceType();
-      setDeviceType(currentDeviceType);
       
       // Get viewport width for truly full width canvas
       const viewportWidth = window.innerWidth;
