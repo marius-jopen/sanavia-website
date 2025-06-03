@@ -2,7 +2,18 @@
 	{
 		"__TYPE__": "SharedSliceContent",
 		"variation": "default",
-		"primary": {},
+		"primary": {
+			"text_problem": {
+				"__TYPE__": "FieldContent",
+				"value": "however",
+				"type": "Text"
+			},
+			"text_solution": {
+				"__TYPE__": "FieldContent",
+				"value": "floor",
+				"type": "Text"
+			}
+		},
 		"items": []
 	}
 ]

@@ -506,7 +506,6 @@ const Grid: FC<GridProps> = ({ slice }) => {
           padding: 0,
           width: '100vw',
           maxWidth: '100vw',
-          overflow: 'hidden',
           position: 'relative',
           left: '50%',
           right: '50%',
@@ -515,29 +514,39 @@ const Grid: FC<GridProps> = ({ slice }) => {
         }}
       >
         {/* Toggle Button - positioned above the circles */}
-        <button 
-          onClick={handleToggle}
-          className={`
-            bg-white text-black hover:bg-black hover:text-white
-            pl-6 pr-10 py-3 md:py-6
-            rounded-r-full
-            cursor-pointer
-            font-bold
-            transition-all duration-300 ease-in-out
-            focus:outline-none
-            cursor-pointer
-            z-20
-            absolute
-            left-0
-          `}
-          style={{
-            top: `${CONFIG.PHYSICS.VERTICAL_PADDING - (isMobile ? 80 : 150)}px` // Closer on mobile
-          }}
+        <div
+        className="
+          z-30
+          absolute
+          left-0
+          "
+        style={{
+          top: `${CONFIG.PHYSICS.VERTICAL_PADDING - (isMobile ? 230 : 300)}px` // Closer on mobile
+        }}
         >
-          <h2>
-            {toggleState ? `Our solution` : `The problem`}
-          </h2>
-        </button>
+          <button 
+            onClick={handleToggle}
+            className={`
+              bg-white text-black hover:bg-black hover:text-white
+              pl-6 pr-10 py-3 md:py-6
+              rounded-r-full
+              cursor-pointer
+              font-bold
+              transition-all duration-300 ease-in-out
+              focus:outline-none
+              mb-2
+            `}
+
+          >
+            <h2>
+              {toggleState ? `Our solution` : `The problem`}
+            </h2>
+          </button>
+
+          <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4">
+            {toggleState ? slice.primary.text_solution : slice.primary.text_problem}
+          </div>
+        </div>
         
         <canvas 
           ref={canvasRef} 

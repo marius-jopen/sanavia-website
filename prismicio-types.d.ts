@@ -376,6 +376,31 @@ type CardsSliceVariation = CardsSliceDefault;
 export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
 
 /**
+ * Primary content in *Grid → Default → Primary*
+ */
+export interface GridSliceDefaultPrimary {
+  /**
+   * Text Problem field in *Grid → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: grid.default.primary.text_problem
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  text_problem: prismic.KeyTextField;
+
+  /**
+   * Text Solution field in *Grid → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: grid.default.primary.text_solution
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  text_solution: prismic.KeyTextField;
+}
+
+/**
  * Default variation for Grid Slice
  *
  * - **API ID**: `default`
@@ -384,7 +409,7 @@ export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
  */
 export type GridSliceDefault = prismic.SharedSliceVariation<
   "default",
-  Record<string, never>,
+  Simplify<GridSliceDefaultPrimary>,
   never
 >;
 
@@ -1120,6 +1145,7 @@ declare module "@prismicio/client" {
       CardsSliceVariation,
       CardsSliceDefault,
       GridSlice,
+      GridSliceDefaultPrimary,
       GridSliceVariation,
       GridSliceDefault,
       HeadlineSlice,
