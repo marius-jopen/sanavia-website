@@ -5,9 +5,10 @@ import { ImageField } from "@prismicio/client";
 interface VideoProps {
   url?: string;
   poster?: ImageField;
+  aspectRatio?: string;
 }
 
-const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
+const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPauseButton, setShowPauseButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -36,7 +37,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
-      <div className="relative w-full h-full">
+      <div className={`relative w-full h-full ${aspectRatio || ''}`}>
         {poster && <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />}
       </div>
     );
@@ -76,7 +77,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster }) => {
 
   return (
     <div
-      className="relative w-full group"
+      className={`relative w-full group ${aspectRatio || ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >

@@ -20,7 +20,18 @@ export type TeamAdvancedProps = SliceComponentProps<Content.TeamAdvancedSlice> &
  */
 const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  
+  // Initialize selectedIndices with autopopulated items
+  const [selectedIndices, setSelectedIndices] = useState<number[]>(() => {
+    const autopopulatedIndices: number[] = [];
+    slice.primary.items?.forEach((item, index) => {
+      if (item.autopopulate) {
+        autopopulatedIndices.push(index);
+      }
+    });
+    return autopopulatedIndices;
+  });
+  
   const [selectedItem, setSelectedItem] = useState<Content.TeamAdvancedSlice['primary']['items'][0] | null>(null);
 
   useEffect(() => {
@@ -69,8 +80,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
             return (
               <div 
                 key={selectedIdx} 
-                className={`flex flex-col bg-white px-4 py-4 text-center fade-in-card mr-4 md:mr-0 cursor-pointer transition-all duration-300 hover:cursor-pointer ${isFirstInRow ? 'pl-8 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
-                style={{ animation: 'fadeIn 0.6s' }}
+                className={`flex flex-col bg-white px-4 py-4 text-center mr-4 md:mr-0 cursor-pointer transition-all duration-300 hover:cursor-pointer ${isFirstInRow ? 'pl-8 md:-mr-4 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '}`}
                 onClick={() => handleItemClick(item)}
                 role="button"
                 tabIndex={0}
@@ -80,20 +90,23 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
                   }
                 }}
               >
-                <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4">
-                  <VideoBasic
-                    url={item.video_url || undefined}
-                    poster={item.image}
-                  />
-                </div>
-                {item.headline && (
-                  <h3 className="pt-2 pb-2 text-xl font-bold mb-2">{item.headline}</h3>
-                )}
-                {item.richtext && (
-                  <div className="px-12 text-sm text-gray-500">
-                    <PrismicRichText field={item.richtext} />
+                <div className="fade-in-card" style={{ animation: 'fadeIn 0.6s' }}>
+                  <div className={`overflow-hidden rounded-2xl mb-4 ${isFirstInRow ? 'md:w-[calc(100%+1rem)] md:-ml-4' : ''}`}>
+                    <VideoBasic
+                      url={item.video_url || undefined}
+                      poster={item.image}
+                      aspectRatio="aspect-[16/9]"
+                    />
                   </div>
-                )}
+                  {item.headline && (
+                    <h3 className="pt-2 pb-2 text-xl font-bold mb-2">{item.headline}</h3>
+                  )}
+                  {item.richtext && (
+                    <div className="px-12 text-sm text-gray-500">
+                      <PrismicRichText field={item.richtext} />
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -102,10 +115,11 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
       <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
         {selectedItem && (
           <div className="p-8">
-            <div className="overflow-hidden rounded-2xl aspect-[16/9] mb-6">
+            <div className="overflow-hidden rounded-2xl mb-6">
               <VideoBasic
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
+                aspectRatio="aspect-[16/9]"
               />
             </div>
             {selectedItem.headline && (
