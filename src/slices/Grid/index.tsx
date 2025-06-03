@@ -72,26 +72,26 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     PHYSICS: {
       // How strongly circles are repelled by the mouse
       REPULSION_STRENGTH: {
-        DESKTOP: 0.1,
+        DESKTOP: 0.2,
         MOBILE: 0.15
       },
       
       // Maximum distance that the mouse affects circles
       REPULSION_RADIUS: {
-        DESKTOP: 150,
+        DESKTOP: 100,
         MOBILE: 80
       },
       
       // How quickly circles return to their original positions
       SPRING_STRENGTH: {
-        DESKTOP: 0.001,
-        MOBILE: 0.0002
+        DESKTOP: 0.00001,
+        MOBILE: 0.00001
       },
       
       // Friction to slow down circle movement
       FRICTION: {
-        DESKTOP: 2,
-        MOBILE: 2.2
+        DESKTOP: 10,
+        MOBILE: 8
       },
       
       // Vertical padding (in pixels) to add at top and bottom of canvas
