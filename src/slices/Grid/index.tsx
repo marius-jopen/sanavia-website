@@ -30,12 +30,14 @@ type PhysicsCircle = {
 const Grid: FC<GridProps> = ({ slice, settings }) => {
   // Configuration variables - modify these to control the grid
   const CONFIG = useMemo(() => ({
-    // Mobile breakpoint
+    // Breakpoints
     MOBILE_BREAKPOINT: 768,
+    TABLET_BREAKPOINT: 1024,
     
     // Number of columns in the grid
     COLUMNS: {
       DESKTOP: 15,
+      TABLET: 12,
       MOBILE: 8
     },
     
@@ -46,7 +48,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         WIDTH: 16,
         HEIGHT: 9
       },
-      // Mobile: 9:16 is portrait
+      // Tablet: 16:6 is intermediate
+      TABLET: {
+        WIDTH: 16,
+        HEIGHT: 9
+      },
+      // Mobile: 9:5 is portrait
       MOBILE: {
         WIDTH: 9,
         HEIGHT: 5
@@ -73,24 +80,28 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       // How strongly circles are repelled by the mouse
       REPULSION_STRENGTH: {
         DESKTOP: 0.2,
+        TABLET: 0.18,
         MOBILE: 0.15
       },
       
       // Maximum distance that the mouse affects circles
       REPULSION_RADIUS: {
         DESKTOP: 100,
+        TABLET: 90,
         MOBILE: 80
       },
       
       // How quickly circles return to their original positions
       SPRING_STRENGTH: {
         DESKTOP: 0.00001,
+        TABLET: 0.00001,
         MOBILE: 0.00001
       },
       
       // Friction to slow down circle movement
       FRICTION: {
         DESKTOP: 10,
+        TABLET: 9,
         MOBILE: 8
       },
       
@@ -116,9 +127,20 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     columns: 0, 
     totalCircles: 0 
   });
-  const [isMobile, setIsMobile] = useState(false);
+  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
 
-  // Check if device is mobile based on window width
+  // Check device type based on window width
+  const getDeviceType = useCallback((): 'mobile' | 'tablet' | 'desktop' => {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < CONFIG.MOBILE_BREAKPOINT) return 'mobile';
+      if (width < CONFIG.TABLET_BREAKPOINT) return 'tablet';
+      return 'desktop';
+    }
+    return 'desktop';
+  }, [CONFIG.MOBILE_BREAKPOINT, CONFIG.TABLET_BREAKPOINT]);
+
+  // Check if device is mobile based on window width (keeping for compatibility)
   const checkIfMobile = useCallback(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < CONFIG.MOBILE_BREAKPOINT;
@@ -182,6 +204,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     const totalWidth = canvas.width;
     const columnWidth = totalWidth / columns;
     
+    const currentDeviceType = getDeviceType();
+    const friction = CONFIG.PHYSICS.FRICTION[currentDeviceType.toUpperCase() as keyof typeof CONFIG.PHYSICS.FRICTION];
+    
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         const index = row * columns + col;
@@ -193,7 +218,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         // Create a circular body
         const body = Matter.Bodies.circle(x, y, circleSize / 2, {
           isStatic: false,
-          friction: isMobile ? CONFIG.PHYSICS.FRICTION.MOBILE : CONFIG.PHYSICS.FRICTION.DESKTOP,
+          friction: friction,
           restitution: 0.3,
           frictionAir: 0.03
         });
@@ -218,7 +243,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     isInitializedRef.current = true;
     
     return engine;
-  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION.DESKTOP, CONFIG.PHYSICS.FRICTION.MOBILE, isMobile]);
+  }, [CONFIG.COLORS.BLUE, CONFIG.COLORS.DEFAULT, CONFIG.PHYSICS.FRICTION, getDeviceType]);
   
   // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
@@ -259,15 +284,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     if (mousePositionRef.current) {
       const { x: mouseX, y: mouseY, active } = mousePositionRef.current;
       const circles = circlesRef.current;
-      const repulsionStrength = isMobile ? 
-        CONFIG.PHYSICS.REPULSION_STRENGTH.MOBILE : 
-        CONFIG.PHYSICS.REPULSION_STRENGTH.DESKTOP;
-      const repulsionRadius = isMobile ? 
-        CONFIG.PHYSICS.REPULSION_RADIUS.MOBILE : 
-        CONFIG.PHYSICS.REPULSION_RADIUS.DESKTOP;
-      const springStrength = isMobile ? 
-        CONFIG.PHYSICS.SPRING_STRENGTH.MOBILE : 
-        CONFIG.PHYSICS.SPRING_STRENGTH.DESKTOP;
+      const currentDeviceType = getDeviceType();
+      const deviceKey = currentDeviceType.toUpperCase() as keyof typeof CONFIG.PHYSICS.REPULSION_STRENGTH;
+      
+      const repulsionStrength = CONFIG.PHYSICS.REPULSION_STRENGTH[deviceKey];
+      const repulsionRadius = CONFIG.PHYSICS.REPULSION_RADIUS[deviceKey];
+      const springStrength = CONFIG.PHYSICS.SPRING_STRENGTH[deviceKey];
       
       for (const circle of circles) {
         const { body, originalPosition } = circle;
@@ -322,20 +344,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Continue animation loop
     requestAnimationRef.current = requestAnimationFrame(animatePhysics);
-  }, [CONFIG.PHYSICS.REPULSION_STRENGTH, CONFIG.PHYSICS.REPULSION_RADIUS, CONFIG.PHYSICS.SPRING_STRENGTH, isMobile]);
-
-  // Update mobile state on resize
-  useEffect(() => {
-    const handleResize = () => {
-      const mobileCheck = checkIfMobile();
-      setIsMobile(mobileCheck);
-    };
-
-    handleResize(); // Check initially
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [checkIfMobile]);
+  }, [CONFIG.PHYSICS.REPULSION_STRENGTH, CONFIG.PHYSICS.REPULSION_RADIUS, CONFIG.PHYSICS.SPRING_STRENGTH, getDeviceType]);
 
   // Handle resize and initial setup - ONLY RUNS ON RESIZE or FIRST MOUNT
   useEffect(() => {
@@ -356,18 +365,17 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       isInitializedRef.current = false;
       
       // Check if mobile
-      const mobile = checkIfMobile();
-      setIsMobile(mobile);
+      const currentDeviceType = getDeviceType();
+      setDeviceType(currentDeviceType);
       
       // Get viewport width for truly full width canvas
       const viewportWidth = window.innerWidth;
       canvas.width = viewportWidth;
       
       // Use responsive values based on device type
-      const columns = mobile ? CONFIG.COLUMNS.MOBILE : CONFIG.COLUMNS.DESKTOP;
-      const aspectRatio = mobile 
-        ? CONFIG.ASPECT_RATIO.MOBILE.WIDTH / CONFIG.ASPECT_RATIO.MOBILE.HEIGHT 
-        : CONFIG.ASPECT_RATIO.DESKTOP.WIDTH / CONFIG.ASPECT_RATIO.DESKTOP.HEIGHT;
+      const columns = CONFIG.COLUMNS[currentDeviceType.toUpperCase() as keyof typeof CONFIG.COLUMNS];
+      const aspectRatioConfig = CONFIG.ASPECT_RATIO[currentDeviceType.toUpperCase() as keyof typeof CONFIG.ASPECT_RATIO];
+      const aspectRatio = aspectRatioConfig.WIDTH / aspectRatioConfig.HEIGHT;
       
       // Calculate spacing
       const spacing = CONFIG.SPACING;
@@ -498,7 +506,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       canvas.removeEventListener('touchend', handleTouchEnd);
       canvas.removeEventListener('touchstart', handleTouchStart);
     };
-  }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile]);
+  }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile, getDeviceType]);
 
   return (
     <div>      
@@ -526,7 +534,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           left-0
           "
         style={{
-          top: `${CONFIG.PHYSICS.VERTICAL_PADDING - (isMobile ? 230 : 300)}px` // Closer on mobile
+          top: `${CONFIG.PHYSICS.VERTICAL_PADDING - (checkIfMobile() ? 230 : 300)}px` // Closer on mobile
         }}
         >
           <button 
