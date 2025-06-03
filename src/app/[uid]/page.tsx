@@ -13,9 +13,21 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const { uid } = await params;
   const client = createClient();
   const page = await client.getByUID("page", uid).catch(() => notFound());
+  
+  // Fetch settings data for components that need it (like Grid)
+  const settings = await client.getSingle("header");
 
-  // <SliceZone> renders the page's slices.
-  return <SliceZone slices={page.data.slices} components={components} />;
+  // Create enhanced components that include settings data
+  const enhancedComponents = {
+    ...components,
+    grid: (props: any) => {
+      const GridComponent = components.grid;
+      return <GridComponent {...props} settings={settings.data} />;
+    }
+  };
+
+  // <SliceZone> renders the page's slices with enhanced components
+  return <SliceZone slices={page.data.slices} components={enhancedComponents} />;
 }
 
 export async function generateMetadata({

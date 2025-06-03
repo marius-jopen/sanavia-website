@@ -11,22 +11,7 @@
       "version": "initial",
       "description": "Default",
       "imageUrl": "",
-      "primary": {
-        "text_problem": {
-          "type": "Text",
-          "config": {
-            "label": "Text Problem",
-            "placeholder": ""
-          }
-        },
-        "text_solution": {
-          "type": "Text",
-          "config": {
-            "label": "Text Solution",
-            "placeholder": ""
-          }
-        }
-      },
+      "primary": {},
       "items": {}
     }
   ]

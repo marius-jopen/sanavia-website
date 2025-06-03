@@ -7,7 +7,12 @@ import Matter from 'matter-js';
 /**
  * Props for `Grid`.
  */
-export type GridProps = SliceComponentProps<Content.GridSlice>;
+export type GridProps = SliceComponentProps<Content.GridSlice> & {
+  settings?: {
+    grid_problem?: string;
+    grid_solution?: string;
+  };
+};
 
 /**
  * Circle type for physics simulation
@@ -22,7 +27,7 @@ type PhysicsCircle = {
 /**
  * Component for "Grid" Slices.
  */
-const Grid: FC<GridProps> = ({ slice }) => {
+const Grid: FC<GridProps> = ({ slice, settings }) => {
   // Configuration variables - modify these to control the grid
   const CONFIG = useMemo(() => ({
     // Mobile breakpoint
@@ -58,10 +63,10 @@ const Grid: FC<GridProps> = ({ slice }) => {
     },
     
     // Percentage of blue circles when toggle is false (20%)
-    BLUE_PERCENTAGE_OFF: 20,
+    BLUE_PERCENTAGE_OFF: 80,
     
     // Percentage of blue circles when toggle is true (60%)
-    BLUE_PERCENTAGE_ON: 60,
+    BLUE_PERCENTAGE_ON: 40,
     
     // Physics configuration
     PHYSICS: {
@@ -544,7 +549,7 @@ const Grid: FC<GridProps> = ({ slice }) => {
           </button>
 
           <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4">
-            {toggleState ? slice.primary.text_solution : slice.primary.text_problem}
+            {toggleState ? settings?.grid_solution : settings?.grid_problem}
           </div>
         </div>
         

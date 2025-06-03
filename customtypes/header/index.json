@@ -81,6 +81,20 @@
           "label": "Footer Bottom Line",
           "placeholder": ""
         }
+      },
+      "grid_problem": {
+        "type": "Text",
+        "config": {
+          "label": "Grid Problem",
+          "placeholder": ""
+        }
+      },
+      "grid_solution": {
+        "type": "Text",
+        "config": {
+          "label": "Grid Solution",
+          "placeholder": ""
+        }
       }
     }
   }

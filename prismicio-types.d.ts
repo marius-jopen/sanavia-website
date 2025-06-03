@@ -102,6 +102,28 @@ interface HeaderDocumentData {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   footer_bottom_line: prismic.KeyTextField;
+
+  /**
+   * Grid Problem field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.grid_problem
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  grid_problem: prismic.KeyTextField;
+
+  /**
+   * Grid Solution field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.grid_solution
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  grid_solution: prismic.KeyTextField;
 }
 
 /**
@@ -376,31 +398,6 @@ type CardsSliceVariation = CardsSliceDefault;
 export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
 
 /**
- * Primary content in *Grid → Default → Primary*
- */
-export interface GridSliceDefaultPrimary {
-  /**
-   * Text Problem field in *Grid → Default → Primary*
-   *
-   * - **Field Type**: Text
-   * - **Placeholder**: *None*
-   * - **API ID Path**: grid.default.primary.text_problem
-   * - **Documentation**: https://prismic.io/docs/field#key-text
-   */
-  text_problem: prismic.KeyTextField;
-
-  /**
-   * Text Solution field in *Grid → Default → Primary*
-   *
-   * - **Field Type**: Text
-   * - **Placeholder**: *None*
-   * - **API ID Path**: grid.default.primary.text_solution
-   * - **Documentation**: https://prismic.io/docs/field#key-text
-   */
-  text_solution: prismic.KeyTextField;
-}
-
-/**
  * Default variation for Grid Slice
  *
  * - **API ID**: `default`
@@ -409,7 +406,7 @@ export interface GridSliceDefaultPrimary {
  */
 export type GridSliceDefault = prismic.SharedSliceVariation<
   "default",
-  Simplify<GridSliceDefaultPrimary>,
+  Record<string, never>,
   never
 >;
 
@@ -1156,7 +1153,6 @@ declare module "@prismicio/client" {
       CardsSliceVariation,
       CardsSliceDefault,
       GridSlice,
-      GridSliceDefaultPrimary,
       GridSliceVariation,
       GridSliceDefault,
       HeadlineSlice,
