@@ -76,6 +76,20 @@
 									"value": "1-column",
 									"type": "Select"
 								}
+							],
+							[
+								"rich_text_2",
+								{
+									"__TYPE__": "StructuredTextContent",
+									"value": [
+										{
+											"type": "paragraph",
+											"content": {
+												"text": "Adipisicing aliquip ipsum pariatur tempor ipsum et ex nostrud. Id tempor nostrud nulla ullamco est mollit esse enim ad dolore adipisicing non magna deserunt."
+											}
+										}
+									]
+								}
 							]
 						]
 					}

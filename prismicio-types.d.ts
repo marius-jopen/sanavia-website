@@ -602,6 +602,16 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
   richtext: prismic.RichTextField;
 
   /**
+   * Rich Text 2 field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: This is only used when styling is set to: image-2-columns
+   * - **API ID Path**: pop_text.default.primary.items[].rich_text_2
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  rich_text_2: prismic.RichTextField;
+
+  /**
    * Image field in *PopText → Default → Primary → Items*
    *
    * - **Field Type**: Image

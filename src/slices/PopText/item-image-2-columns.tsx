@@ -32,11 +32,19 @@ const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
         </div>
       </div>
 
-      {props.richtext && (
-        <div className='columns-2 gap-4'>
-          <PrismicRichText field={props.richtext} />
+        <div className='flex flex-row gap-6'>
+            {props.richtext && props.richtext.length > 0 && (
+                <div className="w-1/2">
+                    <PrismicRichText field={props.richtext} />
+                </div>
+            )}
+
+            {props.rich_text_2 && props.rich_text_2.length > 0 && (
+                <div className="w-1/2">
+                    <PrismicRichText field={props.rich_text_2} />
+                </div>
+            )}
         </div>
-      )}
     </div>
   );
 };
