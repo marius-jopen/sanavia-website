@@ -41,7 +41,7 @@ const desktopHeightMap: Record<HeightSize, string> = {
  */
 const Space: FC<SpaceProps> = ({ slice }) => {
   const height = (slice.primary.height as HeightSize) || "m";
-  const heightMobile = ((slice.primary as any).height_mobile as HeightSize) || height;
+  const heightMobile = (slice.primary as { height_mobile?: string }).height_mobile as HeightSize || height;
   
   const mobileClasses = heightMap[heightMobile] || heightMap["m"];
   const desktopClasses = desktopHeightMap[height] || desktopHeightMap["m"];
