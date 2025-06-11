@@ -22,13 +22,13 @@ const Item1Column: React.FC<Item1ColumnProps> = (props) => {
         )}
 
         {props.headline && (
-            <h3 className='pb-8'>
+            <h3 className='pb-4'>
                 {props.headline}
             </h3>
         )}
 
         {props.richtext && props.richtext.length > 0 && (
-            <div className="">
+            <div className="text-neutral-500">
                 <PrismicRichText field={props.richtext} />
             </div>
         )}

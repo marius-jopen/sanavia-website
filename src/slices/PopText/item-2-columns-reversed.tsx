@@ -22,13 +22,13 @@ const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
 
       <div className='w-1/2 flex justify-center flex-col'>
         {props.headline && (
-          <h3 className='mb-8'>
+          <h3 className='mb-4'>
             {props.headline}
           </h3>
         )}
 
         {props.richtext && props.richtext.length > 0 && (
-          <div className=''>
+          <div className='text-neutral-500'>
             <PrismicRichText field={props.richtext} />
           </div>
         )}

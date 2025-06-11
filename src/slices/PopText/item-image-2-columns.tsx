@@ -16,7 +16,7 @@ const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
   return (
     <div className="pop-text-one-column md:py-4">
       {props.image && (
-        <div className='pb-8'>
+        <div className='pb-4'>
           <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" />
         </div>
       )}
@@ -35,13 +35,13 @@ const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
 
         <div className='flex flex-row gap-6'>
             {props.richtext && props.richtext.length > 0 && (
-                <div className="w-1/2">
+                <div className="w-1/2 text-neutral-500">
                     <PrismicRichText field={props.richtext} />
                 </div>
             )}
 
             {props.rich_text_2 && props.rich_text_2.length > 0 && (
-                <div className="w-1/2">
+                <div className="w-1/2 text-neutral-500">
                     <PrismicRichText field={props.rich_text_2} />
                 </div>
             )}

@@ -5,7 +5,7 @@
 }
 
 body {
-  @apply antialiased text-base md:text-lg leading-6 md:leading-7;
+  @apply antialiased text-base md:text-[20px] leading-6 md:leading-7;
 }
 
 p {
@@ -13,15 +13,15 @@ p {
 }
 
 h1 {
-  @apply text-3xl md:text-6xl font-normal leading-9 md:leading-16;
+  @apply text-3xl md:text-[80px] font-normal leading-9 md:leading-20;
 }
 
 h2 {
-  @apply text-2xl md:text-5xl font-normal leading-8 md:leading-16;
+  @apply text-2xl md:text-[64px] font-normal leading-8 md:leading-18;
 }
 
 h3 {
-  @apply text-xl md:text-2xl font-normal leading-7 md:leading-[130%];
+  @apply text-xl md:text-[30px] font-normal leading-7 md:leading-[130%];
 }
 
 h4 {

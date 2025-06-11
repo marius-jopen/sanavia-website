@@ -28,9 +28,9 @@ export default function Navigation({ links, enableStagger = true, enableAnimatio
         <div 
           className={`${
             index === 0 
-              ? 'rounded-r-2xl pl-8 pr-4 bg-white' 
-              : 'bg-white rounded-2xl px-4'
-          } py-2 hover:bg-black hover:text-white transition-colors`} 
+              ? 'rounded-r-2xl pl-8 pr-4 bg-white ' 
+              : 'bg-white rounded-2xl px-4 '
+          } py-2 hover:bg-black hover:text-white transition-colors `} 
           key={index}
         >
           <PrismicNextLink field={link.link}>
