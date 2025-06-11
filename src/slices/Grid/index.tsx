@@ -86,7 +86,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       
       // Maximum distance that the mouse affects circles
       REPULSION_RADIUS: {
-        DESKTOP: 100,
+        DESKTOP: 80,
         TABLET: 90,
         MOBILE: 80
       },
@@ -334,11 +334,21 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Render circles
     for (const circle of circlesRef.current) {
       const { body, color } = circle;
+      const radius = body.circleRadius as number || body.bounds.max.x - body.bounds.min.x;
       
       ctx.beginPath();
-      ctx.arc(body.position.x, body.position.y, body.circleRadius as number || body.bounds.max.x - body.bounds.min.x, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
+      ctx.arc(body.position.x, body.position.y, radius, 0, Math.PI * 2);
+      
+      if (color === CONFIG.COLORS.DEFAULT) {
+        // White circles - filled
+        ctx.fillStyle = color;
+        ctx.fill();
+      } else {
+        // Black circles - transparent with white outline
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
     }
     
     // Continue animation loop
