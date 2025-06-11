@@ -128,24 +128,27 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     totalCircles: 0 
   });
 
+  // Add state for client-side hydration
+  const [isMounted, setIsMounted] = useState(false);
+
   // Check device type based on window width
   const getDeviceType = useCallback((): 'mobile' | 'tablet' | 'desktop' => {
-    if (typeof window !== 'undefined') {
-      const width = window.innerWidth;
-      if (width < CONFIG.MOBILE_BREAKPOINT) return 'mobile';
-      if (width < CONFIG.TABLET_BREAKPOINT) return 'tablet';
-      return 'desktop';
+    if (!isMounted || typeof window === 'undefined') {
+      return 'desktop'; // Default for SSR
     }
+    const width = window.innerWidth;
+    if (width < CONFIG.MOBILE_BREAKPOINT) return 'mobile';
+    if (width < CONFIG.TABLET_BREAKPOINT) return 'tablet';
     return 'desktop';
-  }, [CONFIG.MOBILE_BREAKPOINT, CONFIG.TABLET_BREAKPOINT]);
+  }, [CONFIG.MOBILE_BREAKPOINT, CONFIG.TABLET_BREAKPOINT, isMounted]);
 
   // Check if device is mobile based on window width (keeping for compatibility)
   const checkIfMobile = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < CONFIG.MOBILE_BREAKPOINT;
+    if (!isMounted || typeof window === 'undefined') {
+      return false; // Default for SSR
     }
-    return false;
-  }, [CONFIG.MOBILE_BREAKPOINT]);
+    return window.innerWidth < CONFIG.MOBILE_BREAKPOINT;
+  }, [CONFIG.MOBILE_BREAKPOINT, isMounted]);
 
   // Generate initial random order of indices (only once)
   const initializeRandomIndices = useCallback((totalCircles: number) => {
@@ -515,6 +518,11 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       canvas.removeEventListener('touchstart', handleTouchStart);
     };
   }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile, getDeviceType]);
+
+  // Add useEffect to set mounted state
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <div>      

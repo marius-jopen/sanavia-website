@@ -26,6 +26,21 @@
               "2xl"
             ]
           }
+        },
+        "height_mobile": {
+          "type": "Select",
+          "config": {
+            "label": "Height Mobile",
+            "placeholder": "",
+            "options": [
+              "xs",
+              "s",
+              "m",
+              "lg",
+              "xl",
+              "2xl"
+            ]
+          }
         }
       },
       "items": {}
