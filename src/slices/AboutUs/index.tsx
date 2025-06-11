@@ -83,7 +83,7 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
             return (
               <div 
                 key={index} 
-                className={` flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
+                className={` flex flex-col bg-white px-4 py-4  cursor-pointer transition-all duration-300 hover:cursor-pointer ${
                   isFirstInRow ? 'pl-6 rounded-l-0 rounded-r-2xl' : 'rounded-2xl'
                 }`}
                 onClick={() => handleItemClick(item)}
@@ -105,7 +105,7 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
                   <h3 className="pt-2 pb-2 text-xl font-bold mb-2 cursor-pointer">{item.headline}</h3>
                 )}
                 {item.richtext && (
-                  <div className="px-12 text-sm text-gray-500 cursor-pointer">
+                  <div className=" text-sm text-gray-500 cursor-pointer text-left">
                     <PrismicRichText field={item.richtext} />
                   </div>
                 )}

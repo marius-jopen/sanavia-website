@@ -66,7 +66,7 @@ const PopText = ({ slice }: PopTextProps) => {
       defaultOpen={!isClosed}
       headerContent={<HeaderContent />}
     >
-      <div className="text-gray-800 flex flex-col gap-2 md:gap-8">
+      <div className="text-gray-800 flex flex-col gap-2 md:gap-20">
         {slice.primary.items.map((item, index) => (
           <div key={index}>
             {/* Mobile view - always use Item1Column */}
