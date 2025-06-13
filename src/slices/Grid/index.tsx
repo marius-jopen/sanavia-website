@@ -572,7 +572,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             </h2>
           </button>
 
-          <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4">
+          <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4 w-full md:w-1/2 ">
             {toggleState ? settings?.grid_solution : settings?.grid_problem}
           </div>
         </div>
