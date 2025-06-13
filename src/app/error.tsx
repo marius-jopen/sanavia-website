@@ -17,8 +17,8 @@ export default function Error({
   reset: () => void;
 }) {
   const [errorPageData, setErrorPageData] = useState<{
-    page: any;
-    settings: any;
+    page: Content.PageDocument;
+    settings: Content.HeaderDocument;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
