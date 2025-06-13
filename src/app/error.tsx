@@ -16,7 +16,10 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const [errorPageData, setErrorPageData] = useState<any>(null);
+  const [errorPageData, setErrorPageData] = useState<{
+    page: any;
+    settings: any;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,7 +73,7 @@ export default function Error({
         <h1 className="text-6xl font-bold text-black mb-4">Oops!</h1>
         <h2 className="text-3xl font-semibold text-black mb-4">Something went wrong</h2>
         <p className="text-gray-600 text-lg mb-8">
-          We're sorry, but something unexpected happened. Please try again.
+          We&apos;re sorry, but something unexpected happened. Please try again.
         </p>
         <button
           onClick={reset}
