@@ -27,9 +27,18 @@ export default function MobileNav({ links, cta, logo }: MobileNavProps) {
 
   const closeMobileMenu = () => {
     if (overlayRef.current && menuRef.current) {
+      // Disable pointer events during animation to prevent interference
+      menuRef.current.style.pointerEvents = 'none';
+      
       // Animate out
       const tl = gsap.timeline({
-        onComplete: () => setIsMobileMenuOpen(false)
+        onComplete: () => {
+          setIsMobileMenuOpen(false);
+          // Re-enable pointer events after animation completes
+          if (menuRef.current) {
+            menuRef.current.style.pointerEvents = 'auto';
+          }
+        }
       });
       
       tl.to(linksRef.current, {
@@ -53,13 +62,23 @@ export default function MobileNav({ links, cta, logo }: MobileNavProps) {
   // Animate in when menu opens
   useEffect(() => {
     if (isMobileMenuOpen && overlayRef.current && menuRef.current) {
+      // Disable pointer events initially to prevent clicks during animation
+      menuRef.current.style.pointerEvents = 'none';
+      
       // Set initial states
       gsap.set(overlayRef.current, { opacity: 0 });
       gsap.set(menuRef.current, { opacity: 0, y: -30 });
       gsap.set(linksRef.current, { opacity: 0, y: -20 });
 
       // Animate in
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({
+        onComplete: () => {
+          // Re-enable pointer events after animation completes
+          if (menuRef.current) {
+            menuRef.current.style.pointerEvents = 'auto';
+          }
+        }
+      });
       
       tl.to(overlayRef.current, {
         opacity: 1,
