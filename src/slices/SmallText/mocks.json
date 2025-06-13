@@ -1,0 +1,20 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"richtext": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Aliqua id nisi dolor laborum voluptate est voluptate exercitation non excepteur."
+						}
+					}
+				]
+			}
+		},
+		"items": []
+	}
+]

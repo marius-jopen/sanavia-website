@@ -12,6 +12,7 @@ export const components = {
   pop_text: dynamic(() => import("./PopText")),
   pop_video: dynamic(() => import("./PopVideo")),
   slider: dynamic(() => import("./Slider")),
+  small_text: dynamic(() => import("./SmallText")),
   space: dynamic(() => import("./Space")),
   team: dynamic(() => import("./Team")),
   team_advanced: dynamic(() => import("./TeamAdvanced")),

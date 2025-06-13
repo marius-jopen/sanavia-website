@@ -143,6 +143,7 @@ export type HeaderDocument<Lang extends string = string> =
   >;
 
 type PageDocumentDataSlicesSlice =
+  | SmallTextSlice
   | CardsSlice
   | AboutUsSlice
   | SpaceSlice
@@ -833,6 +834,51 @@ type SliderSliceVariation = SliderSliceDefault;
 export type SliderSlice = prismic.SharedSlice<"slider", SliderSliceVariation>;
 
 /**
+ * Primary content in *SmallText → Default → Primary*
+ */
+export interface SmallTextSliceDefaultPrimary {
+  /**
+   * Richtext field in *SmallText → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: small_text.default.primary.richtext
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  richtext: prismic.RichTextField;
+}
+
+/**
+ * Default variation for SmallText Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SmallTextSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<SmallTextSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *SmallText*
+ */
+type SmallTextSliceVariation = SmallTextSliceDefault;
+
+/**
+ * SmallText Shared Slice
+ *
+ * - **API ID**: `small_text`
+ * - **Description**: SmallText
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type SmallTextSlice = prismic.SharedSlice<
+  "small_text",
+  SmallTextSliceVariation
+>;
+
+/**
  * Primary content in *Space → Default → Primary*
  */
 export interface SpaceSliceDefaultPrimary {
@@ -845,6 +891,16 @@ export interface SpaceSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#select
    */
   height: prismic.SelectField<"xs" | "s" | "m" | "lg" | "xl" | "2xl">;
+
+  /**
+   * Height Mobile field in *Space → Default → Primary*
+   *
+   * - **Field Type**: Select
+   * - **Placeholder**: *None*
+   * - **API ID Path**: space.default.primary.height_mobile
+   * - **Documentation**: https://prismic.io/docs/field#select
+   */
+  height_mobile: prismic.SelectField<"xs" | "s" | "m" | "lg" | "xl" | "2xl">;
 }
 
 /**
@@ -1181,6 +1237,10 @@ declare module "@prismicio/client" {
       SliderSliceDefaultPrimary,
       SliderSliceVariation,
       SliderSliceDefault,
+      SmallTextSlice,
+      SmallTextSliceDefaultPrimary,
+      SmallTextSliceVariation,
+      SmallTextSliceDefault,
       SpaceSlice,
       SpaceSliceDefaultPrimary,
       SpaceSliceVariation,
