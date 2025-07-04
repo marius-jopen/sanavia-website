@@ -12,6 +12,9 @@ import ItemImage2Columns from "./item-image-2-columns";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 import SimplePlusButton from "@/components/SimplePlusButton";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `PopText`.
  */
@@ -34,6 +37,9 @@ const PopText = ({ slice }: PopTextProps) => {
     });
   }, []);
 
+  // Early return if not visible (after hooks to avoid rules of hooks violation)
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
+
   // Check if we have a headline
   const hasHeadline = slice.primary.headline && slice.primary.headline.length > 0;
 
@@ -42,10 +48,6 @@ const PopText = ({ slice }: PopTextProps) => {
     const { toggle, isToggled } = useToggle();
 
     if (!hasHeadline) return null;
-
-    // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
-
 
     return (
       <>

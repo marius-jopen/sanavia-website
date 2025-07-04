@@ -7,6 +7,9 @@ import VideoBasic from "@/components/VideoBasic";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 type AboutUsItem = {
   category?: KeyTextField;
   video_url?: KeyTextField;
@@ -53,7 +56,7 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
   }, [enableStagger, enableAnimation]);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
   return (

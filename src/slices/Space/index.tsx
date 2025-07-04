@@ -2,6 +2,9 @@ import { FC } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `Space`.
  */
@@ -49,7 +52,7 @@ const Space: FC<SpaceProps> = ({ slice }) => {
   const heightClasses = `${mobileClasses} ${desktopClasses}`;
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
   return (

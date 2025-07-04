@@ -5,6 +5,9 @@ import { SliceComponentProps } from "@prismicio/react";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
 import VideoBasic from "../../components/VideoBasic";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `Video`.
  */
@@ -22,7 +25,7 @@ const Video: FC<VideoProps> = ({ slice }) => {
   }, []);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
   return (

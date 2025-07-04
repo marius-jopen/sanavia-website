@@ -7,6 +7,9 @@ import { setupStaggeredAnimation } from "../../utils/animations/staggerAnimation
 import { PrismicNextLink } from "@prismicio/next";
 import SimplePlusButton from "@/components/SimplePlusButton";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `PopHeadline`.
  */
@@ -56,7 +59,7 @@ const PopButton: FC<PopButtonProps> = ({ slice }) => {
   }, []);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
   return (

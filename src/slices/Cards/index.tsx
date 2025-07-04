@@ -5,6 +5,9 @@ import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `Cards`.
  */
@@ -29,7 +32,7 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
   }, [enableStagger, enableAnimation]);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
 

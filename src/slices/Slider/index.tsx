@@ -5,6 +5,9 @@ import { SliceComponentProps } from "@prismicio/react";
 import Slider from "@/components/Slider";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `Slider`.
  */
@@ -25,7 +28,7 @@ const SliderSlice: FC<SliderProps> = ({ slice }) => {
   const images = slice.primary.items.map((item) => item.image);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
   return (

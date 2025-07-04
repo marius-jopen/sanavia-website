@@ -4,6 +4,9 @@ import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `Headline`.
  */
@@ -24,7 +27,7 @@ const Headline: FC<HeadlineProps> = ({ slice }) => {
   }, []);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
   
   return (
     <section ref={sectionRef} className={`${alignment} pt-4 pb-4 px-8`}>

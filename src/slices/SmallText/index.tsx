@@ -3,6 +3,9 @@ import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 
+// Helper type to add visible field to slice primary
+type WithVisible<T> = T & { visible?: boolean };
+
 /**
  * Props for `SmallText`.
  */
@@ -14,7 +17,7 @@ export type SmallTextProps = SliceComponentProps<Content.SmallTextSlice>;
 const SmallText: FC<SmallTextProps> = ({ slice }) => {
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
   return (
