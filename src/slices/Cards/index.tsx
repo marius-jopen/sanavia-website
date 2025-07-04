@@ -29,7 +29,7 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
   }, [enableStagger, enableAnimation]);
 
   // Early return if not visible
-  if (!((slice.primary as any).visible ?? true)) return null;
+  // if (!((slice.primary as any).visible ?? true)) return null;
 
 
 
