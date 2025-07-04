@@ -13,6 +13,7 @@ type AboutUsItem = {
   image?: ImageField;
   headline?: KeyTextField;
   richtext?: RichTextField;
+  visible?: boolean;
 };
 
 /**
@@ -50,6 +51,9 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
       ease: "power2.out"
     });
   }, [enableStagger, enableAnimation]);
+
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
 
   return (
     <section

@@ -55,6 +55,9 @@ const PopButton: FC<PopButtonProps> = ({ slice }) => {
     return () => resizeObserver.disconnect();
   }, []);
 
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
+
   return (
     <section ref={sectionRef} className="flex gap-2">
       <div className="bg-white rounded-r-full pl-8 pr-12 pt-3 md:pt-6 pb-3 md:pb-6 w-fit text-gray-800 ">

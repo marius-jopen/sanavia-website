@@ -21,6 +21,9 @@ const PopVideo: FC<PopVideoProps> = ({ slice }) => {
     return cleanup;
   }, []);
 
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
+
   return (
     <section ref={sectionRef} className="w-full mb-4">
       <div className="relative md:w-10/12 rounded-r-2xl overflow-hidden mr-4">

@@ -21,6 +21,9 @@ const Video: FC<VideoProps> = ({ slice }) => {
     return cleanup;
   }, []);
 
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
+
   return (
     <section ref={sectionRef} className="w-full mb-4 px-4">
       <div className="relative mx-auto md:w-10/12 rounded-2xl overflow-hidden">

@@ -47,6 +47,9 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
     setSelectedItem(item);
   };
 
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
+
   return (
     <section
       data-slice-type={slice.slice_type}

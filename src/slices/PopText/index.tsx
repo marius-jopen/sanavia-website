@@ -43,6 +43,9 @@ const PopText = ({ slice }: PopTextProps) => {
 
     if (!hasHeadline) return null;
 
+    // Early return if not visible
+  if (!slice.primary.visible) return null;
+
     return (
       <>
       <div className="flex flex-row">

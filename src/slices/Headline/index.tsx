@@ -22,6 +22,9 @@ const Headline: FC<HeadlineProps> = ({ slice }) => {
     const cleanup = setupFadeInAnimation(sectionRef.current);
     return cleanup;
   }, []);
+
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
   
   return (
     <section ref={sectionRef} className={`${alignment} pt-4 pb-4 px-8`}>

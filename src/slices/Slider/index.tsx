@@ -24,6 +24,9 @@ const SliderSlice: FC<SliderProps> = ({ slice }) => {
   // Pass the complete Prismic image field
   const images = slice.primary.items.map((item) => item.image);
 
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
+
   return (
     <section
       ref={sectionRef}

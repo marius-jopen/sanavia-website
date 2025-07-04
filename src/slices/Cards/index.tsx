@@ -11,6 +11,7 @@ import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 export type CardsProps = SliceComponentProps<Content.CardsSlice> & {
   enableStagger?: boolean;
   enableAnimation?: boolean;
+  visible?: boolean;
 };
 
 /**
@@ -27,6 +28,9 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
       ease: "power2.out"
     });
   }, [enableStagger, enableAnimation]);
+
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
 
 
 

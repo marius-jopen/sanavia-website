@@ -291,6 +291,17 @@ export interface AboutUsSliceDefaultPrimaryItemsItem {
  */
 export interface AboutUsSliceDefaultPrimary {
   /**
+   * Visible field in *AboutUs → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: about_us.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
    * Items field in *AboutUs → Default → Primary*
    *
    * - **Field Type**: Group

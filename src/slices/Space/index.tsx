@@ -48,6 +48,9 @@ const Space: FC<SpaceProps> = ({ slice }) => {
   
   const heightClasses = `${mobileClasses} ${desktopClasses}`;
 
+  // Early return if not visible
+  if (!slice.primary.visible) return null;
+
   return (
     <section
       data-slice-type={slice.slice_type}

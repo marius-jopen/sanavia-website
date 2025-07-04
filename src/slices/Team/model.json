@@ -12,6 +12,15 @@
       "description": "Default",
       "imageUrl": "",
       "primary": {
+        "visible": {
+          "type": "Boolean",
+          "config": {
+            "label": "Visible",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": true
+          }
+        },
         "items": {
           "type": "Group",
           "config": {
