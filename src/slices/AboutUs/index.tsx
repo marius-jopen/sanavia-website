@@ -53,7 +53,8 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
   }, [enableStagger, enableAnimation]);
 
   // Early return if not visible
-  if (!slice.primary.visible) return null;
+  if (!((slice.primary as any).visible ?? true)) return null;
+
 
   return (
     <section

@@ -48,7 +48,8 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
   };
 
   // Early return if not visible
-  if (!slice.primary.visible) return null;
+  if (!((slice.primary as any).visible ?? true)) return null;
+
 
   return (
     <section

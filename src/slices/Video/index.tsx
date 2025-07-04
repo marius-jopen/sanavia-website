@@ -22,7 +22,8 @@ const Video: FC<VideoProps> = ({ slice }) => {
   }, []);
 
   // Early return if not visible
-  if (!slice.primary.visible) return null;
+  if (!((slice.primary as any).visible ?? true)) return null;
+
 
   return (
     <section ref={sectionRef} className="w-full mb-4 px-4">
