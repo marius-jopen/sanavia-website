@@ -11,7 +11,6 @@ import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 export type CardsProps = SliceComponentProps<Content.CardsSlice> & {
   enableStagger?: boolean;
   enableAnimation?: boolean;
-  visible?: boolean;
 };
 
 /**
