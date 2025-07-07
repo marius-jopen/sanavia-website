@@ -25,7 +25,7 @@ const Background: React.FC = () => {
   
   // Basic styles that will be the same on server and client
   const gradientStyle = {
-    opacity: 0.3,
+    opacity: 0.35,
     position: 'fixed' as const,
     top: 0,
     left: 0,
@@ -65,7 +65,7 @@ const Background: React.FC = () => {
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
-      radial-gradient(circle at 50% 50%, rgba(64, 224, 208, 0.85) 0%, rgba(100, 180, 255, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
+      radial-gradient(circle at 50% 50%, rgba(255, 249, 69, 0.85) 0%, rgba(100, 180, 255, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
     `,
     filter: 'blur(60px)',
     opacity: 0.85,
@@ -83,7 +83,7 @@ const Background: React.FC = () => {
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
-      radial-gradient(circle at 50% 50%, rgba(255, 210, 100, 0.85) 0%, rgba(255, 140, 50, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
+      radial-gradient(circle at 50% 50%, rgba(255, 210, 100, 0.85) 0%, rgba(255, 50, 204, 0.5) 35%, rgba(255, 255, 255, 0) 70%)
     `,
     filter: 'blur(60px)',
     opacity: 0.85,
