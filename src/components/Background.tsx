@@ -25,7 +25,7 @@ const Background: React.FC = () => {
   
   // Basic styles that will be the same on server and client
   const gradientStyle = {
-    opacity: 0.35,
+    opacity: 0.3,
     position: 'fixed' as const,
     top: 0,
     left: 0,
