@@ -444,11 +444,32 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
 
     // Handle touch movement
     const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault(); // Prevent scrolling
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
       const x = touch.clientX - rect.left;
       const y = touch.clientY - rect.top;
+      
+      // Only prevent default behavior if we're actually affecting circles
+      // Check if touch is within the canvas bounds and near circles
+      if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+        // Check if we're near any circles that would be affected
+        const currentDeviceType = getDeviceType();
+        const deviceKey = currentDeviceType.toUpperCase() as keyof typeof CONFIG.PHYSICS.REPULSION_RADIUS;
+        const repulsionRadius = CONFIG.PHYSICS.REPULSION_RADIUS[deviceKey];
+        
+        // Check if touch is within repulsion radius of any circle
+        const isNearCircle = circlesRef.current.some(circle => {
+          const dx = circle.body.position.x - x;
+          const dy = circle.body.position.y - y;
+          const distanceSquared = dx * dx + dy * dy;
+          return distanceSquared < repulsionRadius * repulsionRadius;
+        });
+        
+        // Only prevent scrolling if we're actually near circles
+        if (isNearCircle) {
+          e.preventDefault();
+        }
+      }
       
       // Update position for physics simulation with active flag
       mousePositionRef.current = { x, y, active: true };
