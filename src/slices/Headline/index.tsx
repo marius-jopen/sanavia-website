@@ -18,7 +18,7 @@ export type HeadlineProps = SliceComponentProps<Content.HeadlineSlice>;
 const Headline: FC<HeadlineProps> = ({ slice }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const alignment = slice.primary.alignment === 'left' ? 'text-left' : 'text-center';
-  const headlineWidth = alignment === 'text-left' ? 'w-full md:w-7/12' : 'md:w-8/12 mx-auto ';
+  const headlineWidth = alignment === 'text-left' ? 'w-full sm:w-8/12 md:w-7/12 2xl:w-4/12' : 'md:w-8/12 mx-auto';
   const subHeadlineWidth = alignment === 'text-left' ? 'w-full md:w-7/12' : 'md:w-8/12 md:w-4/12 mx-auto ';
   
   useEffect(() => {
