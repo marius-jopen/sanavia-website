@@ -16,6 +16,11 @@ const Background: React.FC = () => {
   // Add state for auto movement
   const [autoMovement, setAutoMovement] = useState({ x: 0, y: 0 });
   
+  // Add state for mobile detection and interaction tracking
+  const [isMobile, setIsMobile] = useState(false);
+  const [hasRecentInteraction, setHasRecentInteraction] = useState(false);
+  const [lastInteractionTime, setLastInteractionTime] = useState(0);
+  
   // Add state for random delays
   const [delays] = useState({
     gradient1: Math.random() * 2000,
@@ -114,6 +119,17 @@ const Background: React.FC = () => {
   useEffect(() => {
     setMounted(true);
     
+    // Detect mobile device
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                           window.innerWidth <= 768 ||
+                           'ontouchstart' in window;
+      setIsMobile(isMobileDevice);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     // Generate random initial positions when component mounts
     setInitialOffsets(generateRandomOffsets());
     
@@ -123,6 +139,11 @@ const Background: React.FC = () => {
     let currentX = 0;
     let currentY = 0;
     
+    const updateInteractionTime = () => {
+      setLastInteractionTime(Date.now());
+      setHasRecentInteraction(true);
+    };
+    
     const handleMouseMove = (e: MouseEvent) => {
       // Use window dimensions
       const windowWidth = window.innerWidth;
@@ -131,6 +152,8 @@ const Background: React.FC = () => {
       // Calculate normalized position (-1 to 1 range)
       targetX = (e.clientX / windowWidth) * 2 - 1;
       targetY = (e.clientY / windowHeight) * 2 - 1;
+      
+      updateInteractionTime();
     };
     
     // Handle touch events for mobile
@@ -141,6 +164,8 @@ const Background: React.FC = () => {
         
         targetX = (e.touches[0].clientX / windowWidth) * 2 - 1;
         targetY = (e.touches[0].clientY / windowHeight) * 2 - 1;
+        
+        updateInteractionTime();
       }
     };
     
@@ -160,9 +185,10 @@ const Background: React.FC = () => {
     // Add event listeners
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchstart', updateInteractionTime, { passive: true });
     const animationId = requestAnimationFrame(updatePosition);
     
-    // Enhanced automatic movement
+    // Enhanced automatic movement with mobile optimization
     let autoMoveX = 0;
     let autoMoveY = 0;
     let lastTimestamp = 0;
@@ -172,19 +198,44 @@ const Background: React.FC = () => {
       const delta = timestamp - lastTimestamp;
       lastTimestamp = timestamp;
       
-      // Continuous movement with different frequencies for each axis
-      autoMoveX += Math.sin(timestamp / 3000) * 0.002 * delta;
-      autoMoveY += Math.cos(timestamp / 4000) * 0.002 * delta;
+      // Check if interaction is recent (within 3 seconds)
+      const timeSinceInteraction = timestamp - lastInteractionTime;
+      const isInteractionRecent = timeSinceInteraction < 3000;
+      setHasRecentInteraction(isInteractionRecent);
       
-      // Add some randomness to the movement
-      if (Math.random() < 0.01) {
-        autoMoveX += (Math.random() - 0.5) * 0.1;
-        autoMoveY += (Math.random() - 0.5) * 0.1;
+      // Determine movement intensity based on mobile and interaction
+      let intensityMultiplier = 1;
+      if (isMobile || !isInteractionRecent) {
+        // On mobile or when no recent interaction, increase movement significantly
+        intensityMultiplier = isMobile ? 3.5 : 2.5;
       }
       
-      // Keep the movement within bounds
-      autoMoveX = Math.max(Math.min(autoMoveX, 0.5), -0.5);
-      autoMoveY = Math.max(Math.min(autoMoveY, 0.5), -0.5);
+      // Multiple wave patterns for more complex movement
+      const wave1 = Math.sin(timestamp / 2000) * 0.003 * delta * intensityMultiplier;
+      const wave2 = Math.cos(timestamp / 3500) * 0.002 * delta * intensityMultiplier;
+      const wave3 = Math.sin(timestamp / 5000) * 0.0025 * delta * intensityMultiplier;
+      
+      // Combine waves for X movement
+      autoMoveX += wave1 + Math.sin(timestamp / 4000) * 0.002 * delta * intensityMultiplier;
+      // Combine waves for Y movement  
+      autoMoveY += wave2 + Math.cos(timestamp / 3000) * 0.002 * delta * intensityMultiplier;
+      
+      // Add occasional random bursts for more dynamic movement
+      if (Math.random() < (isMobile ? 0.02 : 0.01)) {
+        autoMoveX += (Math.random() - 0.5) * 0.2 * intensityMultiplier;
+        autoMoveY += (Math.random() - 0.5) * 0.2 * intensityMultiplier;
+      }
+      
+      // Add secondary movement patterns for mobile
+      if (isMobile || !isInteractionRecent) {
+        autoMoveX += Math.sin(timestamp / 6000) * 0.001 * delta * intensityMultiplier;
+        autoMoveY += Math.cos(timestamp / 7000) * 0.001 * delta * intensityMultiplier;
+      }
+      
+      // Keep the movement within bounds (larger bounds for mobile)
+      const bounds = isMobile ? 0.8 : 0.5;
+      autoMoveX = Math.max(Math.min(autoMoveX, bounds), -bounds);
+      autoMoveY = Math.max(Math.min(autoMoveY, bounds), -bounds);
       
       setAutoMovement({ x: autoMoveX, y: autoMoveY });
       
@@ -214,7 +265,9 @@ const Background: React.FC = () => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchstart', updateInteractionTime);
       window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('resize', checkMobile);
       cancelAnimationFrame(animationId);
       cancelAnimationFrame(autoAnimationId);
     };
