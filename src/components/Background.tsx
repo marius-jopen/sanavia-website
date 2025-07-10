@@ -41,13 +41,33 @@ const Background: React.FC = () => {
     pointerEvents: 'none' as const,
   };
   
+  // Get responsive dimensions based on mobile detection
+  const getMobileDimensions = () => {
+    if (mounted && isMobileRef.current) {
+      return {
+        width: '180%', // Much larger for mobile
+        height: '180%', // Much larger for mobile
+        top: '-20%', // Adjusted for larger size
+        left: '-20%' // Adjusted for larger size
+      };
+    }
+    return {
+      width: '140%', // Default desktop size
+      height: '140%', // Default desktop size
+      top: '-10%', // Default desktop position
+      left: '-10%' // Default desktop position
+    };
+  };
+
+  const dimensions = getMobileDimensions();
+
   // Gradient 1: Pink/Purple
   const gradient1BaseStyle = {
     position: 'absolute' as const,
-    top: '-10%', // Adjusted to be more centered
-    left: '-10%', // Adjusted to be more centered
-    width: '140%', // Increased from 120%
-    height: '140%', // Increased from 120%
+    top: dimensions.top,
+    left: dimensions.left,
+    width: dimensions.width,
+    height: dimensions.height,
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
@@ -62,10 +82,10 @@ const Background: React.FC = () => {
   // Gradient 2: Cyan/Blue
   const gradient2BaseStyle = {
     position: 'absolute' as const,
-    top: '-10%', // Adjusted to be more centered
-    left: '-10%', // Adjusted to be more centered
-    width: '140%', // Increased from 120%
-    height: '140%', // Increased from 120%
+    top: dimensions.top,
+    left: dimensions.left,
+    width: dimensions.width,
+    height: dimensions.height,
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
@@ -80,10 +100,10 @@ const Background: React.FC = () => {
   // Gradient 3: Yellow/Orange
   const gradient3BaseStyle = {
     position: 'absolute' as const,
-    top: '-10%', // Adjusted to be more centered
-    left: '-10%', // Adjusted to be more centered
-    width: '140%', // Increased from 120%
-    height: '140%', // Increased from 120%
+    top: dimensions.top,
+    left: dimensions.left,
+    width: dimensions.width,
+    height: dimensions.height,
     transform: 'translate3d(0, 0, 0)',
     transition: 'transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Smooth easing
     background: `
