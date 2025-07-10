@@ -16,10 +16,9 @@ const Background: React.FC = () => {
   // Add state for auto movement
   const [autoMovement, setAutoMovement] = useState({ x: 0, y: 0 });
   
-  // Add state for mobile detection and interaction tracking
-  const [isMobile, setIsMobile] = useState(false);
-  const [hasRecentInteraction, setHasRecentInteraction] = useState(false);
-  const [lastInteractionTime, setLastInteractionTime] = useState(0);
+  // Add refs for mobile detection and interaction tracking
+  const isMobileRef = useRef(false);
+  const lastInteractionTimeRef = useRef(0);
   
   // Add state for random delays
   const [delays] = useState({
@@ -124,7 +123,7 @@ const Background: React.FC = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
                            window.innerWidth <= 768 ||
                            'ontouchstart' in window;
-      setIsMobile(isMobileDevice);
+      isMobileRef.current = isMobileDevice;
     };
     
     checkMobile();
@@ -140,8 +139,7 @@ const Background: React.FC = () => {
     let currentY = 0;
     
     const updateInteractionTime = () => {
-      setLastInteractionTime(Date.now());
-      setHasRecentInteraction(true);
+      lastInteractionTimeRef.current = Date.now();
     };
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -199,15 +197,14 @@ const Background: React.FC = () => {
       lastTimestamp = timestamp;
       
       // Check if interaction is recent (within 3 seconds)
-      const timeSinceInteraction = timestamp - lastInteractionTime;
+      const timeSinceInteraction = timestamp - lastInteractionTimeRef.current;
       const isInteractionRecent = timeSinceInteraction < 3000;
-      setHasRecentInteraction(isInteractionRecent);
       
       // Determine movement intensity based on mobile and interaction
       let intensityMultiplier = 1;
-      if (isMobile || !isInteractionRecent) {
+      if (isMobileRef.current || !isInteractionRecent) {
         // On mobile or when no recent interaction, increase movement significantly
-        intensityMultiplier = isMobile ? 3.5 : 2.5;
+        intensityMultiplier = isMobileRef.current ? 3.5 : 2.5;
       }
       
       // Multiple wave patterns for more complex movement
@@ -218,22 +215,22 @@ const Background: React.FC = () => {
       // Combine waves for X movement
       autoMoveX += wave1 + Math.sin(timestamp / 4000) * 0.002 * delta * intensityMultiplier;
       // Combine waves for Y movement  
-      autoMoveY += wave2 + Math.cos(timestamp / 3000) * 0.002 * delta * intensityMultiplier;
+      autoMoveY += wave2 + wave3 + Math.cos(timestamp / 3000) * 0.002 * delta * intensityMultiplier;
       
       // Add occasional random bursts for more dynamic movement
-      if (Math.random() < (isMobile ? 0.02 : 0.01)) {
+      if (Math.random() < (isMobileRef.current ? 0.02 : 0.01)) {
         autoMoveX += (Math.random() - 0.5) * 0.2 * intensityMultiplier;
         autoMoveY += (Math.random() - 0.5) * 0.2 * intensityMultiplier;
       }
       
       // Add secondary movement patterns for mobile
-      if (isMobile || !isInteractionRecent) {
+      if (isMobileRef.current || !isInteractionRecent) {
         autoMoveX += Math.sin(timestamp / 6000) * 0.001 * delta * intensityMultiplier;
         autoMoveY += Math.cos(timestamp / 7000) * 0.001 * delta * intensityMultiplier;
       }
       
       // Keep the movement within bounds (larger bounds for mobile)
-      const bounds = isMobile ? 0.8 : 0.5;
+      const bounds = isMobileRef.current ? 0.8 : 0.5;
       autoMoveX = Math.max(Math.min(autoMoveX, bounds), -bounds);
       autoMoveY = Math.max(Math.min(autoMoveY, bounds), -bounds);
       
