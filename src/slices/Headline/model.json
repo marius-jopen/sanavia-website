@@ -50,6 +50,15 @@
             ],
             "default_value": "left"
           }
+        },
+        "keep_layout": {
+          "type": "Boolean",
+          "config": {
+            "label": "Keep Layout",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": false
+          }
         }
       },
       "items": {}

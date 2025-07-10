@@ -372,6 +372,17 @@ export interface CardsSliceDefaultPrimaryItemsItem {
  */
 export interface CardsSliceDefaultPrimary {
   /**
+   * Visible field in *Cards → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: cards.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
    * Items field in *Cards → Default → Primary*
    *
    * - **Field Type**: Group
@@ -441,6 +452,17 @@ export type GridSlice = prismic.SharedSlice<"grid", GridSliceVariation>;
  */
 export interface HeadlineSliceDefaultPrimary {
   /**
+   * Visible field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: headline.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
    * Headline field in *Headline → Default → Primary*
    *
    * - **Field Type**: Rich Text
@@ -470,6 +492,17 @@ export interface HeadlineSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#select
    */
   alignment: prismic.SelectField<"left" | "center", "filled">;
+
+  /**
+   * Keep Layout field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: headline.default.primary.keep_layout
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  keep_layout: prismic.BooleanField;
 }
 
 /**
@@ -506,6 +539,17 @@ export type HeadlineSlice = prismic.SharedSlice<
  * Primary content in *PopButton → Default → Primary*
  */
 export interface PopButtonSliceDefaultPrimary {
+  /**
+   * Visible field in *PopButton → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: pop_button.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Button field in *PopButton → Default → Primary*
    *
@@ -551,6 +595,17 @@ export type PopButtonSlice = prismic.SharedSlice<
  * Primary content in *PopHeadline → Default → Primary*
  */
 export interface PopHeadlineSliceDefaultPrimary {
+  /**
+   * Visible field in *PopHeadline → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: pop_headline.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Headline field in *PopHeadline → Default → Primary*
    *
@@ -671,6 +726,17 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
  */
 export interface PopTextSliceDefaultPrimary {
   /**
+   * Visible field in *PopText → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: pop_text.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
    * Headline field in *PopText → Default → Primary*
    *
    * - **Field Type**: Rich Text
@@ -736,6 +802,17 @@ export type PopTextSlice = prismic.SharedSlice<
  * Primary content in *PopVideo → Default → Primary*
  */
 export interface PopVideoSliceDefaultPrimary {
+  /**
+   * Visible field in *PopVideo → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: pop_video.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Poster field in *PopVideo → Default → Primary*
    *
@@ -807,6 +884,17 @@ export interface SliderSliceDefaultPrimaryItemsItem {
  */
 export interface SliderSliceDefaultPrimary {
   /**
+   * Visible field in *Slider → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: slider.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
    * Items field in *Slider → Default → Primary*
    *
    * - **Field Type**: Group
@@ -848,6 +936,17 @@ export type SliderSlice = prismic.SharedSlice<"slider", SliderSliceVariation>;
  * Primary content in *SmallText → Default → Primary*
  */
 export interface SmallTextSliceDefaultPrimary {
+  /**
+   * Visible field in *SmallText → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: small_text.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Richtext field in *SmallText → Default → Primary*
    *
@@ -893,6 +992,17 @@ export type SmallTextSlice = prismic.SharedSlice<
  * Primary content in *Space → Default → Primary*
  */
 export interface SpaceSliceDefaultPrimary {
+  /**
+   * Visible field in *Space → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: space.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Height field in *Space → Default → Primary*
    *
@@ -990,6 +1100,17 @@ export interface TeamSliceDefaultPrimaryItemsItem {
  * Primary content in *Team → Default → Primary*
  */
 export interface TeamSliceDefaultPrimary {
+  /**
+   * Visible field in *Team → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: team.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Items field in *Team → Default → Primary*
    *
@@ -1089,6 +1210,17 @@ export interface TeamAdvancedSliceDefaultPrimaryItemsItem {
  */
 export interface TeamAdvancedSliceDefaultPrimary {
   /**
+   * Visible field in *TeamAdvanced → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: team_advanced.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
    * Items field in *TeamAdvanced → Default → Primary*
    *
    * - **Field Type**: Group
@@ -1133,6 +1265,17 @@ export type TeamAdvancedSlice = prismic.SharedSlice<
  * Primary content in *Video → Default → Primary*
  */
 export interface VideoSliceDefaultPrimary {
+  /**
+   * Visible field in *Video → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: video.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
   /**
    * Poster field in *Video → Default → Primary*
    *
