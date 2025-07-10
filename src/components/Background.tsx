@@ -337,19 +337,39 @@ const Background: React.FC = () => {
     y: getEasedPosition(combinedPosition.y, delays.gradient3, easeInOutQuart)
   };
 
+  // Get movement multipliers based on device type
+  const getMovementMultipliers = () => {
+    if (mounted && isMobileRef.current) {
+      return {
+        // Reduced movement for mobile to keep gradients visible
+        gradient1: { x: 300, y: 280 },
+        gradient2: { x: 280, y: 320 },
+        gradient3: { x: 320, y: 250 }
+      };
+    }
+    return {
+      // Original desktop movement
+      gradient1: { x: 800, y: 720 },
+      gradient2: { x: 720, y: 880 },
+      gradient3: { x: 840, y: 640 }
+    };
+  };
+
+  const multipliers = getMovementMultipliers();
+
   // Gradient 1 moves opposite to mouse X and with mouse Y
   const gradient1Transform = mounted 
-    ? `translate3d(${-gradient1Position.x * 800 + initialOffsets.gradient1.x}px, ${gradient1Position.y * 720 + initialOffsets.gradient1.y}px, 0)` 
+    ? `translate3d(${-gradient1Position.x * multipliers.gradient1.x + initialOffsets.gradient1.x}px, ${gradient1Position.y * multipliers.gradient1.y + initialOffsets.gradient1.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient1.x}px, ${initialOffsets.gradient1.y}px, 0)`;
     
   // Gradient 2 moves with mouse X and opposite to mouse Y
   const gradient2Transform = mounted 
-    ? `translate3d(${gradient2Position.x * 720 + initialOffsets.gradient2.x}px, ${-gradient2Position.y * 880 + initialOffsets.gradient2.y}px, 0)` 
+    ? `translate3d(${gradient2Position.x * multipliers.gradient2.x + initialOffsets.gradient2.x}px, ${-gradient2Position.y * multipliers.gradient2.y + initialOffsets.gradient2.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient2.x}px, ${initialOffsets.gradient2.y}px, 0)`;
     
   // Gradient 3 moves diagonally relative to mouse but in a slightly different angle
   const gradient3Transform = mounted 
-    ? `translate3d(${gradient3Position.x * 840 + initialOffsets.gradient3.x}px, ${gradient3Position.y * 640 + initialOffsets.gradient3.y}px, 0)` 
+    ? `translate3d(${gradient3Position.x * multipliers.gradient3.x + initialOffsets.gradient3.x}px, ${gradient3Position.y * multipliers.gradient3.y + initialOffsets.gradient3.y}px, 0)` 
     : `translate3d(${initialOffsets.gradient3.x}px, ${initialOffsets.gradient3.y}px, 0)`;
   
   return (
