@@ -27,3 +27,7 @@ h3 {
 h4 {
   @apply text-base font-normal leading-6 md:leading-10;
 }
+
+.headline h1 {
+  @apply text-[7vw] md:text-[5vw] font-normal leading-[7.5vw] md:leading-[5.5vw];
+}
