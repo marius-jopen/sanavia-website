@@ -90,6 +90,14 @@
 										}
 									]
 								}
+							],
+							[
+								"video_url",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "roar",
+									"type": "Text"
+								}
 							]
 						]
 					}

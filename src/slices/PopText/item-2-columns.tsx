@@ -3,6 +3,7 @@ import { PrismicRichText } from '@prismicio/react';
 import { PrismicNextImage } from '@prismicio/next';
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
+import VideoBasic from "../../components/VideoBasic";
 
 interface Item2ColumnsProps {
   headline?: KeyTextField;
@@ -16,7 +17,14 @@ const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
     <div className="pop-text-one-column flex gap-8 md:py-4">
       {props.image && (
         <div className='w-1/2 flex justify-center flex-col'>
-          <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" />
+          {/* <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" /> */}
+          <div className='mb-4 rounded-2xl overflow-hidden'>
+            <VideoBasic
+            url={props.video_url || undefined}
+            poster={props.image}
+            className="rounded-2xl"
+            />
+          </div>
         </div>
       )}
 

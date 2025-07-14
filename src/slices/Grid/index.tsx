@@ -22,6 +22,23 @@ type PhysicsCircle = {
   originalPosition: { x: number; y: number };
   color: string;
   index: number;
+  wiggleOffset: { x: number; y: number };
+  wiggleSpeed: { x: number; y: number };
+  isFilled: boolean;
+  isInitiallyFilled: boolean;
+  isUserFilled: boolean;
+  isAnimating: boolean;
+  animationProgress: number;
+};
+
+/**
+ * Feedback message type
+ */
+type FeedbackMessage = {
+  id: string;
+  x: number;
+  y: number;
+  timestamp: number;
 };
 
 /**
@@ -66,58 +83,70 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Circle colors
     COLORS: {
       DEFAULT: 'white',
-      BLUE: 'black'
+      FILLED: 'black',
+      OUTLINE: 'rgba(255, 255, 255, 0.6)',
+      GLOW: 'rgba(0, 0, 0, 0.3)'
     },
     
-    // Percentage of blue circles when toggle is false (20%)
-    BLUE_PERCENTAGE_OFF: 80,
+    // Progress percentages
+    INITIAL_FILLED_PERCENTAGE: 20,
+    MAX_FILLED_PERCENTAGE: 60,
     
-    // Percentage of blue circles when toggle is true (60%)
-    BLUE_PERCENTAGE_ON: 40,
+    // Animation settings
+    FILL_ANIMATION_DURATION: 1500, // 1.5 seconds
     
-    // Physics configuration
-    PHYSICS: {
-      // How strongly circles are repelled by the mouse
-      REPULSION_STRENGTH: {
-        DESKTOP: 0.2,
-        TABLET: 0.18,
-        MOBILE: 0.15
+    // Wiggle animation configuration
+    WIGGLE: {
+      // Maximum wiggle distance in pixels
+      MAX_DISTANCE: {
+        DESKTOP: 3,
+        TABLET: 2.5,
+        MOBILE: 2
       },
       
-      // Maximum distance that the mouse affects circles
-      REPULSION_RADIUS: {
-        DESKTOP: 80,
-        TABLET: 90,
-        MOBILE: 80
+      // Wiggle animation speed
+      SPEED: {
+        DESKTOP: 0.02,
+        TABLET: 0.018,
+        MOBILE: 0.015
       },
       
       // How quickly circles return to their original positions
       SPRING_STRENGTH: {
-        DESKTOP: 0.00001,
-        TABLET: 0.00001,
-        MOBILE: 0.00001
+        DESKTOP: 0.001,
+        TABLET: 0.001,
+        MOBILE: 0.001
       },
       
-      // Friction to slow down circle movement
+      // Friction to control movement smoothness
       FRICTION: {
-        DESKTOP: 10,
-        TABLET: 9,
-        MOBILE: 8
-      },
-      
-      // Vertical padding (in pixels) to add at top and bottom of canvas
-      // to ensure circles don't disappear when they move outside the grid
-      VERTICAL_PADDING: 200
-    }
+        DESKTOP: 8,
+        TABLET: 7,
+        MOBILE: 6
+      }
+    },
+    
+    // Interaction settings
+    INTERACTION: {
+      // Click/tap detection radius
+      CLICK_RADIUS: {
+        DESKTOP: 25,
+        TABLET: 30,
+        MOBILE: 35
+      }
+    },
+    
+    // Vertical padding (in pixels) to add at top and bottom of canvas
+    VERTICAL_PADDING: 200
   }), []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestAnimationRef = useRef<number | null>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const circlesRef = useRef<PhysicsCircle[]>([]);
-  const mousePositionRef = useRef<{ x: number; y: number; active: boolean } | null>(null);
   const isInitializedRef = useRef<boolean>(false);
   const toggleRef = useRef<boolean>(false);
+  const timeRef = useRef<number>(0);
   
   // This state is only for forcing UI updates, not for physics
   const [toggleState, setToggleState] = useState(false);
@@ -127,6 +156,10 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     columns: 0, 
     totalCircles: 0 
   });
+  const [progress, setProgress] = useState(20);
+  const [userFilledCount, setUserFilledCount] = useState(0);
+  const [feedbackMessages, setFeedbackMessages] = useState<FeedbackMessage[]>([]);
+  const [showFinalMessage, setShowFinalMessage] = useState(false);
 
   // Add state for client-side hydration
   const [isMounted, setIsMounted] = useState(false);
@@ -170,14 +203,87 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     return randomizedIndices;
   }, [randomizedIndices]);
 
-  // Get the set of blue indices based on toggle state
-  const getBlueIndices = useCallback((indices: number[], totalCircles: number) => {
-    const percentage = toggleRef.current ? CONFIG.BLUE_PERCENTAGE_ON : CONFIG.BLUE_PERCENTAGE_OFF;
-    const count = Math.floor(totalCircles * (percentage / 100));
+  // Get the set of filled indices based on toggle state or interaction
+  const getFilledIndices = useCallback((indices: number[], totalCircles: number, isToggleMode: boolean = false) => {
+    if (isToggleMode) {
+      // Toggle mode: use predefined percentages
+      const percentage = toggleRef.current ? CONFIG.MAX_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
+      const count = Math.floor(totalCircles * (percentage / 100));
+      return new Set(indices.slice(0, count));
+    } else {
+      // Interactive mode: use current circle states
+      return new Set(circlesRef.current.filter(circle => circle.isFilled).map(circle => circle.index));
+    }
+  }, [CONFIG.INITIAL_FILLED_PERCENTAGE, CONFIG.MAX_FILLED_PERCENTAGE]);
+
+  // Handle click/tap interaction
+  const handleCanvasInteraction = useCallback((event: MouseEvent | TouchEvent) => {
+    if (!canvasRef.current || toggleRef.current) return; // Disable interaction in solution mode
     
-    // Take first 'count' elements from our consistent randomized array
-    return new Set(indices.slice(0, count));
-  }, [CONFIG.BLUE_PERCENTAGE_ON, CONFIG.BLUE_PERCENTAGE_OFF]);
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Get interaction coordinates
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+    
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    
+    // Find closest circle within click radius
+    const currentDeviceType = getDeviceType();
+    const clickRadius = CONFIG.INTERACTION.CLICK_RADIUS[currentDeviceType.toUpperCase() as keyof typeof CONFIG.INTERACTION.CLICK_RADIUS];
+    
+    let closestCircle: PhysicsCircle | null = null;
+    let closestDistance = Infinity;
+    
+    for (const circle of circlesRef.current) {
+      const dx = circle.body.position.x - x;
+      const dy = circle.body.position.y - y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < clickRadius && distance < closestDistance && !circle.isFilled) {
+        closestDistance = distance;
+        closestCircle = circle;
+      }
+    }
+    
+    // Fill the closest circle if found
+    if (closestCircle) {
+      closestCircle.isFilled = true;
+      closestCircle.isUserFilled = true;
+      closestCircle.isAnimating = true;
+      closestCircle.animationProgress = 0;
+      
+      // Update progress
+      const filledCount = circlesRef.current.filter(c => c.isFilled).length;
+      const newProgress = Math.min(
+        (filledCount / circlesRef.current.length) * 100,
+        CONFIG.MAX_FILLED_PERCENTAGE
+      );
+      setProgress(newProgress);
+      setUserFilledCount(prev => prev + 1);
+      
+      // Add feedback message
+      const feedbackId = `${closestCircle.index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setFeedbackMessages(prev => [...prev, {
+        id: feedbackId,
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+        timestamp: Date.now()
+      }]);
+      
+      // Remove feedback after 2 seconds
+      setTimeout(() => {
+        setFeedbackMessages(prev => prev.filter(msg => msg.id !== feedbackId));
+      }, 2000);
+      
+      // Check if we've reached the maximum state
+      if (newProgress >= CONFIG.MAX_FILLED_PERCENTAGE) {
+        setShowFinalMessage(true);
+      }
+    }
+  }, [CONFIG, getDeviceType]);
 
   // Setup physics world with matter.js
   const setupPhysics = useCallback((
@@ -186,7 +292,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     columns: number,
     spacing: number,
     circleSize: number,
-    blueIndicesSet: Set<number>,
+    filledIndicesSet: Set<number>,
     gridTopOffset: number
   ) => {
     // Clean up existing engine if it exists
@@ -207,7 +313,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     const columnWidth = totalWidth / columns;
     
     const currentDeviceType = getDeviceType();
-    const friction = CONFIG.PHYSICS.FRICTION[currentDeviceType.toUpperCase() as keyof typeof CONFIG.PHYSICS.FRICTION];
+    const friction = CONFIG.WIGGLE.FRICTION[currentDeviceType.toUpperCase() as keyof typeof CONFIG.WIGGLE.FRICTION];
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
@@ -221,19 +327,29 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         const body = Matter.Bodies.circle(x, y, circleSize / 2, {
           isStatic: false,
           friction: friction,
-          restitution: 0.3,
-          frictionAir: 0.03
+          restitution: 0.1,
+          frictionAir: 0.05
         });
         
-        // Determine color based on indices
-        const color = blueIndicesSet.has(index) ? CONFIG.COLORS.BLUE : CONFIG.COLORS.DEFAULT;
+        // Determine if initially filled
+        const isInitiallyFilled = filledIndicesSet.has(index);
         
-        // Store circles with their original positions
+        // Store circles with their original positions and wiggle properties
         circles.push({
           body,
           originalPosition: { x, y },
-          color,
-          index
+          color: isInitiallyFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT,
+          index,
+          wiggleOffset: { x: 0, y: 0 },
+          wiggleSpeed: { 
+            x: (Math.random() - 0.5) * 0.02, 
+            y: (Math.random() - 0.5) * 0.02 
+          },
+          isFilled: isInitiallyFilled,
+          isInitiallyFilled,
+          isUserFilled: false,
+          isAnimating: false,
+          animationProgress: 0
         });
         
         // Add body to the world
@@ -255,23 +371,35 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Only force a UI update
     setToggleState(toggleRef.current);
     
-    // Directly update circle colors without any re-render
+    // Reset all user interactions and set predetermined states
     if (isInitializedRef.current && circlesRef.current.length > 0) {
       const { totalCircles } = gridDimensions;
       const indices = randomizedIndices.length === totalCircles 
         ? randomizedIndices 
         : initializeRandomIndices(totalCircles);
       
-      const blueIndicesSet = getBlueIndices(indices, totalCircles);
+      const filledIndicesSet = getFilledIndices(indices, totalCircles, true);
       
-      // Update colors without changing positions
+      // Update all circles to match toggle state
       for (const circle of circlesRef.current) {
-        circle.color = blueIndicesSet.has(circle.index) ? CONFIG.COLORS.BLUE : CONFIG.COLORS.DEFAULT;
+        const shouldBeFilled = filledIndicesSet.has(circle.index);
+        circle.isFilled = shouldBeFilled;
+        circle.isInitiallyFilled = shouldBeFilled;
+        circle.isUserFilled = false;
+        circle.isAnimating = false;
+        circle.animationProgress = 0;
+        circle.color = shouldBeFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT;
       }
+      
+      // Update progress to match toggle state
+      const newProgress = toggleRef.current ? CONFIG.MAX_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
+      setProgress(newProgress);
+      setUserFilledCount(0);
+      setShowFinalMessage(false);
     }
-  }, [gridDimensions, randomizedIndices, initializeRandomIndices, getBlueIndices, CONFIG]);
+  }, [gridDimensions, randomizedIndices, initializeRandomIndices, getFilledIndices, CONFIG]);
 
-  // Animation loop for physics simulation
+  // Animation loop for physics simulation with gentle wiggling
   const animatePhysics = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !engineRef.current || !isInitializedRef.current) return;
@@ -279,56 +407,51 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Update time for wiggle animation
+    timeRef.current += 0.016; // approximately 60fps
+
     // Update physics engine
     Matter.Engine.update(engineRef.current, 1000 / 60);
     
-    // Apply forces based on mouse position
-    if (mousePositionRef.current) {
-      const { x: mouseX, y: mouseY, active } = mousePositionRef.current;
-      const circles = circlesRef.current;
-      const currentDeviceType = getDeviceType();
-      const deviceKey = currentDeviceType.toUpperCase() as keyof typeof CONFIG.PHYSICS.REPULSION_STRENGTH;
+    // Apply gentle wiggle forces to circles
+    const circles = circlesRef.current;
+    const currentDeviceType = getDeviceType();
+    const deviceKey = currentDeviceType.toUpperCase() as keyof typeof CONFIG.WIGGLE.MAX_DISTANCE;
+    
+    const maxDistance = CONFIG.WIGGLE.MAX_DISTANCE[deviceKey];
+    const wiggleSpeed = CONFIG.WIGGLE.SPEED[deviceKey];
+    const springStrength = CONFIG.WIGGLE.SPRING_STRENGTH[deviceKey];
+    
+    for (const circle of circles) {
+      const { body, originalPosition } = circle;
+      const { position } = body;
       
-      const repulsionStrength = CONFIG.PHYSICS.REPULSION_STRENGTH[deviceKey];
-      const repulsionRadius = CONFIG.PHYSICS.REPULSION_RADIUS[deviceKey];
-      const springStrength = CONFIG.PHYSICS.SPRING_STRENGTH[deviceKey];
-      
-      for (const circle of circles) {
-        const { body, originalPosition } = circle;
-        const { position } = body;
-        
-        // Only apply mouse repulsion if mouse is active (inside canvas)
-        if (active) {
-          // Calculate distance from mouse to circle
-          const dx = position.x - mouseX;
-          const dy = position.y - mouseY;
-          const distanceSquared = dx * dx + dy * dy;
-          
-          if (distanceSquared < repulsionRadius * repulsionRadius) {
-            // Apply repulsion force (stronger when closer)
-            const distance = Math.sqrt(distanceSquared);
-            const forceMagnitude = repulsionStrength * (1 - distance / repulsionRadius);
-            
-            // Normalize direction vector
-            const forceX = (dx / distance) * forceMagnitude;
-            const forceY = (dy / distance) * forceMagnitude;
-            
-            Matter.Body.applyForce(body, position, {
-              x: forceX,
-              y: forceY
-            });
-          }
+      // Update animation progress for filling circles
+      if (circle.isAnimating) {
+        circle.animationProgress += 0.016; // 60fps
+        if (circle.animationProgress >= CONFIG.FILL_ANIMATION_DURATION / 1000) {
+          circle.isAnimating = false;
+          circle.animationProgress = 1;
         }
-        
-        // Always apply spring force to return to original position
-        const springDx = originalPosition.x - position.x;
-        const springDy = originalPosition.y - position.y;
-        
-        Matter.Body.applyForce(body, position, {
-          x: springDx * springStrength,
-          y: springDy * springStrength
-        });
       }
+      
+      // Calculate gentle wiggle using sine waves with unique offsets per circle
+      const wiggleMultiplier = circle.isFilled ? 0.7 : 1; // Filled circles wiggle less
+      const wiggleX = Math.sin(timeRef.current * wiggleSpeed + circle.index * 0.5) * maxDistance * wiggleMultiplier;
+      const wiggleY = Math.cos(timeRef.current * wiggleSpeed * 0.8 + circle.index * 0.3) * maxDistance * wiggleMultiplier;
+      
+      // Target position includes the wiggle offset
+      const targetX = originalPosition.x + wiggleX;
+      const targetY = originalPosition.y + wiggleY;
+      
+      // Apply gentle spring force toward the wiggling target position
+      const springDx = targetX - position.x;
+      const springDy = targetY - position.y;
+      
+      Matter.Body.applyForce(body, position, {
+        x: springDx * springStrength,
+        y: springDy * springStrength
+      });
     }
     
     // Clear canvas
@@ -336,19 +459,45 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Render circles
     for (const circle of circlesRef.current) {
-      const { body, color } = circle;
+      const { body, isFilled, isAnimating, animationProgress } = circle;
       const radius = body.circleRadius as number || body.bounds.max.x - body.bounds.min.x;
       
       ctx.beginPath();
       ctx.arc(body.position.x, body.position.y, radius, 0, Math.PI * 2);
       
-      if (color === CONFIG.COLORS.DEFAULT) {
-        // White circles - filled
-        ctx.fillStyle = color;
-        ctx.fill();
+      if (isFilled) {
+        // Filled circles (black)
+        if (isAnimating) {
+          // Animated fill
+          const progress = Math.min(animationProgress / (CONFIG.FILL_ANIMATION_DURATION / 1000), 1);
+          const animRadius = radius * progress;
+          
+          // Draw outline first
+          ctx.strokeStyle = CONFIG.COLORS.OUTLINE;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          // Draw growing fill
+          if (animRadius > 0) {
+            ctx.beginPath();
+            ctx.arc(body.position.x, body.position.y, animRadius, 0, Math.PI * 2);
+            ctx.fillStyle = CONFIG.COLORS.FILLED;
+            ctx.fill();
+          }
+        } else {
+          // Fully filled
+          ctx.fillStyle = CONFIG.COLORS.FILLED;
+          ctx.fill();
+          
+          // Add subtle glow
+          ctx.shadowColor = CONFIG.COLORS.GLOW;
+          ctx.shadowBlur = 4;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
       } else {
-        // Black circles - transparent with white outline
-        ctx.strokeStyle = 'white';
+        // Unfilled circles (white outline)
+        ctx.strokeStyle = CONFIG.COLORS.OUTLINE;
         ctx.lineWidth = 2;
         ctx.stroke();
       }
@@ -409,7 +558,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       const gridHeight = (estimatedRows * rowHeight) + (spacing * 2);
       
       // Add vertical padding for circles that move outside the grid
-      const verticalPadding = CONFIG.PHYSICS.VERTICAL_PADDING;
+      const verticalPadding = CONFIG.VERTICAL_PADDING;
       
       // Set canvas height to accommodate all rows plus padding
       const totalHeight = gridHeight + (verticalPadding * 2);
@@ -423,99 +572,27 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       
       // Initialize indices and set up physics
       const indices = initializeRandomIndices(totalCircles);
-      const blueIndicesSet = getBlueIndices(indices, totalCircles);
+      const filledIndicesSet = getFilledIndices(indices, totalCircles, true);
       
       // Set up physics world - pass the top padding offset so grid starts at the right position
-      setupPhysics(canvas, rows, columns, spacing, adjustedCircleSize, blueIndicesSet, verticalPadding);
+      setupPhysics(canvas, rows, columns, spacing, adjustedCircleSize, filledIndicesSet, verticalPadding);
       
       // Start animation loop
       requestAnimationRef.current = requestAnimationFrame(animatePhysics);
     };
 
-    // Handle mouse movement
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      // Update mouse position for physics simulation with active flag
-      mousePositionRef.current = { x, y, active: true };
+    // Add interaction event listeners
+    const handleClick = (e: MouseEvent) => {
+      handleCanvasInteraction(e);
     };
 
-    // Handle touch movement
-    const handleTouchMove = (e: TouchEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      
-      // Only prevent default behavior if we're actually affecting circles
-      // Check if touch is within the canvas bounds and near circles
-      if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
-        // Check if we're near any circles that would be affected
-        const currentDeviceType = getDeviceType();
-        const deviceKey = currentDeviceType.toUpperCase() as keyof typeof CONFIG.PHYSICS.REPULSION_RADIUS;
-        const repulsionRadius = CONFIG.PHYSICS.REPULSION_RADIUS[deviceKey];
-        
-        // Check if touch is within repulsion radius of any circle
-        const isNearCircle = circlesRef.current.some(circle => {
-          const dx = circle.body.position.x - x;
-          const dy = circle.body.position.y - y;
-          const distanceSquared = dx * dx + dy * dy;
-          return distanceSquared < repulsionRadius * repulsionRadius;
-        });
-        
-        // Only prevent scrolling if we're actually near circles
-        if (isNearCircle) {
-          e.preventDefault();
-        }
-      }
-      
-      // Update position for physics simulation with active flag
-      mousePositionRef.current = { x, y, active: true };
-    };
-    
-    // Handle mouse leaving the canvas
-    const handleMouseLeave = () => {
-      // Instead of setting to null, we keep the last position but mark as inactive
-      if (mousePositionRef.current) {
-        mousePositionRef.current.active = false;
-      }
-    };
-
-    // Handle touch end
-    const handleTouchEnd = () => {
-      // Mark as inactive when touch ends
-      if (mousePositionRef.current) {
-        mousePositionRef.current.active = false;
-      }
-    };
-
-    // Handle mouse entering the canvas
-    const handleMouseEnter = () => {
-      // Reactivate mouse effect if we have a position
-      if (mousePositionRef.current) {
-        mousePositionRef.current.active = true;
-      }
-    };
-
-    // Handle touch start
     const handleTouchStart = (e: TouchEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      
-      // Set initial touch position and mark as active
-      mousePositionRef.current = { x, y, active: true };
+      e.preventDefault(); // Prevent scrolling on touch
+      handleCanvasInteraction(e);
     };
 
     window.addEventListener('resize', handleResize);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
-    canvas.addEventListener('mouseenter', handleMouseEnter);
-    canvas.addEventListener('touchmove', handleTouchMove);
-    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('click', handleClick);
     canvas.addEventListener('touchstart', handleTouchStart);
     
     handleResize();
@@ -531,14 +608,10 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       }
       
       window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
-      canvas.removeEventListener('mouseenter', handleMouseEnter);
-      canvas.removeEventListener('touchmove', handleTouchMove);
-      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('click', handleClick);
       canvas.removeEventListener('touchstart', handleTouchStart);
     };
-  }, [CONFIG, initializeRandomIndices, getBlueIndices, setupPhysics, animatePhysics, checkIfMobile, getDeviceType]);
+  }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, getDeviceType, handleCanvasInteraction]);
 
   // Add useEffect to set mounted state
   useEffect(() => {
@@ -563,40 +636,102 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           marginRight: '-50vw'
         }}
       >
+        {/* Instruction tooltip */}
+        <div
+          className="z-20 absolute left-1/2 transform -translate-x-1/2 
+                     bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 
+                     text-sm font-medium text-gray-700 shadow-lg"
+          style={{
+            top: `${CONFIG.VERTICAL_PADDING - 60}px`
+          }}
+        >
+          {toggleState 
+            ? "This is what Sanavia's technology can achieve"
+            : "Each dot = a patient. Click/tap to give them hope."
+          }
+        </div>
+
         {/* Toggle Button - positioned above the circles */}
         <div
-        className="
-          z-30
-          absolute
-          left-0
-          "
-        style={{
-          top: `${CONFIG.PHYSICS.VERTICAL_PADDING - (checkIfMobile() ? 230 : 300)}px` // Closer on mobile
-        }}
+          className="z-30 absolute left-0"
+          style={{
+            top: `${CONFIG.VERTICAL_PADDING - (checkIfMobile() ? 230 : 300)}px`
+          }}
         >
           <button 
             onClick={handleToggle}
-            className={`
-              bg-white text-black hover:bg-black hover:text-white
-              pl-6 pr-10 py-3 md:py-6
-              rounded-r-full
-              cursor-pointer
-              font-bold
-              transition-all duration-300 ease-in-out
-              focus:outline-none
-              mb-2
-            `}
-
+            className="bg-white text-black hover:bg-black hover:text-white
+                       pl-6 pr-10 py-3 md:py-6 rounded-r-full cursor-pointer 
+                       font-bold transition-all duration-300 ease-in-out 
+                       focus:outline-none mb-2"
           >
             <h2>
-              {toggleState ? `Our solution` : `The problem`}
+              {toggleState ? 'Our solution' : 'The problem'}
             </h2>
           </button>
 
-          <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4 w-full md:w-1/2 ">
+          <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4">
             {toggleState ? settings?.grid_solution : settings?.grid_problem}
           </div>
         </div>
+
+        {/* Progress indicator */}
+        <div
+          className="z-20 absolute right-0 bg-white/90 backdrop-blur-sm 
+                     rounded-l-full px-8 py-4 shadow-lg"
+          style={{
+            top: `${CONFIG.VERTICAL_PADDING - (checkIfMobile() ? 160 : 200)}px`
+          }}
+        >
+          <div className="text-2xl font-bold text-gray-900">
+            {Math.round(progress)}%
+          </div>
+          <div className="text-sm text-gray-600">
+            patients helped
+          </div>
+          {!toggleState && userFilledCount > 0 && (
+            <div className="text-xs text-blue-600 font-medium mt-1">
+              +{userFilledCount} by you! 💙
+            </div>
+          )}
+        </div>
+        
+        {/* Final message */}
+        {showFinalMessage && !toggleState && (
+          <div
+            className="z-30 absolute left-1/2 transform -translate-x-1/2 
+                       bg-gradient-to-r from-blue-600 to-purple-600 text-white 
+                       rounded-2xl px-8 py-6 shadow-2xl text-center max-w-md
+                       animate-pulse"
+            style={{
+              bottom: `${CONFIG.VERTICAL_PADDING - 100}px`
+            }}
+          >
+            <h3 className="text-xl font-bold mb-2">
+              Imagine if our therapies could reach them all.
+            </h3>
+            <p className="text-sm opacity-90">
+              See how Sanavia makes this vision a reality.
+            </p>
+          </div>
+        )}
+        
+        {/* Feedback Messages */}
+        {feedbackMessages.map((msg) => (
+          <div
+            key={msg.id}
+            className="absolute pointer-events-none z-40 text-green-600 
+                       font-bold text-sm animate-bounce"
+            style={{
+              left: msg.x,
+              top: msg.y,
+              transform: 'translate(-50%, -100%)',
+              animation: 'fadeUpOut 2s ease-out forwards'
+            }}
+          >
+            +1 patient helped
+          </div>
+        ))}
         
         <canvas 
           ref={canvasRef} 
@@ -605,10 +740,20 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             margin: 0, 
             padding: 0,
             width: '100%',
-            maxWidth: '100%'
+            maxWidth: '100%',
+            cursor: toggleState ? 'default' : 'pointer'
           }}
         />
       </section>
+
+      {/* CSS for feedback animation */}
+      <style>{`
+        @keyframes fadeUpOut {
+          0% { opacity: 1; transform: translate(-50%, -100%) translateY(0px); }
+          50% { opacity: 1; transform: translate(-50%, -100%) translateY(-20px); }
+          100% { opacity: 0; transform: translate(-50%, -100%) translateY(-40px); }
+        }
+      `}</style>
     </div>
   );
 };

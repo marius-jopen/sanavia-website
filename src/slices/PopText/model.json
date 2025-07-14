@@ -104,6 +104,13 @@
                   "allowText": true,
                   "repeat": false
                 }
+              },
+              "video_url": {
+                "type": "Text",
+                "config": {
+                  "label": "Video Url",
+                  "placeholder": ""
+                }
               }
             }
           }
