@@ -1,6 +1,5 @@
 import Button from '@/components/Button';
 import { PrismicRichText } from '@prismicio/react';
-import { PrismicNextImage } from '@prismicio/next';
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
 import VideoBasic from "../../components/VideoBasic";
@@ -18,7 +17,6 @@ const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
     <div className="pop-text-one-column md:py-4">
       {props.image && (
         <div className='mb-4 rounded-2xl overflow-hidden'>
-          {/* <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" /> */}
           <VideoBasic
           url={props.video_url || undefined}
           poster={props.image}

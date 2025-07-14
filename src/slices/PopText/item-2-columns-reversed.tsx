@@ -1,5 +1,4 @@
 import { PrismicRichText } from '@prismicio/react';
-import { PrismicNextImage } from '@prismicio/next';
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
 import Button from '@/components/Button';
@@ -17,7 +16,6 @@ const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
     <div className="pop-text-one-column flex gap-8 flex-row-reverse md:py-4">
       {props.image && (
         <div className='w-1/2 flex justify-center flex-col'>
-          {/* <PrismicNextImage className="rounded-lg" field={props.image} fallbackAlt="" /> */}
           <div className='mb-4 rounded-2xl overflow-hidden'>
             <VideoBasic
             url={props.video_url || undefined}

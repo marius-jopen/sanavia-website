@@ -1,6 +1,5 @@
 import Button from '@/components/Button';
 import { PrismicRichText } from '@prismicio/react';
-import { PrismicNextImage } from '@prismicio/next';
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
 import VideoBasic from "../../components/VideoBasic";
@@ -17,7 +16,6 @@ const Item2ColumnsBigImage: React.FC<Item2ColumnsBigImageProps> = (props) => {
     <div className="pop-text-one-column flex gap-8 md:py-4">
       {props.image && (
         <div className='w-7/12 flex justify-center flex-col'>
-          {/* <PrismicNextImage className="rounded-2xl" field={props.image} fallbackAlt="" /> */}
           <div className='mb-4 rounded-2xl overflow-hidden'>
             <VideoBasic
             url={props.video_url || undefined}

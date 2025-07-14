@@ -636,6 +636,20 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           marginRight: '-50vw'
         }}
       >
+        {/* Static text section above the circles */}
+        <div
+          className="z-20 absolute left-1/2 transform -translate-x-1/2 
+                     bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 
+                     text-center font-medium text-gray-700 shadow-lg max-w-4xl"
+          style={{
+            top: `${CONFIG.VERTICAL_PADDING - 180}px`
+          }}
+        >
+          <p className="text-base md:text-lg leading-relaxed">
+            Of the approximately 18 million new cancer diagnoses per year, only 20% of patients are responsive to current therapies. Unfortunately, that leaves the 80% of patients resistant to current therapies lost and without hope.
+          </p>
+        </div>
+
         {/* Instruction tooltip */}
         <div
           className="z-20 absolute left-1/2 transform -translate-x-1/2 
