@@ -137,7 +137,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     },
     
     // Vertical padding (in pixels) to add at top and bottom of canvas
-    VERTICAL_PADDING: 200
+    VERTICAL_PADDING: 20
   }), []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -653,7 +653,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       </div>
     </div>
 
-      <div className="bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 w-1/2 mb-4 text-gray-800">
+      <div className="bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
         <p>
         {settings?.grid_problem} 
         </p>
@@ -711,7 +711,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           style={{ 
             display: 'block', 
             margin: 0, 
-            padding: 0,
+            padding: '0 20px 0 20px',
             width: '100%',
             maxWidth: '100%',
             cursor: toggleState ? 'default' : 'pointer'
