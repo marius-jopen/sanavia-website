@@ -31,15 +31,7 @@ type PhysicsCircle = {
   animationProgress: number;
 };
 
-/**
- * Feedback message type
- */
-type FeedbackMessage = {
-  id: string;
-  x: number;
-  y: number;
-  timestamp: number;
-};
+
 
 /**
  * Component for "Grid" Slices.
@@ -90,7 +82,8 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Progress percentages
     INITIAL_FILLED_PERCENTAGE: 20,
-    MAX_FILLED_PERCENTAGE: 60,
+    SOLUTION_FILLED_PERCENTAGE: 60,
+    MAX_FILLED_PERCENTAGE: 100,
     
     // Animation settings
     FILL_ANIMATION_DURATION: 1500, // 1.5 seconds
@@ -130,9 +123,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     INTERACTION: {
       // Click/tap detection radius
       CLICK_RADIUS: {
-        DESKTOP: 25,
-        TABLET: 30,
-        MOBILE: 35
+        DESKTOP: 50,
+        TABLET: 55,
+        MOBILE: 60
       }
     },
     
@@ -158,8 +151,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   });
   const [progress, setProgress] = useState(20);
   const [userFilledCount, setUserFilledCount] = useState(0);
-  const [feedbackMessages, setFeedbackMessages] = useState<FeedbackMessage[]>([]);
-  const [showFinalMessage, setShowFinalMessage] = useState(false);
 
   // Add state for client-side hydration
   const [isMounted, setIsMounted] = useState(false);
@@ -207,18 +198,18 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   const getFilledIndices = useCallback((indices: number[], totalCircles: number, isToggleMode: boolean = false) => {
     if (isToggleMode) {
       // Toggle mode: use predefined percentages
-      const percentage = toggleRef.current ? CONFIG.MAX_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
+      const percentage = toggleRef.current ? CONFIG.SOLUTION_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
       const count = Math.floor(totalCircles * (percentage / 100));
       return new Set(indices.slice(0, count));
     } else {
       // Interactive mode: use current circle states
       return new Set(circlesRef.current.filter(circle => circle.isFilled).map(circle => circle.index));
     }
-  }, [CONFIG.INITIAL_FILLED_PERCENTAGE, CONFIG.MAX_FILLED_PERCENTAGE]);
+  }, [CONFIG.INITIAL_FILLED_PERCENTAGE, CONFIG.SOLUTION_FILLED_PERCENTAGE]);
 
   // Handle click/tap interaction
   const handleCanvasInteraction = useCallback((event: MouseEvent | TouchEvent) => {
-    if (!canvasRef.current || toggleRef.current) return; // Disable interaction in solution mode
+    if (!canvasRef.current) return; // Allow interaction in both modes
     
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
@@ -264,24 +255,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       setProgress(newProgress);
       setUserFilledCount(prev => prev + 1);
       
-      // Add feedback message
-      const feedbackId = `${closestCircle.index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      setFeedbackMessages(prev => [...prev, {
-        id: feedbackId,
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-        timestamp: Date.now()
-      }]);
-      
-      // Remove feedback after 2 seconds
-      setTimeout(() => {
-        setFeedbackMessages(prev => prev.filter(msg => msg.id !== feedbackId));
-      }, 2000);
-      
-      // Check if we've reached the maximum state
-      if (newProgress >= CONFIG.MAX_FILLED_PERCENTAGE) {
-        setShowFinalMessage(true);
-      }
+
     }
   }, [CONFIG, getDeviceType]);
 
@@ -392,10 +366,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       }
       
       // Update progress to match toggle state
-      const newProgress = toggleRef.current ? CONFIG.MAX_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
+      const newProgress = toggleRef.current ? CONFIG.SOLUTION_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
       setProgress(newProgress);
       setUserFilledCount(0);
-      setShowFinalMessage(false);
     }
   }, [gridDimensions, randomizedIndices, initializeRandomIndices, getFilledIndices, CONFIG]);
 
@@ -669,42 +642,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       </div>
 
         
-        {/* Final message */}
-        {showFinalMessage && !toggleState && (
-          <div
-            className="z-30 absolute left-1/2 transform -translate-x-1/2 
-                       bg-gradient-to-r from-blue-600 to-purple-600 text-white 
-                       rounded-2xl px-8 py-6 shadow-2xl text-center max-w-md
-                       animate-pulse"
-            style={{
-              bottom: `${CONFIG.VERTICAL_PADDING - 100}px`
-            }}
-          >
-            <h3 className="text-xl font-bold mb-2">
-              Imagine if our therapies could reach them all.
-            </h3>
-            <p className="text-sm opacity-90">
-              See how Sanavia makes this vision a reality.
-            </p>
-          </div>
-        )}
-        
-        {/* Feedback Messages */}
-        {feedbackMessages.map((msg) => (
-          <div
-            key={msg.id}
-            className="absolute pointer-events-none z-40 text-green-600 
-                       font-bold text-sm animate-bounce"
-            style={{
-              left: msg.x,
-              top: msg.y,
-              transform: 'translate(-50%, -100%)',
-              animation: 'fadeUpOut 2s ease-out forwards'
-            }}
-          >
-            +1 patient helped
-          </div>
-        ))}
+
         
         <canvas 
           ref={canvasRef} 
@@ -714,19 +652,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             padding: '0 20px 0 20px',
             width: '100%',
             maxWidth: '100%',
-            cursor: toggleState ? 'default' : 'pointer'
+            cursor: 'pointer'
           }}
         />
       </section>
 
-      {/* CSS for feedback animation */}
-      <style>{`
-        @keyframes fadeUpOut {
-          0% { opacity: 1; transform: translate(-50%, -100%) translateY(0px); }
-          50% { opacity: 1; transform: translate(-50%, -100%) translateY(-20px); }
-          100% { opacity: 0; transform: translate(-50%, -100%) translateY(-40px); }
-        }
-      `}</style>
+
     </div>
   );
 };
