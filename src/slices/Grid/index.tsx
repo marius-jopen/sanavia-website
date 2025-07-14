@@ -22,13 +22,21 @@ type PhysicsCircle = {
   originalPosition: { x: number; y: number };
   color: string;
   index: number;
-  wiggleOffset: { x: number; y: number };
-  wiggleSpeed: { x: number; y: number };
   isFilled: boolean;
   isInitiallyFilled: boolean;
   isUserFilled: boolean;
-  isAnimating: boolean;
-  animationProgress: number;
+  rippleScale: number;
+};
+
+/**
+ * Ripple effect type
+ */
+type RippleEffect = {
+  id: string;
+  centerX: number;
+  centerY: number;
+  startTime: number;
+  duration: number;
 };
 
 
@@ -88,35 +96,22 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Animation settings
     FILL_ANIMATION_DURATION: 1500, // 1.5 seconds
     
-    // Wiggle animation configuration
-    WIGGLE: {
-      // Maximum wiggle distance in pixels
-      MAX_DISTANCE: {
-        DESKTOP: 3,
-        TABLET: 2.5,
-        MOBILE: 2
-      },
+    // Ripple animation configuration
+    RIPPLE: {
+      // Maximum ripple effect radius in pixels
+      MAX_RADIUS: 400,
       
-      // Wiggle animation speed
-      SPEED: {
-        DESKTOP: 0.02,
-        TABLET: 0.018,
-        MOBILE: 0.015
-      },
+      // Ripple animation duration in milliseconds
+      DURATION: 1500,
       
-      // How quickly circles return to their original positions
-      SPRING_STRENGTH: {
-        DESKTOP: 0.001,
-        TABLET: 0.001,
-        MOBILE: 0.001
-      },
+      // Maximum scale effect (how much circles can grow)
+      MAX_SCALE: 1.6,
       
-      // Friction to control movement smoothness
-      FRICTION: {
-        DESKTOP: 8,
-        TABLET: 7,
-        MOBILE: 6
-      }
+      // Ripple speed (how fast it spreads)
+      SPEED: 0.4,
+      
+      // Wave width for smoother effect
+      WAVE_WIDTH: 80
     },
     
     // Interaction settings
@@ -140,6 +135,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   const isInitializedRef = useRef<boolean>(false);
   const toggleRef = useRef<boolean>(false);
   const timeRef = useRef<number>(0);
+  const activeRipplesRef = useRef<RippleEffect[]>([]);
   
   // This state is only for forcing UI updates, not for physics
   const [toggleState, setToggleState] = useState(false);
@@ -151,6 +147,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   });
   const [progress, setProgress] = useState(20);
   const [userFilledCount, setUserFilledCount] = useState(0);
+  const [activeRipples, setActiveRipples] = useState<RippleEffect[]>([]);
 
   // Add state for client-side hydration
   const [isMounted, setIsMounted] = useState(false);
@@ -239,12 +236,10 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       }
     }
     
-    // Fill the closest circle if found
+              // Fill the closest circle if found
     if (closestCircle) {
       closestCircle.isFilled = true;
       closestCircle.isUserFilled = true;
-      closestCircle.isAnimating = true;
-      closestCircle.animationProgress = 0;
       
       // Update progress
       const filledCount = circlesRef.current.filter(c => c.isFilled).length;
@@ -254,9 +249,33 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       );
       setProgress(newProgress);
       setUserFilledCount(prev => prev + 1);
-      
-
-    }
+        
+        // Create ripple effect
+        const rippleId = `ripple-${Date.now()}-${Math.random()}`;
+        const newRipple: RippleEffect = {
+          id: rippleId,
+          centerX: closestCircle.body.position.x,
+          centerY: closestCircle.body.position.y,
+          startTime: Date.now(),
+          duration: CONFIG.RIPPLE.DURATION
+        };
+        
+        setActiveRipples(prev => {
+          const newRipples = [...prev, newRipple];
+          activeRipplesRef.current = newRipples;
+          return newRipples;
+        });
+        
+        // Remove ripple after duration
+        setTimeout(() => {
+          setActiveRipples(prev => {
+            const filteredRipples = prev.filter(r => r.id !== rippleId);
+            activeRipplesRef.current = filteredRipples;
+            return filteredRipples;
+          });
+        }, CONFIG.RIPPLE.DURATION);
+ 
+      }
   }, [CONFIG, getDeviceType]);
 
   // Setup physics world with matter.js
@@ -286,9 +305,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     const totalWidth = canvas.width;
     const columnWidth = totalWidth / columns;
     
-    const currentDeviceType = getDeviceType();
-    const friction = CONFIG.WIGGLE.FRICTION[currentDeviceType.toUpperCase() as keyof typeof CONFIG.WIGGLE.FRICTION];
-    
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         const index = row * columns + col;
@@ -297,33 +313,27 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         const x = (col * columnWidth) + (columnWidth / 2);
         const y = gridTopOffset + spacing + row * (circleSize + spacing) + circleSize / 2;
         
-        // Create a circular body
+        // Create a circular body (static for no physics movement)
         const body = Matter.Bodies.circle(x, y, circleSize / 2, {
-          isStatic: false,
-          friction: friction,
-          restitution: 0.1,
-          frictionAir: 0.05
+          isStatic: true,
+          friction: 0,
+          restitution: 0,
+          frictionAir: 0
         });
         
         // Determine if initially filled
         const isInitiallyFilled = filledIndicesSet.has(index);
         
-        // Store circles with their original positions and wiggle properties
+        // Store circles with their original positions and ripple properties
         circles.push({
           body,
           originalPosition: { x, y },
           color: isInitiallyFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT,
           index,
-          wiggleOffset: { x: 0, y: 0 },
-          wiggleSpeed: { 
-            x: (Math.random() - 0.5) * 0.02, 
-            y: (Math.random() - 0.5) * 0.02 
-          },
           isFilled: isInitiallyFilled,
           isInitiallyFilled,
           isUserFilled: false,
-          isAnimating: false,
-          animationProgress: 0
+          rippleScale: 1
         });
         
         // Add body to the world
@@ -360,8 +370,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         circle.isFilled = shouldBeFilled;
         circle.isInitiallyFilled = shouldBeFilled;
         circle.isUserFilled = false;
-        circle.isAnimating = false;
-        circle.animationProgress = 0;
         circle.color = shouldBeFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT;
       }
       
@@ -372,7 +380,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     }
   }, [gridDimensions, randomizedIndices, initializeRandomIndices, getFilledIndices, CONFIG]);
 
-  // Animation loop for physics simulation with gentle wiggling
+  // Animation loop for physics simulation with ripple effects
   const animatePhysics = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !engineRef.current || !isInitializedRef.current) return;
@@ -380,51 +388,65 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Update time for wiggle animation
-    timeRef.current += 0.016; // approximately 60fps
-
     // Update physics engine
     Matter.Engine.update(engineRef.current, 1000 / 60);
     
-    // Apply gentle wiggle forces to circles
+    // Update circles with ripple effects
     const circles = circlesRef.current;
-    const currentDeviceType = getDeviceType();
-    const deviceKey = currentDeviceType.toUpperCase() as keyof typeof CONFIG.WIGGLE.MAX_DISTANCE;
-    
-    const maxDistance = CONFIG.WIGGLE.MAX_DISTANCE[deviceKey];
-    const wiggleSpeed = CONFIG.WIGGLE.SPEED[deviceKey];
-    const springStrength = CONFIG.WIGGLE.SPRING_STRENGTH[deviceKey];
+    const currentTime = Date.now();
     
     for (const circle of circles) {
-      const { body, originalPosition } = circle;
-      const { position } = body;
+      // Calculate ripple scale based on active ripples
+      let rippleScale = 1;
       
-      // Update animation progress for filling circles
-      if (circle.isAnimating) {
-        circle.animationProgress += 0.016; // 60fps
-        if (circle.animationProgress >= CONFIG.FILL_ANIMATION_DURATION / 1000) {
-          circle.isAnimating = false;
-          circle.animationProgress = 1;
+      for (const ripple of activeRipplesRef.current) {
+        const elapsed = currentTime - ripple.startTime;
+        const progress = Math.min(elapsed / ripple.duration, 1);
+        
+        if (progress >= 0 && progress <= 1) {
+          // Calculate distance from ripple center
+          const dx = circle.originalPosition.x - ripple.centerX;
+          const dy = circle.originalPosition.y - ripple.centerY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // Easing function for smooth animation (ease-out cubic)
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          
+          // Calculate ripple wave position with easing
+          const wavePosition = easeOut * CONFIG.RIPPLE.MAX_RADIUS;
+          const waveWidth = CONFIG.RIPPLE.WAVE_WIDTH;
+          
+          // Create a smoother wave front
+          const waveStart = Math.max(0, wavePosition - waveWidth);
+          const waveEnd = wavePosition;
+          
+          // Check if circle is within the ripple wave
+          if (distance >= waveStart && distance <= waveEnd) {
+            // Calculate position within the wave (0 to 1)
+            const waveProgress = waveWidth > 0 ? (distance - waveStart) / waveWidth : 0;
+            
+            // Create smooth wave intensity using sine function
+            const waveIntensity = Math.sin(waveProgress * Math.PI);
+            
+            // Apply fade out over time with smooth easing
+            const fadeOut = Math.pow(1 - progress, 2);
+            
+            // Additional distance-based attenuation for more natural look
+            const distanceAttenuation = Math.max(0, 1 - (distance / CONFIG.RIPPLE.MAX_RADIUS));
+            
+            // Combine all factors
+            const finalIntensity = waveIntensity * fadeOut * distanceAttenuation;
+            
+            // Calculate scale effect with smooth interpolation
+            const scaleEffect = 1 + (CONFIG.RIPPLE.MAX_SCALE - 1) * finalIntensity;
+            rippleScale = Math.max(rippleScale, scaleEffect);
+          }
         }
       }
       
-      // Calculate gentle wiggle using sine waves with unique offsets per circle
-      const wiggleMultiplier = circle.isFilled ? 0.7 : 1; // Filled circles wiggle less
-      const wiggleX = Math.sin(timeRef.current * wiggleSpeed + circle.index * 0.5) * maxDistance * wiggleMultiplier;
-      const wiggleY = Math.cos(timeRef.current * wiggleSpeed * 0.8 + circle.index * 0.3) * maxDistance * wiggleMultiplier;
-      
-      // Target position includes the wiggle offset
-      const targetX = originalPosition.x + wiggleX;
-      const targetY = originalPosition.y + wiggleY;
-      
-      // Apply gentle spring force toward the wiggling target position
-      const springDx = targetX - position.x;
-      const springDy = targetY - position.y;
-      
-      Matter.Body.applyForce(body, position, {
-        x: springDx * springStrength,
-        y: springDy * springStrength
-      });
+      // Smooth interpolation to prevent jarring changes
+      const lerpFactor = 0.15; // Adjust for smoother/slower transitions
+      circle.rippleScale = circle.rippleScale + (rippleScale - circle.rippleScale) * lerpFactor;
     }
     
     // Clear canvas
@@ -432,46 +454,31 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Render circles
     for (const circle of circlesRef.current) {
-      const { body, isFilled, isAnimating, animationProgress } = circle;
-      const radius = body.circleRadius as number || body.bounds.max.x - body.bounds.min.x;
+      const { body, isFilled, rippleScale } = circle;
+      const baseRadius = body.circleRadius as number || body.bounds.max.x - body.bounds.min.x;
+      const radius = baseRadius * rippleScale;
       
       ctx.beginPath();
       ctx.arc(body.position.x, body.position.y, radius, 0, Math.PI * 2);
       
+      // Dynamic stroke width based on ripple scale
+      const strokeWidth = 2 + (rippleScale - 1) * 3;
+      
       if (isFilled) {
-        // Filled circles (black)
-        if (isAnimating) {
-          // Animated fill
-          const progress = Math.min(animationProgress / (CONFIG.FILL_ANIMATION_DURATION / 1000), 1);
-          const animRadius = radius * progress;
-          
-          // Draw outline first
-          ctx.strokeStyle = CONFIG.COLORS.OUTLINE;
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          
-          // Draw growing fill
-          if (animRadius > 0) {
-            ctx.beginPath();
-            ctx.arc(body.position.x, body.position.y, animRadius, 0, Math.PI * 2);
-            ctx.fillStyle = CONFIG.COLORS.FILLED;
-            ctx.fill();
-          }
-        } else {
-          // Fully filled
-          ctx.fillStyle = CONFIG.COLORS.FILLED;
-          ctx.fill();
-          
-          // Add subtle glow
-          ctx.shadowColor = CONFIG.COLORS.GLOW;
-          ctx.shadowBlur = 4;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
+        // Filled circles (black) - always show as filled immediately
+        ctx.fillStyle = CONFIG.COLORS.FILLED;
+        ctx.fill();
+        
+        // Add dynamic glow based on scale
+        const glowIntensity = 4 + (rippleScale - 1) * 8;
+        ctx.shadowColor = CONFIG.COLORS.GLOW;
+        ctx.shadowBlur = glowIntensity;
+        ctx.fill();
+        ctx.shadowBlur = 0;
       } else {
-        // Unfilled circles (white outline)
+        // Unfilled circles (white outline) with dynamic width
         ctx.strokeStyle = CONFIG.COLORS.OUTLINE;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = strokeWidth;
         ctx.stroke();
       }
     }
@@ -590,6 +597,11 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Keep activeRipplesRef in sync with activeRipples state
+  useEffect(() => {
+    activeRipplesRef.current = activeRipples;
+  }, [activeRipples]);
 
   return (
     <div>  
