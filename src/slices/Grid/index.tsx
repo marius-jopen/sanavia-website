@@ -619,7 +619,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   }, []);
 
   return (
-    <div>      
+    <div>  
+
+      
       {/* Grid Section */}
       <section
         data-slice-type={slice.slice_type}
@@ -635,80 +637,37 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           marginLeft: '-50vw',
           marginRight: '-50vw'
         }}
-      >
-        {/* Static text section above the circles */}
-        <div
-          className="z-20 absolute left-1/2 transform -translate-x-1/2 
-                     bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 
-                     text-center font-medium text-gray-700 shadow-lg max-w-4xl"
-          style={{
-            top: `${CONFIG.VERTICAL_PADDING - 180}px`
-          }}
-        >
-          <p className="text-base md:text-lg leading-relaxed">
-            Of the approximately 18 million new cancer diagnoses per year, only 20% of patients are responsive to current therapies. Unfortunately, that leaves the 80% of patients resistant to current therapies lost and without hope.
-          </p>
-        </div>
+      >     
 
-        {/* Instruction tooltip */}
-        <div
-          className="z-20 absolute left-1/2 transform -translate-x-1/2 
-                     bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 
-                     text-sm font-medium text-gray-700 shadow-lg"
-          style={{
-            top: `${CONFIG.VERTICAL_PADDING - 60}px`
-          }}
-        >
+<div className="flex items-center gap-2">
+      <div onClick={handleToggle} className="cursor-pointer hover:bg-black hover:text-white bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+        <h2>
+          {toggleState ? 'Our solution' : 'The problem'}  
+        </h2>
+      </div>
+
+      <div className="bg-white rounded-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+        <h2>
+          {Math.round(progress)}% Helped
+        </h2>
+      </div>
+    </div>
+
+      <div className="bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 w-1/2 mb-4 text-gray-800">
+        <p>
+        {settings?.grid_problem} 
+        </p>
+      </div>  
+
+      <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+        <h3>
           {toggleState 
             ? "This is what Sanavia's technology can achieve"
-            : "Each dot = a patient. Click/tap to give them hope."
+            : "Each dot = a patient. Click to give them hope."
           }
-        </div>
+        </h3>
+      </div>
 
-        {/* Toggle Button - positioned above the circles */}
-        <div
-          className="z-30 absolute left-0"
-          style={{
-            top: `${CONFIG.VERTICAL_PADDING - (checkIfMobile() ? 230 : 300)}px`
-          }}
-        >
-          <button 
-            onClick={handleToggle}
-            className="bg-white text-black hover:bg-black hover:text-white
-                       pl-6 pr-10 py-3 md:py-6 rounded-r-full cursor-pointer 
-                       font-bold transition-all duration-300 ease-in-out 
-                       focus:outline-none mb-2"
-          >
-            <h2>
-              {toggleState ? 'Our solution' : 'The problem'}
-            </h2>
-          </button>
-
-          <div className="pl-8 pr-10 py-3 md:py-6 bg-white text-black rounded-r-full w-fit mr-4">
-            {toggleState ? settings?.grid_solution : settings?.grid_problem}
-          </div>
-        </div>
-
-        {/* Progress indicator */}
-        <div
-          className="z-20 absolute right-0 bg-white/90 backdrop-blur-sm 
-                     rounded-l-full px-8 py-4 shadow-lg"
-          style={{
-            top: `${CONFIG.VERTICAL_PADDING - (checkIfMobile() ? 160 : 200)}px`
-          }}
-        >
-          <div className="text-2xl font-bold text-gray-900">
-            {Math.round(progress)}%
-          </div>
-          <div className="text-sm text-gray-600">
-            patients helped
-          </div>
-          {!toggleState && userFilledCount > 0 && (
-            <div className="text-xs text-blue-600 font-medium mt-1">
-              +{userFilledCount} by you! 💙
-            </div>
-          )}
-        </div>
         
         {/* Final message */}
         {showFinalMessage && !toggleState && (
