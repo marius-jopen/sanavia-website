@@ -680,8 +680,8 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     </div>
 
 
-      <div className="flex items-center gap-2">
-        <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+      <div className="flex md:items-center gap-2 md:flex-row flex-col">
+        <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit  md:mb-4 text-gray-800 mr-3 mb-2">
           <h3>
             {toggleState 
               ? "This is what Sanavia's technology can achieve"
@@ -690,7 +690,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           </h3>
         </div>
 
-        <div className="bg-white rounded-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+        <div className="bg-white md:rounded-full rounded-r-3xl pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
           <h3>
             {Math.round(progress)}% Helped
           </h3>
