@@ -674,30 +674,27 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
 <div className="flex items-center gap-2">
       <div onClick={handleToggle} className="cursor-pointer hover:bg-black hover:text-white bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
         <h2>
-          {toggleState ? 'Our solution' : 'The problem'}  
-        </h2>
-      </div>
-
-      <div className="bg-white rounded-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
-        <h2>
-          {Math.round(progress)}% Helped
+          {toggleState ? 'Our solution' : 'Click here to solve the problem'}  
         </h2>
       </div>
     </div>
 
-      <div className="bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
-        <p>
-        {settings?.grid_problem} 
-        </p>
-      </div>  
 
-      <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
-        <h3>
-          {toggleState 
-            ? "This is what Sanavia's technology can achieve"
-            : "Each dot = a patient. Click to give them hope."
-          }
-        </h3>
+      <div className="flex items-center gap-2">
+        <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+          <h3>
+            {toggleState 
+              ? "This is what Sanavia's technology can achieve"
+              : "Each dot = a patient. Click to give them hope."
+            }
+          </h3>
+        </div>
+
+        <div className="bg-white rounded-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+          <h3>
+            {Math.round(progress)}% Helped
+          </h3>
+        </div>
       </div>
 
         
@@ -714,6 +711,13 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             cursor: 'pointer'
           }}
         />
+
+<div className="mt-4 bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
+        <h3>
+        {settings?.grid_problem} 
+        </h3>
+      </div>  
+
       </section>
 
 
