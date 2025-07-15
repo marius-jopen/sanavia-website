@@ -139,7 +139,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   const circlesRef = useRef<PhysicsCircle[]>([]);
   const isInitializedRef = useRef<boolean>(false);
   const toggleRef = useRef<boolean>(false);
-  const timeRef = useRef<number>(0);
   const activeRipplesRef = useRef<RippleEffect[]>([]);
   
   // This state is only for forcing UI updates, not for physics
@@ -151,7 +150,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     totalCircles: 0 
   });
   const [progress, setProgress] = useState(20);
-  const [userFilledCount, setUserFilledCount] = useState(0);
   const [activeRipples, setActiveRipples] = useState<RippleEffect[]>([]);
 
   // Add state for client-side hydration
@@ -168,13 +166,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     return 'desktop';
   }, [CONFIG.MOBILE_BREAKPOINT, CONFIG.TABLET_BREAKPOINT, isMounted]);
 
-  // Check if device is mobile based on window width (keeping for compatibility)
-  const checkIfMobile = useCallback(() => {
-    if (!isMounted || typeof window === 'undefined') {
-      return false; // Default for SSR
-    }
-    return window.innerWidth < CONFIG.MOBILE_BREAKPOINT;
-  }, [CONFIG.MOBILE_BREAKPOINT, isMounted]);
+
 
   // Generate initial random order of indices (only once)
   const initializeRandomIndices = useCallback((totalCircles: number) => {
@@ -255,7 +247,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         CONFIG.MAX_FILLED_PERCENTAGE
       );
       setProgress(newProgress);
-      setUserFilledCount(prev => prev + 1);
       
       // Create ripple effect
       const rippleId = `ripple-${Date.now()}-${Math.random()}`;
@@ -359,7 +350,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     isInitializedRef.current = true;
     
     return engine;
-  }, [CONFIG, getDeviceType]);
+  }, [CONFIG]);
   
   // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
@@ -392,7 +383,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       // Update progress to match toggle state
       const newProgress = toggleRef.current ? CONFIG.SOLUTION_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
       setProgress(newProgress);
-      setUserFilledCount(0);
     }
   }, [gridDimensions, randomizedIndices, initializeRandomIndices, getFilledIndices, CONFIG]);
 
@@ -532,7 +522,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Continue animation loop
     requestAnimationRef.current = requestAnimationFrame(animatePhysics);
-  }, [CONFIG, getDeviceType]);
+  }, [CONFIG]);
 
   // Handle resize and initial setup - ONLY RUNS ON RESIZE or FIRST MOUNT
   useEffect(() => {
@@ -638,7 +628,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       canvas.removeEventListener('click', handleClick);
       canvas.removeEventListener('touchstart', handleTouchStart);
     };
-  }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, getDeviceType, handleCanvasInteraction]);
+  }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, handleCanvasInteraction]);
 
   // Add useEffect to set mounted state
   useEffect(() => {
