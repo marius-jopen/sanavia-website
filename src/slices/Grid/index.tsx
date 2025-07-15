@@ -90,6 +90,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       GLOW: 'rgba(0, 0, 0, 0.3)'
     },
     
+    // Circle fill behavior
+    FILL_OUTLINED_CIRCLES: true, // Set to false to make outlined circles transparent
+    
     // Progress percentages
     INITIAL_FILLED_PERCENTAGE: 20,
     SOLUTION_FILLED_PERCENTAGE: 60,
@@ -517,6 +520,10 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         ctx.shadowBlur = 0;
       } else {
         // Unfilled circles (white outline) with dynamic width
+        if (CONFIG.FILL_OUTLINED_CIRCLES) {
+          ctx.fillStyle = CONFIG.COLORS.DEFAULT;
+          ctx.fill();
+        }
         ctx.strokeStyle = CONFIG.COLORS.OUTLINE;
         ctx.lineWidth = strokeWidth;
         ctx.stroke();
