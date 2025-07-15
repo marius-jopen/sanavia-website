@@ -9,6 +9,7 @@ interface Item2ColumnsReversedProps {
   richtext?: RichTextField;
   image?: ImageField;
   button?: LinkField;
+  video_url?: string;
 }
 
 const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {

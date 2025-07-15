@@ -9,6 +9,7 @@ interface Item2ColumnsProps {
   richtext?: RichTextField;
   image?: ImageField;
   button?: LinkField;
+  video_url?: string;
 }
 
 const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {

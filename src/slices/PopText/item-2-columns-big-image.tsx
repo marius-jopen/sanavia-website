@@ -9,6 +9,7 @@ interface Item2ColumnsBigImageProps {
   richtext?: RichTextField;
   image?: ImageField;
   button?: LinkField;
+  video_url?: string;
 }
 
 const Item2ColumnsBigImage: React.FC<Item2ColumnsBigImageProps> = (props) => {
