@@ -26,6 +26,8 @@ type PhysicsCircle = {
   isInitiallyFilled: boolean;
   isUserFilled: boolean;
   rippleScale: number;
+  isClickedCircle: boolean;
+  clickAnimationStart: number;
 };
 
 /**
@@ -99,19 +101,19 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Ripple animation configuration
     RIPPLE: {
       // Maximum ripple effect radius in pixels
-      MAX_RADIUS: 400,
+      MAX_RADIUS: 1000,
       
       // Ripple animation duration in milliseconds
-      DURATION: 1500,
+      DURATION: 4500,
       
       // Maximum scale effect (how much circles can grow)
-      MAX_SCALE: 1.6,
+      MAX_SCALE: 1.4,
       
       // Ripple speed (how fast it spreads)
-      SPEED: 0.4,
+      SPEED: 0.3,
       
       // Wave width for smoother effect
-      WAVE_WIDTH: 80
+      WAVE_WIDTH: 120
     },
     
     // Interaction settings
@@ -236,10 +238,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       }
     }
     
-              // Fill the closest circle if found
+                  // Fill the closest circle if found
     if (closestCircle) {
       closestCircle.isFilled = true;
       closestCircle.isUserFilled = true;
+      closestCircle.isClickedCircle = true;
+      closestCircle.clickAnimationStart = Date.now();
       
       // Update progress
       const filledCount = circlesRef.current.filter(c => c.isFilled).length;
@@ -249,33 +253,38 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       );
       setProgress(newProgress);
       setUserFilledCount(prev => prev + 1);
-        
-        // Create ripple effect
-        const rippleId = `ripple-${Date.now()}-${Math.random()}`;
-        const newRipple: RippleEffect = {
-          id: rippleId,
-          centerX: closestCircle.body.position.x,
-          centerY: closestCircle.body.position.y,
-          startTime: Date.now(),
-          duration: CONFIG.RIPPLE.DURATION
-        };
-        
+      
+      // Create ripple effect
+      const rippleId = `ripple-${Date.now()}-${Math.random()}`;
+      const newRipple: RippleEffect = {
+        id: rippleId,
+        centerX: closestCircle.body.position.x,
+        centerY: closestCircle.body.position.y,
+        startTime: Date.now(),
+        duration: CONFIG.RIPPLE.DURATION
+      };
+      
+      setActiveRipples(prev => {
+        const newRipples = [...prev, newRipple];
+        activeRipplesRef.current = newRipples;
+        return newRipples;
+      });
+      
+      // Remove ripple after duration
+      setTimeout(() => {
         setActiveRipples(prev => {
-          const newRipples = [...prev, newRipple];
-          activeRipplesRef.current = newRipples;
-          return newRipples;
+          const filteredRipples = prev.filter(r => r.id !== rippleId);
+          activeRipplesRef.current = filteredRipples;
+          return filteredRipples;
         });
-        
-        // Remove ripple after duration
-        setTimeout(() => {
-          setActiveRipples(prev => {
-            const filteredRipples = prev.filter(r => r.id !== rippleId);
-            activeRipplesRef.current = filteredRipples;
-            return filteredRipples;
-          });
-        }, CONFIG.RIPPLE.DURATION);
+      }, CONFIG.RIPPLE.DURATION);
+      
+      // Reset click animation after duration
+      setTimeout(() => {
+        closestCircle.isClickedCircle = false;
+      }, CONFIG.RIPPLE.DURATION);
  
-      }
+    }
   }, [CONFIG, getDeviceType]);
 
   // Setup physics world with matter.js
@@ -333,7 +342,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           isFilled: isInitiallyFilled,
           isInitiallyFilled,
           isUserFilled: false,
-          rippleScale: 1
+          rippleScale: 1,
+          isClickedCircle: false,
+          clickAnimationStart: 0
         });
         
         // Add body to the world
@@ -370,6 +381,8 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         circle.isFilled = shouldBeFilled;
         circle.isInitiallyFilled = shouldBeFilled;
         circle.isUserFilled = false;
+        circle.isClickedCircle = false;
+        circle.clickAnimationStart = 0;
         circle.color = shouldBeFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT;
       }
       
@@ -399,6 +412,24 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       // Calculate ripple scale based on active ripples
       let rippleScale = 1;
       
+              // Special animation for clicked circle
+        if (circle.isClickedCircle) {
+          const elapsed = currentTime - circle.clickAnimationStart;
+          const progress = Math.min(elapsed / CONFIG.RIPPLE.DURATION, 1);
+          
+          if (progress >= 0 && progress <= 1) {
+            // Easing function for click animation (ease-out)
+            const easeOut = 1 - Math.pow(1 - progress, 2);
+            
+            // Create a very subtle pulsing effect
+            const pulseIntensity = Math.sin(progress * Math.PI * 3) * (1 - progress) * 0.05;
+            
+            // Extremely subtle scaling for clicked circle
+            const clickScale = 1 + (0.08 * (1 - easeOut)) + pulseIntensity;
+            rippleScale = Math.max(rippleScale, clickScale);
+          }
+        }
+      
       for (const ripple of activeRipplesRef.current) {
         const elapsed = currentTime - ripple.startTime;
         const progress = Math.min(elapsed / ripple.duration, 1);
@@ -409,8 +440,8 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           const dy = circle.originalPosition.y - ripple.centerY;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          // Easing function for smooth animation (ease-out cubic)
-          const easeOut = 1 - Math.pow(1 - progress, 3);
+          // Easing function that starts immediately but slows down (ease-out)
+          const easeOut = Math.sqrt(progress);
           
           // Calculate ripple wave position with easing
           const wavePosition = easeOut * CONFIG.RIPPLE.MAX_RADIUS;
@@ -425,17 +456,17 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             // Calculate position within the wave (0 to 1)
             const waveProgress = waveWidth > 0 ? (distance - waveStart) / waveWidth : 0;
             
-            // Create smooth wave intensity using sine function
-            const waveIntensity = Math.sin(waveProgress * Math.PI);
+            // Create gentler wave intensity using sine function
+            const waveIntensity = Math.sin(waveProgress * Math.PI) * 0.8;
             
-            // Apply fade out over time with smooth easing
-            const fadeOut = Math.pow(1 - progress, 2);
+            // Apply gentle fade out over time
+            const fadeOut = Math.pow(1 - progress, 1.5);
             
             // Additional distance-based attenuation for more natural look
             const distanceAttenuation = Math.max(0, 1 - (distance / CONFIG.RIPPLE.MAX_RADIUS));
             
-            // Combine all factors
-            const finalIntensity = waveIntensity * fadeOut * distanceAttenuation;
+            // Combine all factors with reduced intensity
+            const finalIntensity = waveIntensity * fadeOut * distanceAttenuation * 0.7;
             
             // Calculate scale effect with smooth interpolation
             const scaleEffect = 1 + (CONFIG.RIPPLE.MAX_SCALE - 1) * finalIntensity;
@@ -445,7 +476,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       }
       
       // Smooth interpolation to prevent jarring changes
-      const lerpFactor = 0.15; // Adjust for smoother/slower transitions
+      const lerpFactor = 0.08; // Gentler, slower transitions
       circle.rippleScale = circle.rippleScale + (rippleScale - circle.rippleScale) * lerpFactor;
     }
     
@@ -469,8 +500,17 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         ctx.fillStyle = CONFIG.COLORS.FILLED;
         ctx.fill();
         
-        // Add dynamic glow based on scale
-        const glowIntensity = 4 + (rippleScale - 1) * 8;
+        // Add dynamic glow based on scale and clicked state
+        let glowIntensity = 4 + (rippleScale - 1) * 8;
+        
+        // Extra glow for clicked circles
+        if (circle.isClickedCircle) {
+          const elapsed = Date.now() - circle.clickAnimationStart;
+          const progress = Math.min(elapsed / CONFIG.RIPPLE.DURATION, 1);
+          const clickGlow = 2 * (1 - progress); // Extremely subtle glow that fades out
+          glowIntensity += clickGlow;
+        }
+        
         ctx.shadowColor = CONFIG.COLORS.GLOW;
         ctx.shadowBlur = glowIntensity;
         ctx.fill();
