@@ -9,7 +9,7 @@ interface Item2ColumnsProps {
   richtext?: RichTextField;
   image?: ImageField;
   button?: LinkField;
-  video_url?: string;
+  video_url?: KeyTextField;
 }
 
 const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
@@ -21,7 +21,6 @@ const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
             <VideoBasic
             url={props.video_url || undefined}
             poster={props.image}
-            className="rounded-2xl"
             />
           </div>
         </div>

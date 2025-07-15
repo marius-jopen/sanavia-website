@@ -10,7 +10,7 @@ interface Item1ColumnProps {
   richtext?: RichTextField;
   image?: ImageField;
   button?: LinkField;
-  video_url?: string;
+  video_url?: KeyTextField;
 }
 
 const Item1Column: React.FC<Item1ColumnProps> = (props) => {
