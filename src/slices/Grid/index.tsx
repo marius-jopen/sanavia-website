@@ -95,7 +95,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Progress percentages
     INITIAL_FILLED_PERCENTAGE: 20,
-    SOLUTION_FILLED_PERCENTAGE: 60,
+    SOLUTION_FILLED_PERCENTAGE: 80,
     MAX_FILLED_PERCENTAGE: 100,
     
     // Animation settings
