@@ -429,12 +429,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Clean up existing engine if it exists
     if (engineRef.current) {
       Matter.Engine.clear(engineRef.current);
-      
-      // PRESERVE existing filled state if victory is locked
-      const existingFilledStates = isVictoryLocked ? 
-        circlesRef.current.map(circle => ({ index: circle.index, isFilled: circle.isFilled, isUserFilled: circle.isUserFilled })) : 
-        [];
-      
       circlesRef.current = [];
     }
     
@@ -848,7 +842,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         canvas.removeEventListener('click', handleClick);
         canvas.removeEventListener('touchstart', handleTouchStart);
       };
-    }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, handleCanvasInteraction, isVictoryLocked]);
+    }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, handleCanvasInteraction, isVictoryLocked, getDeviceType]);
 
   // Add useEffect to set mounted state
   useEffect(() => {
