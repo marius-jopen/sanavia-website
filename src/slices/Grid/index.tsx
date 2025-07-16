@@ -53,6 +53,23 @@ type RippleEffect = {
   duration: number;
 };
 
+/**
+ * Confetti particle type with emojicons
+ */
+type ConfettiParticle = {
+  id: string;
+  emoji: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rotation: number;
+  rotationSpeed: number;
+  scale: number;
+  life: number;
+  maxLife: number;
+};
+
 
 
 /**
@@ -142,7 +159,33 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     },
     
     // Vertical padding (in pixels) to add at top and bottom of canvas
-    VERTICAL_PADDING: 20
+    VERTICAL_PADDING: 20,
+    
+    // Confetti configuration for celebration
+    CONFETTI: {
+      // Emojicons for celebration (fewer for better performance)
+      EMOJIS: ['🎉', '🎊', '✨', '🌟', '💫', '🎈', '🥳', '🎁', '🌈', '⭐'],
+      
+      // Number of particles (fewer emojicons)
+      PARTICLE_COUNT: 60,
+      
+      // Animation duration (faster - 5 seconds)
+      DURATION: 5000,
+      
+      // Physics for outward explosion (faster)
+      GRAVITY: 0.12,
+      FRICTION: 0.992,
+      
+      // Explosion velocities (faster speeds)
+      VELOCITY_RANGE: {
+        MIN_SPEED: 5,
+        MAX_SPEED: 18
+      },
+      
+      // Rotation and scale
+      ROTATION_SPEED_RANGE: [-0.2, 0.2],
+      SCALE_RANGE: [0.8, 1.6]
+    }
   }), []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -152,6 +195,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   const isInitializedRef = useRef<boolean>(false);
   const toggleRef = useRef<boolean>(false);
   const activeRipplesRef = useRef<RippleEffect[]>([]);
+  const confettiParticlesRef = useRef<ConfettiParticle[]>([]);
   
   // This state is only for forcing UI updates, not for physics
   const [toggleState, setToggleState] = useState(false);
@@ -163,6 +207,8 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
   });
   const [progress, setProgress] = useState(20);
   const [activeRipples, setActiveRipples] = useState<RippleEffect[]>([]);
+  const [hasShownConfetti, setHasShownConfetti] = useState(false);
+  const [isVictoryLocked, setIsVictoryLocked] = useState(false);
 
   // Add state for client-side hydration
   const [isMounted, setIsMounted] = useState(false);
@@ -176,9 +222,70 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     if (width < CONFIG.MOBILE_BREAKPOINT) return 'mobile';
     if (width < CONFIG.TABLET_BREAKPOINT) return 'tablet';
     return 'desktop';
-  }, [CONFIG.MOBILE_BREAKPOINT, CONFIG.TABLET_BREAKPOINT, isMounted]);
+    }, [CONFIG.MOBILE_BREAKPOINT, CONFIG.TABLET_BREAKPOINT, isMounted]);
 
-
+  // Create confetti explosion from center outward
+  const createConfetti = useCallback(() => {
+    if (!canvasRef.current || hasShownConfetti || !isMounted) return;
+    
+    const canvas = canvasRef.current;
+    const particles: ConfettiParticle[] = [];
+    
+    // Get canvas center
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Create particles exploding outward from center
+    for (let i = 0; i < CONFIG.CONFETTI.PARTICLE_COUNT; i++) {
+      // Random emoji
+      const emoji = CONFIG.CONFETTI.EMOJIS[Math.floor(Math.random() * CONFIG.CONFETTI.EMOJIS.length)];
+      
+      // Start at center with small random offset
+      const x = centerX + (Math.random() - 0.5) * 20;
+      const y = centerY + (Math.random() - 0.5) * 20;
+      
+      // Random angle for explosion direction
+      const angle = Math.random() * 6.28318; // 2π
+      
+      // Random speed for explosion
+      const speed = CONFIG.CONFETTI.VELOCITY_RANGE.MIN_SPEED + 
+                    Math.random() * (CONFIG.CONFETTI.VELOCITY_RANGE.MAX_SPEED - CONFIG.CONFETTI.VELOCITY_RANGE.MIN_SPEED);
+      
+      // Calculate velocity components
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      
+      // Random properties
+      const rotation = Math.random() * 6.28318;
+      const rotationSpeed = CONFIG.CONFETTI.ROTATION_SPEED_RANGE[0] + 
+                           Math.random() * (CONFIG.CONFETTI.ROTATION_SPEED_RANGE[1] - CONFIG.CONFETTI.ROTATION_SPEED_RANGE[0]);
+      const scale = CONFIG.CONFETTI.SCALE_RANGE[0] + 
+                    Math.random() * (CONFIG.CONFETTI.SCALE_RANGE[1] - CONFIG.CONFETTI.SCALE_RANGE[0]);
+      
+      particles.push({
+        id: `confetti-${i}-${Date.now()}`,
+        emoji,
+        x,
+        y,
+        vx,
+        vy,
+        rotation,
+        rotationSpeed,
+        scale,
+        life: CONFIG.CONFETTI.DURATION,
+        maxLife: CONFIG.CONFETTI.DURATION
+      });
+    }
+    
+    confettiParticlesRef.current = particles;
+    setHasShownConfetti(true);
+    
+    // Clear confetti after duration - BUT NEVER RESET VICTORY STATE
+    setTimeout(() => {
+      confettiParticlesRef.current = [];
+      // DON'T reset hasShownConfetti or victory state - keep dots filled forever
+    }, CONFIG.CONFETTI.DURATION);
+  }, [CONFIG, hasShownConfetti, isMounted]);
 
   // Generate initial random order of indices (only once)
   const initializeRandomIndices = useCallback((totalCircles: number) => {
@@ -215,7 +322,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
 
   // Handle click/tap interaction
   const handleCanvasInteraction = useCallback((event: MouseEvent | TouchEvent) => {
-    if (!canvasRef.current) return; // Allow interaction in both modes
+    if (!canvasRef.current || isVictoryLocked) return; // No interaction once victory is locked
     
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
@@ -260,6 +367,22 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       );
       setProgress(newProgress);
       
+      // Trigger confetti when reaching 100% and lock the progress PERMANENTLY
+      if (newProgress >= 100 && !isVictoryLocked) {
+        // PERMANENT VICTORY LOCK - dots stay filled until page reload
+        setIsVictoryLocked(true);
+        
+        // Lock all circles as filled permanently
+        for (const circle of circlesRef.current) {
+          circle.isFilled = true;
+          circle.isUserFilled = true;
+        }
+        
+        if (!hasShownConfetti) {
+          createConfetti();
+        }
+      }
+      
       // Create ripple effect
       const rippleId = `ripple-${Date.now()}-${Math.random()}`;
       const newRipple: RippleEffect = {
@@ -289,9 +412,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       setTimeout(() => {
         closestCircle.isClickedCircle = false;
       }, CONFIG.RIPPLE.DURATION);
- 
+    
     }
-  }, [CONFIG, getDeviceType]);
+  }, [CONFIG, getDeviceType, hasShownConfetti, createConfetti, isVictoryLocked]);
 
   // Setup physics world with matter.js
   const setupPhysics = useCallback((
@@ -306,6 +429,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Clean up existing engine if it exists
     if (engineRef.current) {
       Matter.Engine.clear(engineRef.current);
+      
+      // PRESERVE existing filled state if victory is locked
+      const existingFilledStates = isVictoryLocked ? 
+        circlesRef.current.map(circle => ({ index: circle.index, isFilled: circle.isFilled, isUserFilled: circle.isUserFilled })) : 
+        [];
+      
       circlesRef.current = [];
     }
     
@@ -336,8 +465,15 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           frictionAir: 0
         });
         
-        // Determine if initially filled
-        const isInitiallyFilled = filledIndicesSet.has(index);
+        // Determine if initially filled - BUT RESPECT VICTORY LOCK
+        let isInitiallyFilled = filledIndicesSet.has(index);
+        let isUserFilledState = false;
+        
+        // VICTORY LOCK: If victory is locked, ALL circles should be filled
+        if (isVictoryLocked) {
+          isInitiallyFilled = true;
+          isUserFilledState = true;
+        }
         
         // Store circles with their original positions and ripple properties
         circles.push({
@@ -347,7 +483,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           index,
           isFilled: isInitiallyFilled,
           isInitiallyFilled,
-          isUserFilled: false,
+          isUserFilled: isUserFilledState,
           rippleScale: 1,
           isClickedCircle: false,
           clickAnimationStart: 0
@@ -362,10 +498,15 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     isInitializedRef.current = true;
     
     return engine;
-  }, [CONFIG]);
+  }, [CONFIG, isVictoryLocked]);
   
-  // Handle toggle button click - just update the ref and force UI update
+    // Handle toggle button click - just update the ref and force UI update
   const handleToggle = useCallback(() => {
+    // VICTORY LOCK: Once 100% is reached, NEVER allow any reset until page reload
+    if (isVictoryLocked) {
+      return;
+    }
+    
     // Update our ref first (this is what physics will use)
     toggleRef.current = !toggleRef.current;
     
@@ -381,22 +522,39 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       
       const filledIndicesSet = getFilledIndices(indices, totalCircles, true);
       
-      // Update all circles to match toggle state
+      // Update all circles to match toggle state (BUT NEVER if victory is locked)
       for (const circle of circlesRef.current) {
         const shouldBeFilled = filledIndicesSet.has(circle.index);
-        circle.isFilled = shouldBeFilled;
-        circle.isInitiallyFilled = shouldBeFilled;
-        circle.isUserFilled = false;
+        
+        // VICTORY LOCK: Never change filled state once victory is achieved
+        if (!isVictoryLocked) {
+          circle.isFilled = shouldBeFilled;
+          circle.isInitiallyFilled = shouldBeFilled;
+          circle.isUserFilled = false;
+          circle.color = shouldBeFilled ? CONFIG.COLORS.STATE_2_FILL : CONFIG.COLORS.STATE_1_FILL;
+        }
+        
         circle.isClickedCircle = false;
         circle.clickAnimationStart = 0;
-        circle.color = shouldBeFilled ? CONFIG.COLORS.STATE_2_FILL : CONFIG.COLORS.STATE_1_FILL;
       }
       
-      // Update progress to match toggle state
-      const newProgress = toggleRef.current ? CONFIG.SOLUTION_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
-      setProgress(newProgress);
+      // Update progress to match toggle state (BUT NEVER if victory is locked)
+      let newProgress = 100; // Default to 100 if victory is locked
+      if (!isVictoryLocked) {
+        newProgress = toggleRef.current ? CONFIG.SOLUTION_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
+        setProgress(newProgress);
+        
+        // Reset confetti state (only if not in victory mode)
+        setHasShownConfetti(false);
+        confettiParticlesRef.current = [];
+        
+        // Trigger confetti if toggle shows solution (100%)
+        if (newProgress >= 100) {
+          setTimeout(() => createConfetti(), 100);
+        }
+      }
     }
-  }, [gridDimensions, randomizedIndices, initializeRandomIndices, getFilledIndices, CONFIG]);
+     }, [gridDimensions, randomizedIndices, initializeRandomIndices, getFilledIndices, CONFIG, createConfetti, isVictoryLocked]);
 
   // Animation loop for physics simulation with ripple effects
   const animatePhysics = useCallback(() => {
@@ -408,6 +566,32 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
 
     // Update physics engine
     Matter.Engine.update(engineRef.current, 1000 / 60);
+    
+    // Update confetti particles (performant in-place updates)
+    if (confettiParticlesRef.current.length > 0) {
+      const deltaTime = 1000 / 60;
+      const gravity = CONFIG.CONFETTI.GRAVITY;
+      const friction = CONFIG.CONFETTI.FRICTION;
+      
+      for (let i = confettiParticlesRef.current.length - 1; i >= 0; i--) {
+        const particle = confettiParticlesRef.current[i];
+        
+        // Update physics
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vx *= friction;
+        particle.vy += gravity;
+        particle.rotation += particle.rotationSpeed;
+        particle.life -= deltaTime;
+        
+        // Remove dead or out-of-bounds particles
+        if (particle.life <= 0 || 
+            particle.x < -600 || particle.x > canvas.width + 600 ||
+            particle.y < -600 || particle.y > canvas.height + 600) {
+          confettiParticlesRef.current.splice(i, 1);
+        }
+      }
+    }
     
     // Update circles with ripple effects
     const circles = circlesRef.current;
@@ -516,6 +700,33 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       }
     }
     
+    // Render confetti particles (emoji celebration)
+    if (confettiParticlesRef.current.length > 0) {
+      ctx.font = '32px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      for (const particle of confettiParticlesRef.current) {
+        // Calculate fade - smooth fade from 1.0 to 0.0 over entire lifetime
+        const lifeProgress = 1 - (particle.life / particle.maxLife);
+        const alpha = Math.max(0, 1 - lifeProgress); // Fade from 1 to 0
+        
+        if (alpha < 0.01) continue; // Skip nearly invisible particles
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(particle.x, particle.y);
+        ctx.rotate(particle.rotation);
+        ctx.scale(particle.scale, particle.scale);
+        
+        // Draw emoji
+        ctx.fillStyle = 'black';
+        ctx.fillText(particle.emoji, 0, 0);
+        
+        ctx.restore();
+      }
+    }
+    
     // Continue animation loop
     requestAnimationRef.current = requestAnimationFrame(animatePhysics);
   }, [CONFIG]);
@@ -585,10 +796,23 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       
       // Initialize indices and set up physics
       const indices = initializeRandomIndices(totalCircles);
-      const filledIndicesSet = getFilledIndices(indices, totalCircles, true);
+      
+      // VICTORY LOCK: If victory is locked, ignore normal filled indices
+      let filledIndicesSet: Set<number>;
+      if (isVictoryLocked) {
+        // Victory mode: all circles should be filled
+        filledIndicesSet = new Set(Array.from({ length: totalCircles }, (_, i) => i));
+      } else {
+        filledIndicesSet = getFilledIndices(indices, totalCircles, true);
+      }
       
       // Set up physics world - pass the top padding offset so grid starts at the right position
       setupPhysics(canvas, rows, columns, spacing, adjustedCircleSize, filledIndicesSet, verticalPadding);
+      
+      // VICTORY LOCK: Ensure progress stays at 100% after resize
+      if (isVictoryLocked) {
+        setProgress(100);
+      }
       
       // Start animation loop
       requestAnimationRef.current = requestAnimationFrame(animatePhysics);
@@ -608,23 +832,23 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     canvas.addEventListener('click', handleClick);
     canvas.addEventListener('touchstart', handleTouchStart);
     
-    handleResize();
-    
-    return () => {
-      // Clean up
-      if (requestAnimationRef.current) {
-        cancelAnimationFrame(requestAnimationRef.current);
-      }
+          handleResize();
       
-      if (engineRef.current) {
-        Matter.Engine.clear(engineRef.current);
-      }
-      
-      window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('click', handleClick);
-      canvas.removeEventListener('touchstart', handleTouchStart);
-    };
-  }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, handleCanvasInteraction]);
+      return () => {
+        // Clean up
+        if (requestAnimationRef.current) {
+          cancelAnimationFrame(requestAnimationRef.current);
+        }
+        
+        if (engineRef.current) {
+          Matter.Engine.clear(engineRef.current);
+        }
+        
+        window.removeEventListener('resize', handleResize);
+        canvas.removeEventListener('click', handleClick);
+        canvas.removeEventListener('touchstart', handleTouchStart);
+      };
+    }, [CONFIG, initializeRandomIndices, getFilledIndices, setupPhysics, animatePhysics, handleCanvasInteraction, isVictoryLocked]);
 
   // Add useEffect to set mounted state
   useEffect(() => {
