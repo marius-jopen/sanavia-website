@@ -4,6 +4,18 @@ import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import Matter from 'matter-js';
 
+// ============= CIRCLE COLORS CONFIGURATION =============
+// Easily customize the appearance of circles in different states
+const CIRCLE_COLORS = {
+  // State 1: Unfilled/Empty circles
+  STATE_1_OUTLINE: 'white',
+  STATE_1_FILL: 'transparent',
+  
+  // State 2: Filled circles  
+  STATE_2_OUTLINE: 'white',
+  STATE_2_FILL: 'white'
+} as const;
+
 /**
  * Props for `Grid`.
  */
@@ -82,12 +94,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     // Spacing between circles in pixels
     SPACING: 10,
     
-    // Circle colors
+    // Circle colors - now using the configurable variables
     COLORS: {
-      DEFAULT: 'white',
-      FILLED: 'black',
-      OUTLINE: 'rgba(255, 255, 255, 0.6)',
-      GLOW: 'rgba(0, 0, 0, 0.3)'
+      STATE_1_FILL: CIRCLE_COLORS.STATE_1_FILL,
+      STATE_1_OUTLINE: CIRCLE_COLORS.STATE_1_OUTLINE,
+      STATE_2_FILL: CIRCLE_COLORS.STATE_2_FILL,
+      STATE_2_OUTLINE: CIRCLE_COLORS.STATE_2_OUTLINE
     },
     
     // Circle fill behavior
@@ -331,7 +343,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         circles.push({
           body,
           originalPosition: { x, y },
-          color: isInitiallyFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT,
+          color: isInitiallyFilled ? CONFIG.COLORS.STATE_2_FILL : CONFIG.COLORS.STATE_1_FILL,
           index,
           isFilled: isInitiallyFilled,
           isInitiallyFilled,
@@ -377,7 +389,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         circle.isUserFilled = false;
         circle.isClickedCircle = false;
         circle.clickAnimationStart = 0;
-        circle.color = shouldBeFilled ? CONFIG.COLORS.FILLED : CONFIG.COLORS.DEFAULT;
+        circle.color = shouldBeFilled ? CONFIG.COLORS.STATE_2_FILL : CONFIG.COLORS.STATE_1_FILL;
       }
       
       // Update progress to match toggle state
@@ -485,36 +497,20 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       ctx.beginPath();
       ctx.arc(body.position.x, body.position.y, radius, 0, Math.PI * 2);
       
-      // Dynamic stroke width based on ripple scale
+      // Dynamic stroke width based on ripple scale (2px thicker)
       const strokeWidth = 2 + (rippleScale - 1) * 3;
       
       if (isFilled) {
-        // Filled circles (black) - always show as filled immediately
-        ctx.fillStyle = CONFIG.COLORS.FILLED;
+        // Filled circles - use state 2 colors
+        ctx.fillStyle = CONFIG.COLORS.STATE_2_FILL;
         ctx.fill();
-        
-        // Add dynamic glow based on scale and clicked state
-        let glowIntensity = 4 + (rippleScale - 1) * 8;
-        
-        // Extra glow for clicked circles
-        if (circle.isClickedCircle) {
-          const elapsed = Date.now() - circle.clickAnimationStart;
-          const progress = Math.min(elapsed / CONFIG.RIPPLE.DURATION, 1);
-          const clickGlow = 2 * (1 - progress); // Extremely subtle glow that fades out
-          glowIntensity += clickGlow;
-        }
-        
-        ctx.shadowColor = CONFIG.COLORS.GLOW;
-        ctx.shadowBlur = glowIntensity;
-        ctx.fill();
-        ctx.shadowBlur = 0;
       } else {
-        // Unfilled circles (white outline) with dynamic width
-        if (CONFIG.FILL_OUTLINED_CIRCLES) {
-          ctx.fillStyle = CONFIG.COLORS.DEFAULT;
+        // Unfilled circles - use state 1 colors
+        if (CONFIG.FILL_OUTLINED_CIRCLES && CONFIG.COLORS.STATE_1_FILL !== 'transparent') {
+          ctx.fillStyle = CONFIG.COLORS.STATE_1_FILL;
           ctx.fill();
         }
-        ctx.strokeStyle = CONFIG.COLORS.OUTLINE;
+        ctx.strokeStyle = CONFIG.COLORS.STATE_1_OUTLINE;
         ctx.lineWidth = strokeWidth;
         ctx.stroke();
       }
