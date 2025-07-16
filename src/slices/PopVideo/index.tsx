@@ -34,6 +34,7 @@ const PopVideo: FC<PopVideoProps> = ({ slice }) => {
         <VideoBasic
           url={slice.primary.video_url || undefined}
           poster={slice.primary.poster}
+          autoplay={slice.primary.autoplay}
         />
       </div>
     </section>

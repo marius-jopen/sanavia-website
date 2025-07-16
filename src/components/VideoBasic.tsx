@@ -6,13 +6,71 @@ interface VideoProps {
   url?: string;
   poster?: ImageField;
   aspectRatio?: string;
+  autoplay?: boolean;
 }
 
-const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio }) => {
+const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPauseButton, setShowPauseButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle autoplay functionality
+  useEffect(() => {
+    if (!autoplay || !url || !videoRef.current) return;
+
+    const video = videoRef.current;
+    
+    // Function to attempt autoplay
+    const tryAutoplay = () => {
+      if (video && !isPlaying) {
+        // Check if video is visible
+        const rect = video.getBoundingClientRect();
+        const isVisible = rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (isVisible) {
+          video.play().then(() => {
+            setIsPlaying(true);
+            setShowPauseButton(true);
+            // Hide pause button after 2 seconds for autoplay
+            if (timerRef.current) clearTimeout(timerRef.current);
+            timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
+          }).catch((error) => {
+            console.log('Autoplay failed:', error);
+          });
+        }
+      }
+    };
+
+    // Try autoplay immediately
+    tryAutoplay();
+
+    // Set up intersection observer to detect when video becomes visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isPlaying) {
+            tryAutoplay();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(video);
+
+    // Also listen for resize events (accordion opening might trigger this)
+    const handleResize = () => {
+      setTimeout(tryAutoplay, 100); // Small delay to ensure layout is updated
+    };
+    
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [autoplay, url, isPlaying]);
 
   // Hide pause button on mobile (touch) after tap
   useEffect(() => {
@@ -88,6 +146,9 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio }) => {
         onClick={handlePlay}
         playsInline
         controls={false}
+        autoPlay={autoplay}
+        muted={autoplay} // Videos need to be muted to autoplay in most browsers
+        loop={autoplay} // Loop when autoplay is enabled
         poster={poster?.url || undefined}
       />
       <button

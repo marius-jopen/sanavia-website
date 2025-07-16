@@ -1,6 +1,6 @@
 import { PrismicRichText } from '@prismicio/react';
 import React from 'react';
-import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
+import { KeyTextField, RichTextField, ImageField, LinkField, BooleanField } from '@prismicio/client';
 import Button from '@/components/Button';
 import VideoBasic from "../../components/VideoBasic";
 
@@ -10,6 +10,7 @@ interface Item2ColumnsReversedProps {
   image?: ImageField;
   button?: LinkField;
   video_url?: KeyTextField;
+  autoplay?: BooleanField;
 }
 
 const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
@@ -21,6 +22,7 @@ const Item2ColumnsReversed: React.FC<Item2ColumnsReversedProps> = (props) => {
             <VideoBasic
             url={props.video_url || undefined}
             poster={props.image}
+            autoplay={props.autoplay}
             />
           </div>
         </div>

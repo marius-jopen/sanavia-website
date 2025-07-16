@@ -1,7 +1,7 @@
 import Button from '@/components/Button';
 import { PrismicRichText } from '@prismicio/react';
 import React from 'react';
-import { KeyTextField, RichTextField, ImageField, LinkField } from '@prismicio/client';
+import { KeyTextField, RichTextField, ImageField, LinkField, BooleanField } from '@prismicio/client';
 import VideoBasic from "../../components/VideoBasic";
 
 interface Item2ColumnsProps {
@@ -10,6 +10,7 @@ interface Item2ColumnsProps {
   image?: ImageField;
   button?: LinkField;
   video_url?: KeyTextField;
+  autoplay?: BooleanField;
 }
 
 const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
@@ -21,6 +22,7 @@ const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
             <VideoBasic
             url={props.video_url || undefined}
             poster={props.image}
+            autoplay={props.autoplay}
             />
           </div>
         </div>

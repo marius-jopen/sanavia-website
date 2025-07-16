@@ -30,6 +30,10 @@
 				"__TYPE__": "FieldContent",
 				"value": "milk",
 				"type": "Text"
+			},
+			"autoplay": {
+				"__TYPE__": "BooleanContent",
+				"value": true
 			}
 		},
 		"items": []

@@ -98,6 +98,13 @@
 									"value": "roar",
 									"type": "Text"
 								}
+							],
+							[
+								"autoplay",
+								{
+									"__TYPE__": "BooleanContent",
+									"value": false
+								}
 							]
 						]
 					}

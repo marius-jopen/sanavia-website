@@ -729,6 +729,17 @@ export interface PopTextSliceDefaultPrimaryItemsItem {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   video_url: prismic.KeyTextField;
+
+  /**
+   * Autoplay field in *PopText → Default → Primary → Items*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: pop_text.default.primary.items[].autoplay
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  autoplay: prismic.BooleanField;
 }
 
 /**
@@ -842,6 +853,17 @@ export interface PopVideoSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   video_url: prismic.KeyTextField;
+
+  /**
+   * Autoplay field in *PopVideo → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: pop_video.default.primary.autoplay
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  autoplay: prismic.BooleanField;
 }
 
 /**
