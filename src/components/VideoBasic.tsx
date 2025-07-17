@@ -153,7 +153,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
       />
       <button
         onClick={handlePlay}
-        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-20 ${isPlaying && !showPauseButton ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-20 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
         style={{ outline: 'none' }}
         tabIndex={0}
         aria-label={isPlaying ? 'Pause video' : 'Play video'}
@@ -168,12 +168,6 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
               strokeWidth="2"
             />
           </svg>
-        )}
-        {isPlaying && (
-          <div className="flex gap-2">
-            <div className="w-5 h-12 bg-white rounded-sm" />
-            <div className="w-5 h-12 bg-white rounded-sm" />
-          </div>
         )}
       </button>
     </div>
