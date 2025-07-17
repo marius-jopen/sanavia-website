@@ -94,12 +94,12 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       // Desktop: 16:9 is widescreen
       DESKTOP: {
         WIDTH: 16,
-        HEIGHT: 9
+        HEIGHT: 6
       },
       // Tablet: 16:9 is intermediate
       TABLET: {
         WIDTH: 16,
-        HEIGHT: 9
+        HEIGHT: 6
       },
       // Mobile: 9:5 is portrait
       MOBILE: {
@@ -150,6 +150,9 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     
     // Interaction settings
     INTERACTION: {
+      // Enable/disable interactive dot filling
+      ENABLE_INTERACTIVE_FILLING: false, // Set to true to allow users to click and fill dots
+      
       // Click/tap detection radius
       CLICK_RADIUS: {
         DESKTOP: 50,
@@ -346,44 +349,52 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       const dy = circle.body.position.y - y;
       const distance = Math.sqrt(dx * dx + dy * dy);
       
-      if (distance < clickRadius && distance < closestDistance && !circle.isFilled) {
+      // If filling is enabled, only detect unfilled circles; otherwise detect all circles for ripple effect
+      const canInteract = CONFIG.INTERACTION.ENABLE_INTERACTIVE_FILLING ? !circle.isFilled : true;
+      
+      if (distance < clickRadius && distance < closestDistance && canInteract) {
         closestDistance = distance;
         closestCircle = circle;
       }
     }
     
-                  // Fill the closest circle if found
+                  // Handle closest circle interaction if found
     if (closestCircle) {
-      closestCircle.isFilled = true;
-      closestCircle.isUserFilled = true;
+      // Always set click animation properties for ripple effect
       closestCircle.isClickedCircle = true;
       closestCircle.clickAnimationStart = Date.now();
       
-      // Update progress
-      const filledCount = circlesRef.current.filter(c => c.isFilled).length;
-      const newProgress = Math.min(
-        (filledCount / circlesRef.current.length) * 100,
-        CONFIG.MAX_FILLED_PERCENTAGE
-      );
-      setProgress(newProgress);
-      
-      // Trigger confetti when reaching 100% and lock the progress PERMANENTLY
-      if (newProgress >= 100 && !isVictoryLocked) {
-        // PERMANENT VICTORY LOCK - dots stay filled until page reload
-        setIsVictoryLocked(true);
+      // Only fill the circle if interactive filling is enabled
+      if (CONFIG.INTERACTION.ENABLE_INTERACTIVE_FILLING) {
+        closestCircle.isFilled = true;
+        closestCircle.isUserFilled = true;
         
-        // Lock all circles as filled permanently
-        for (const circle of circlesRef.current) {
-          circle.isFilled = true;
-          circle.isUserFilled = true;
-        }
+        // Update progress
+        const filledCount = circlesRef.current.filter(c => c.isFilled).length;
+        const newProgress = Math.min(
+          (filledCount / circlesRef.current.length) * 100,
+          CONFIG.MAX_FILLED_PERCENTAGE
+        );
+        setProgress(newProgress);
         
-        if (!hasShownConfetti) {
-          createConfetti();
+        // Trigger confetti when reaching 100% and lock the progress PERMANENTLY
+        if (newProgress >= 100 && !isVictoryLocked) {
+          // PERMANENT VICTORY LOCK - dots stay filled until page reload
+          setIsVictoryLocked(true);
+          
+          // Lock all circles as filled permanently
+          for (const circle of circlesRef.current) {
+            circle.isFilled = true;
+            circle.isUserFilled = true;
+          }
+          
+          if (!hasShownConfetti) {
+            createConfetti();
+          }
         }
       }
       
-      // Create ripple effect
+      // Always create ripple effect regardless of filling setting
       const rippleId = `ripple-${Date.now()}-${Math.random()}`;
       const newRipple: RippleEffect = {
         id: rippleId,
@@ -878,13 +889,13 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
 <div className="flex items-center gap-2">
       <div onClick={handleToggle} className="cursor-pointer hover:bg-black hover:text-white bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
         <h2>
-          {toggleState ? 'Our solution' : 'Click here to solve the problem'}  
+          {toggleState ? 'Our solution' : 'Click here see how Sanavia can help'}  
         </h2>
       </div>
     </div>
 
 
-      <div className="flex md:items-center gap-2 md:flex-row flex-col">
+      {/* <div className="flex md:items-center gap-2 md:flex-row flex-col">
         <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit  md:mb-4 text-gray-800 mr-3 mb-2">
           <h3>
             {toggleState 
@@ -899,12 +910,20 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             {Math.round(progress)}% Helped
           </h3>
         </div>
-      </div>
+      </div> */}
 
         
 
         
-        <canvas 
+     
+
+<div className="mt-4 bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
+        <h3>
+        {settings?.grid_problem} 
+        </h3>
+      </div> 
+      
+      <canvas 
           ref={canvasRef} 
           style={{ 
             display: 'block', 
@@ -915,12 +934,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
             cursor: 'pointer'
           }}
         />
-
-<div className="mt-4 bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
-        <h3>
-        {settings?.grid_problem} 
-        </h3>
-      </div>  
 
       </section>
 
