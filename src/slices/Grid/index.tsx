@@ -208,7 +208,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     columns: 0, 
     totalCircles: 0 
   });
-  const [progress, setProgress] = useState(20);
+
   const [activeRipples, setActiveRipples] = useState<RippleEffect[]>([]);
   const [hasShownConfetti, setHasShownConfetti] = useState(false);
   const [isVictoryLocked, setIsVictoryLocked] = useState(false);
@@ -375,7 +375,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
           (filledCount / circlesRef.current.length) * 100,
           CONFIG.MAX_FILLED_PERCENTAGE
         );
-        setProgress(newProgress);
         
         // Trigger confetti when reaching 100% and lock the progress PERMANENTLY
         if (newProgress >= 100 && !isVictoryLocked) {
@@ -547,7 +546,6 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       let newProgress = 100; // Default to 100 if victory is locked
       if (!isVictoryLocked) {
         newProgress = toggleRef.current ? CONFIG.SOLUTION_FILLED_PERCENTAGE : CONFIG.INITIAL_FILLED_PERCENTAGE;
-        setProgress(newProgress);
         
         // Reset confetti state (only if not in victory mode)
         setHasShownConfetti(false);
@@ -816,7 +814,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       
       // VICTORY LOCK: Ensure progress stays at 100% after resize
       if (isVictoryLocked) {
-        setProgress(100);
+        // Progress display is disabled, no need to set progress
       }
       
       // Start animation loop
