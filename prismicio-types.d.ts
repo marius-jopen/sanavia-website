@@ -1327,6 +1327,17 @@ export interface VideoSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   video_url: prismic.KeyTextField;
+
+  /**
+   * Autoplay field in *Video → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: video.default.primary.autoplay
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  autoplay: prismic.BooleanField;
 }
 
 /**
