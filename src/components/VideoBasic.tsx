@@ -11,9 +11,7 @@ interface VideoProps {
 
 const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showPauseButton, setShowPauseButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle autoplay functionality
   useEffect(() => {
@@ -31,10 +29,6 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
         if (isVisible) {
           video.play().then(() => {
             setIsPlaying(true);
-            setShowPauseButton(true);
-            // Hide pause button after 2 seconds for autoplay
-            if (timerRef.current) clearTimeout(timerRef.current);
-            timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
           }).catch((error) => {
             console.log('Autoplay failed:', error);
           });
@@ -72,26 +66,6 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
     };
   }, [autoplay, url, isPlaying]);
 
-  // Hide pause button on mobile (touch) after tap
-  useEffect(() => {
-    const handleTouch = () => {
-      if (isPlaying) {
-        setShowPauseButton(true);
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
-      }
-    };
-    const video = videoRef.current;
-    if (video) {
-      video.addEventListener('touchstart', handleTouch);
-    }
-    return () => {
-      if (video) {
-        video.removeEventListener('touchstart', handleTouch);
-      }
-    };
-  }, [isPlaying]);
-
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
@@ -105,32 +79,20 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
-        setShowPauseButton(false);
       } else {
         videoRef.current.play();
-        setShowPauseButton(true);
-        // Start the timer to hide the pause button after 2 seconds
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
       }
       setIsPlaying(!isPlaying);
     }
   };
 
-  // Mouse movement logic for pause button visibility
+  // Mouse event handlers (simplified since we don't show pause button)
   const handleMouseMove = () => {
-    if (isPlaying) {
-      setShowPauseButton(true);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setShowPauseButton(false), 2000);
-    }
+    // No pause button visibility logic needed
   };
 
   const handleMouseLeave = () => {
-    if (isPlaying) {
-      setShowPauseButton(false);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    }
+    // No pause button visibility logic needed
   };
 
   return (
