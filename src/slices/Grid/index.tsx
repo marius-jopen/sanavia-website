@@ -889,12 +889,19 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
       >    
 
     <div className="flex items-center gap-2">
-      <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-4 text-gray-800">
+      <div className="bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-0 text-gray-800">
         <h2>
           {toggleState ? settings?.grid_solution_title : settings?.grid_problem_title}  
         </h2>
       </div>
     </div>
+
+
+<div className="mt-4 bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
+    <h3>
+    {toggleState ? settings?.grid_solution : settings?.grid_problem}  
+    </h3>
+  </div> 
 
     <div className="flex items-center gap-2">
       <div onClick={handleToggle} className="cursor-pointer hover:bg-black hover:text-white bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-0 text-gray-800">
@@ -927,12 +934,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         
      
 
-<div className="mt-4 bg-white rounded-r-3xl pl-8 pr-12 py-2 md:py-6 mr-3 md:w-1/2 mb-4 text-gray-800">
-        <h3>
-        {toggleState ? settings?.grid_solution : settings?.grid_problem}  
-        </h3>
-      </div> 
-      
+  
       <canvas 
           ref={canvasRef} 
           style={{ 
