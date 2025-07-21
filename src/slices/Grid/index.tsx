@@ -26,6 +26,7 @@ export type GridProps = SliceComponentProps<Content.GridSlice> & {
     grid_problem_title?: string | null;
     grid_solution_title?: string | null;
     grid_button_text?: string | null;
+    grid_button_text_clicked?: string | null;
   };
 };
 
@@ -898,7 +899,7 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
     <div className="flex items-center gap-2">
       <div onClick={handleToggle} className="cursor-pointer hover:bg-black hover:text-white bg-white rounded-r-full pl-8 pr-12 py-2 md:py-6 w-fit mb-0 text-gray-800">
         <h3>
-          {settings?.grid_button_text}
+          {toggleState ? settings?.grid_button_text_clicked : settings?.grid_button_text}
         </h3>
       </div>
     </div>

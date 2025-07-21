@@ -103,6 +103,13 @@
           "placeholder": "" 
         }
       },
+      "grid_button_text_clicked": {
+        "type": "Text",
+        "config": {
+          "label": "Grid Button Text Clicked",
+          "placeholder": "" 
+        }
+      },
       "grid_problem": {
         "type": "Text",
         "config": {
