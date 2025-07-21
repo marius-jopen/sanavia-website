@@ -82,6 +82,27 @@
           "placeholder": ""
         }
       },
+      "grid_problem_title": {
+        "type": "Text",
+        "config": {
+          "label": "Grid Problem Title",
+          "placeholder": ""
+        }
+      },
+      "grid_solution_title": {
+        "type": "Text",
+        "config": {
+          "label": "Grid Solution Title",
+          "placeholder": ""
+        }
+      },
+      "grid_button_text": {
+        "type": "Text",
+        "config": {
+          "label": "Grid Button Text",
+          "placeholder": "" 
+        }
+      },
       "grid_problem": {
         "type": "Text",
         "config": {
