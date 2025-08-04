@@ -1,117 +1,216 @@
-# Prismic + Next.js Minimal Starter
+# Sanavia Website
 
-Want to quickly get started building your own project with [Prismic][prismic] and [Next.js][nextjs]? This project includes basic configurations and nothing else. The project includes one Rich Text slice, a homepage, and a dynamic page.
+> A modern, interactive healthcare technology website built with Next.js, Prismic CMS, and advanced animations.
 
-- **Demo**: [Open live demo][live-demo]
-- **Learn more about Prismic and Next.js**: [Prismic Next.js Documentation][prismic-docs]
+[![Next.js](https://img.shields.io/badge/Next.js-15.1.6-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0.0-blue?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1.3-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+[![Prismic](https://img.shields.io/badge/Prismic-CMS-5163BA?logo=prismic)](https://prismic.io/)
 
-&nbsp;
+## 🚀 Overview
 
-![Website screenshot](https://user-images.githubusercontent.com/31219208/228821412-fdde92b2-c13c-4287-b799-611fa96a5fd6.png)
+The Sanavia website is a cutting-edge web application showcasing healthcare technology solutions through interactive visualizations, physics-based animations, and dynamic content management. Built with modern web technologies, it delivers an engaging user experience while maintaining high performance and accessibility standards.
 
-&nbsp;
+## ✨ Key Features
 
-## 🚀 Quick Start
+- **🎯 Interactive Physics Simulations** - Matter.js powered grid visualizations with real-time particle effects
+- **🎨 Advanced Animations** - GSAP-powered scroll animations, intersection observers, and smooth transitions
+- **📱 Responsive Design** - Optimized for all devices with adaptive layouts and touch interactions
+- **⚡ Dynamic Content** - Prismic CMS integration with custom slice components
+- **🎪 Rich Media Support** - Video components, image sliders, and interactive carousels
+- **🎉 Celebration Effects** - Confetti animations and ripple effects for user engagement
+- **🔧 Modern Architecture** - TypeScript, ESLint, Prettier for maintainable code
 
-To start a new project using this starter:
+## 🛠️ Tech Stack
 
-1. Visit <https://prismic.io/dashboard>.
-2. Create a new Prismic repository by selecting **Next.js**.
-3. Select the **Minimal starter**.
-4. Fill out your repository details and continue with the steps given in Prismic.
+### Core Framework
+- **Next.js 15.1.6** - React framework with App Router
+- **React 19.0.0** - UI library with latest features
+- **TypeScript 5.7.3** - Type-safe development
 
-When you're ready to start your project, run the following command:
+### Styling & UI
+- **Tailwind CSS 4.1.3** - Utility-first CSS framework
+- **PostCSS** - CSS processing and optimization
 
-```sh
+### Animation & Interactions
+- **GSAP 3.12.7** - Professional animation library
+- **Matter.js 0.20.0** - 2D physics engine for interactive elements
+- **Splide.js 4.1.4** - Touch-friendly slider component
+
+### Content Management
+- **Prismic CMS** - Headless content management
+  - `@prismicio/client` - API client
+  - `@prismicio/react` - React components
+  - `@prismicio/next` - Next.js integration
+
+### Development Tools
+- **ESLint** - Code linting and quality assurance
+- **Prettier** - Code formatting
+- **Slice Machine** - Visual slice development
+- **Concurrently** - Parallel script execution
+
+## 📁 Project Structure
+
+```
+sanavia-website/
+├── src/
+│   ├── app/                    # Next.js app directory
+│   │   ├── [uid]/             # Dynamic page routes
+│   │   ├── api/               # API endpoints (preview, revalidate)
+│   │   ├── slice-simulator/   # Development slice preview
+│   │   └── ...
+│   ├── components/            # Reusable UI components
+│   │   ├── Background.tsx     # Background component
+│   │   ├── Header.tsx         # Navigation header
+│   │   ├── Slider.tsx         # Media slider
+│   │   ├── Modal.tsx          # Modal dialogs
+│   │   └── ...
+│   ├── slices/               # Prismic slice components
+│   │   ├── Grid/             # Interactive physics grid
+│   │   ├── PopText/          # Animated text sections
+│   │   ├── Video/            # Video components
+│   │   ├── Team/             # Team member displays
+│   │   └── ...
+│   ├── utils/                # Utility functions
+│   │   ├── animations/       # Animation helpers
+│   │   └── hooks/           # Custom React hooks
+│   └── types/               # TypeScript definitions
+├── customtypes/             # Prismic custom type definitions
+├── public/                  # Static assets
+└── ...
+```
+
+## 🎨 Component Architecture
+
+### Interactive Slices
+- **Grid** - Physics-based particle visualization with Matter.js
+- **PopText** - Multi-layout text components with animations
+- **Video/PopVideo** - Responsive video players with controls
+- **Slider** - Touch-friendly content carousels
+- **Team/TeamAdvanced** - Dynamic team member showcases
+
+### Utility Components
+- **Background** - Responsive background management
+- **Navigation** - Mobile-responsive navigation system
+- **Modal** - Accessible modal dialogs
+- **Button variations** - Multiple button styles and interactions
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Prismic repository access
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd sanavia-website
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   ```bash
+   # Copy environment template
+   cp .env.example .env.local
+   
+   # Add your Prismic repository details
+   # PRISMIC_REPOSITORY_NAME=sanavia-website
+   # PRISMIC_ACCESS_TOKEN=your-access-token
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application**
+   - Website: `http://localhost:3000`
+   - Slice Machine: `http://localhost:9999`
+
+## 🛠️ Development Scripts
+
+```bash
+# Development with hot reload and Slice Machine
 npm run dev
+
+# Production build
+npm run build
+
+# Start production server  
+npm start
+
+# Code linting
+npm run lint
+
+# Code formatting
+npm run format
+
+# Slice Machine only
+npm run slicemachine
 ```
 
-## How to use your project
+## 🎯 Development Workflow
 
-To edit the content of this project, go to [prismic.io/dashboard](https://prismic.io/dashboard), click on the repository for this website, and start editing.
+### Content Management
+1. **Slice Development** - Use Slice Machine for visual component development
+2. **Content Modeling** - Define custom types and slices in Prismic
+3. **Preview System** - Real-time preview of draft content
 
-### Create a page
+### Code Quality
+- **TypeScript** - Full type safety across the application
+- **ESLint** - Automated code quality checks
+- **Prettier** - Consistent code formatting
+- **Git Hooks** - Pre-commit quality assurance
 
-To create a page, click on the green pencil icon, then select **Page**.
+## 🚀 Deployment
 
-Pages are made of Slices. You can add and rearrange Slices to your pages.
+The application is optimized for deployment on modern hosting platforms:
 
-Your new page will be accessible by its URL, but it won't appear on the website automatically. To let users discover it, add it to the navigation.
+- **Vercel** (Recommended) - Zero-config deployment with Next.js optimization
+- **Netlify** - Static site generation with serverless functions
+- **AWS/Google Cloud** - Container-based deployment
 
-### Preview documents
+### Build Optimization
+- Automatic code splitting
+- Image optimization with Next.js Image component
+- CSS optimization and minification
+- TypeScript compilation and checking
 
-If you chose this starter when you created a new repository from the Prismic Dashboard, then your repository is preconfigured with previews on localhost. To change the preview configuration or add previews to your production or staging environments, see [Preview Drafts in Next.js](https://prismic.io/docs/technologies/preview-content-nextjs) in the Prismic documentation.
+## 🤝 Contributing
 
-### Customize this website
+### Development Guidelines
+1. Follow TypeScript best practices
+2. Use semantic commit messages
+3. Ensure all tests pass before submission
+4. Follow the established component patterns
+5. Update documentation for new features
 
-This website is preconfigured with Prismic. It has three Prismic packages installed:
+### Code Style
+- Use Prettier for formatting
+- Follow ESLint configurations
+- Maintain component modularity
+- Write descriptive component documentation
 
-- `@prismicio/client` provides helpers for fetching content from Prismic
-- `@prismicio/react` provides React components for rendering content from Prismic
-- `@prismicio/next` provides a wrapper component to configure Prismic previews
+## 📄 License
 
-These packages are already integrated and employed in this app. Take a look at the code to see how they're used.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-### Edit the code
+## 🔗 Resources
 
-There are two steps to rendering content from Prismic in your Next.js project:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prismic Documentation](https://prismic.io/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [GSAP Documentation](https://greensock.com/docs/)
+- [Matter.js Documentation](https://brm.io/matter-js/docs/)
 
-1. Fetch content from the Prismic API using `@prismicio/client`.
-2. Template the content using components from `@prismicio/react`.
+---
 
-Here are some of the files in your project that you can edit:
-
-- `prismicio.ts` - This file includes configuration for `@prismicio/client` and exports useful API helpers.
-- `app/layout.tsx` - This is your layout component, which includes configuration for `@prismicio/react` and `@prismicio/next`.
-- `app/page.tsx` - This is the app homepage. It queries and renders a page document with the UID (unique identifier) "home" from the Prismic API.
-- `app/[uid]/page.tsx` - This is the page component, which queries and renders a page document from your Prismic repository based on the UID.
-- `slices/*/index.tsx` - Each Slice in your project has an index.tsx file that renders the Slice component. Edit this file to customize your Slices.
-
-These are important files that you should leave as-is:
-
-- `app/api/exit-preview/route.ts` - Do not edit or delete this file. This is the API endpoint to close a Prismic preview session.
-- `app/api/preview/route.ts` - Do not edit or delete this file. This is the API endpoint to launch a Prismic preview session.
-- `app/slice-simulator/page.tsx` - Do not edit or delete this file. This file simulates your Slice components in development.
-- `slices/` - This directory contains Slice components, which are generated programmatically by Slice Machine. To customize a Slice template, you can edit the Slice's index.tsx file. To add Slices, delete Slices, or edit Slice models, use Slice Machine (more info below).
-
-Learn more about how to edit your components with [Fetch Data in Next.js](https://prismic.io/docs/technologies/fetch-data-nextjs) and [Template Content in Next.js](https://prismic.io/docs/technologies/template-content-nextjs).
-
-Learn more about how to use [TypeScript with Prismic](https://prismic.io/docs/typescript-nextjs).
-
-### Deploy to the web
-
-To put your project online, see [Deploy your Next.js App](https://prismic.io/docs/technologies/deploy-nextjs).
-
-### Edit content models with Slice Machine
-
-This project includes an application called Slice Machine, which generates models for your Custom Types and Slices. Slice Machine stores the models locally in your codebase, so you can save and version them. It also syncs your models to Prismic. To learn how to use Slice Machine, read [Model Content in Next.js](https://prismic.io/docs/technologies/model-content-nextjs).
-
-If you change or add to your Custom Types, you'll need to update your route handling to match. To learn how to do that, read [Define Paths in Next.js](https://prismic.io/docs/technologies/define-paths-nextjs).
-
-## Documentation
-
-For the official Prismic documentation, see [Prismic's guide for Next.js][prismic-docs] or the [technical references for the installed Prismic packages](https://prismic.io/docs/technologies/technical-references).
-
-## License
-
-```
-Copyright 2013-2022 Prismic <contact@prismic.io> (https://prismic.io)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
-[prismic]: https://prismic.io/
-[prismic-docs]: https://prismic.io/docs/technologies/nextjs
-[prismic-sign-up]: https://prismic.io/dashboard/signup
-[nextjs]: https://nextjs.org/
-[live-demo]: https://nextjs-starter-prismic-minimal.vercel.app/
+**Built with ❤️ for healthcare innovation**
