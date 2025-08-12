@@ -18,7 +18,7 @@ const Item1Column: React.FC<Item1ColumnProps> = (props) => {
   return (
     <div className="pop-text-one-column md:py-4">
         {props.image?.url && (
-            <div className='mb-4 rounded-2xl overflow-hidden'>
+            <div className='mb-4 rounded-2xl overflow-hidden  '>
                 <VideoBasic
                 url={props.video_url || undefined}
                 poster={props.image}

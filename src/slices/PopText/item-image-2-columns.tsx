@@ -18,7 +18,7 @@ const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
   return (
     <div className="pop-text-one-column md:py-4">
       {props.image && (
-        <div className='mb-4 rounded-2xl overflow-hidden'>
+        <div className='mb-4 rounded-2xl overflow-hidden  '>
           <VideoBasic
           url={props.video_url || undefined}
           poster={props.image}
