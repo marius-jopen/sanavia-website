@@ -24,6 +24,14 @@ type FullscreenElement = HTMLElement & {
   mozRequestFullScreen?: () => Promise<void> | void;
 };
 
+// iOS Safari exposes special fullscreen APIs on HTMLVideoElement
+type IOSVideoElement = HTMLVideoElement & {
+  webkitEnterFullscreen?: () => Promise<void> | void;
+  webkitExitFullscreen?: () => Promise<void> | void;
+  webkitSupportsFullscreen?: boolean;
+  webkitDisplayingFullscreen?: boolean;
+};
+
 const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(false);
@@ -137,27 +145,55 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
 
   const toggleFullscreen = () => {
     const container = containerRef.current as FullscreenElement | null;
-    if (!container) return;
+    const video = videoRef.current as IOSVideoElement | null;
+    if (!container || !video) return;
 
     const doc = document as FullscreenDocument;
 
-    const isCurrentlyFullscreen = !!(
+    const isDocFullscreen = !!(
       doc.fullscreenElement ||
       doc.webkitFullscreenElement ||
       doc.mozFullScreenElement ||
       doc.msFullscreenElement
     );
 
+    // iOS Safari inline video fullscreen detection
+    const isIOSVideoFullscreen = Boolean(video.webkitDisplayingFullscreen);
+    const isCurrentlyFullscreen = isDocFullscreen || isIOSVideoFullscreen;
+
     if (!isCurrentlyFullscreen) {
-      if (container.requestFullscreen) container.requestFullscreen();
-      else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-      else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
-      else if (container.msRequestFullscreen) container.msRequestFullscreen();
+      // Prefer requesting fullscreen on the video element itself
+      if (video.requestFullscreen) {
+        video.requestFullscreen().catch(() => {
+          // fall back if request fails
+          if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+          else if (container.requestFullscreen) container.requestFullscreen();
+          else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+          else if ((container as any).mozRequestFullScreen) (container as any).mozRequestFullScreen();
+          else if ((container as any).msRequestFullscreen) (container as any).msRequestFullscreen();
+        });
+      } else if (video.webkitEnterFullscreen) {
+        // iOS Safari
+        video.webkitEnterFullscreen();
+      } else if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      } else if ((container as any).mozRequestFullScreen) {
+        (container as any).mozRequestFullScreen();
+      } else if ((container as any).msRequestFullscreen) {
+        (container as any).msRequestFullscreen();
+      }
     } else {
-      if (doc.exitFullscreen) doc.exitFullscreen();
-      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
-      else if (doc.mozCancelFullScreen) doc.mozCancelFullScreen();
-      else if (doc.msExitFullscreen) doc.msExitFullscreen();
+      if (isDocFullscreen) {
+        if (doc.exitFullscreen) doc.exitFullscreen();
+        else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+        else if ((doc as any).mozCancelFullScreen) (doc as any).mozCancelFullScreen();
+        else if ((doc as any).msExitFullscreen) (doc as any).msExitFullscreen();
+      } else if (video.webkitExitFullscreen) {
+        // iOS Safari
+        video.webkitExitFullscreen();
+      }
     }
   };
 
@@ -175,11 +211,25 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
     document.addEventListener("webkitfullscreenchange", onFsChange as EventListener);
     document.addEventListener("msfullscreenchange", onFsChange as EventListener);
     document.addEventListener("mozfullscreenchange", onFsChange as EventListener);
+
+    // iOS Safari specific video fullscreen events
+    const video = videoRef.current as IOSVideoElement | null;
+    const onBeginIOSFs = () => setIsFullscreen(true);
+    const onEndIOSFs = () => setIsFullscreen(false);
+    if (video) {
+      video.addEventListener('webkitbeginfullscreen', onBeginIOSFs as EventListener);
+      video.addEventListener('webkitendfullscreen', onEndIOSFs as EventListener);
+    }
+
     return () => {
       document.removeEventListener("fullscreenchange", onFsChange);
       document.removeEventListener("webkitfullscreenchange", onFsChange as EventListener);
       document.removeEventListener("msfullscreenchange", onFsChange as EventListener);
       document.removeEventListener("mozfullscreenchange", onFsChange as EventListener);
+      if (video) {
+        video.removeEventListener('webkitbeginfullscreen', onBeginIOSFs as EventListener);
+        video.removeEventListener('webkitendfullscreen', onEndIOSFs as EventListener);
+      }
     };
   }, []);
 
@@ -233,6 +283,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
       className={`relative w-full group ${aspectRatio || ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={() => { setShowControls(true); scheduleHideControls(); }}
     >
       <video
         ref={videoRef}
