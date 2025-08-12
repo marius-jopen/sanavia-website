@@ -169,8 +169,8 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
           if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
           else if (container.requestFullscreen) container.requestFullscreen();
           else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-          else if ((container as any).mozRequestFullScreen) (container as any).mozRequestFullScreen();
-          else if ((container as any).msRequestFullscreen) (container as any).msRequestFullscreen();
+          else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
+          else if (container.msRequestFullscreen) container.msRequestFullscreen();
         });
       } else if (video.webkitEnterFullscreen) {
         // iOS Safari
@@ -179,17 +179,17 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
         container.requestFullscreen();
       } else if (container.webkitRequestFullscreen) {
         container.webkitRequestFullscreen();
-      } else if ((container as any).mozRequestFullScreen) {
-        (container as any).mozRequestFullScreen();
-      } else if ((container as any).msRequestFullscreen) {
-        (container as any).msRequestFullscreen();
+      } else if (container.mozRequestFullScreen) {
+        container.mozRequestFullScreen();
+      } else if (container.msRequestFullscreen) {
+        container.msRequestFullscreen();
       }
     } else {
       if (isDocFullscreen) {
         if (doc.exitFullscreen) doc.exitFullscreen();
         else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
-        else if ((doc as any).mozCancelFullScreen) (doc as any).mozCancelFullScreen();
-        else if ((doc as any).msExitFullscreen) (doc as any).msExitFullscreen();
+        else if (doc.mozCancelFullScreen) doc.mozCancelFullScreen();
+        else if (doc.msExitFullscreen) doc.msExitFullscreen();
       } else if (video.webkitExitFullscreen) {
         // iOS Safari
         video.webkitExitFullscreen();
