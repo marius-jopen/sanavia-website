@@ -9,8 +9,29 @@ interface VideoProps {
   autoplay?: boolean;
 }
 
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void> | void;
+  msFullscreenElement?: Element | null;
+  msExitFullscreen?: () => Promise<void> | void;
+  mozFullScreenElement?: Element | null;
+  mozCancelFullScreen?: () => Promise<void> | void;
+};
+
+type FullscreenElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+  msRequestFullscreen?: () => Promise<void> | void;
+  mozRequestFullScreen?: () => Promise<void> | void;
+};
+
 const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const hideControlsTimerRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Handle autoplay functionality
@@ -66,15 +87,6 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
     };
   }, [autoplay, url, isPlaying]);
 
-  // If no video URL is provided, just show the poster as an image
-  if (!url) {
-    return (
-      <div className={`relative w-full h-full ${aspectRatio || ''}`}>
-        {poster && <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />}
-      </div>
-    );
-  }
-
   const handlePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -86,17 +98,138 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
     }
   };
 
-  // Mouse event handlers (simplified since we don't show pause button)
+  const clearHideControlsTimer = () => {
+    if (hideControlsTimerRef.current) {
+      window.clearTimeout(hideControlsTimerRef.current);
+      hideControlsTimerRef.current = null;
+    }
+  };
+
+  const scheduleHideControls = () => {
+    clearHideControlsTimer();
+    hideControlsTimerRef.current = window.setTimeout(() => {
+      setShowControls(false);
+    }, 2000);
+  };
+
   const handleMouseMove = () => {
-    // No pause button visibility logic needed
+    if (!isPlaying) return; // Only show overlay controls while playing
+    setShowControls(true);
+    scheduleHideControls();
   };
 
   const handleMouseLeave = () => {
-    // No pause button visibility logic needed
+    clearHideControlsTimer();
+    setShowControls(false);
   };
+
+  const seek = (deltaSeconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      const nextTime = Math.min(Math.max(0, (video.currentTime || 0) + deltaSeconds), video.duration || Infinity);
+      video.currentTime = nextTime;
+      setCurrentTime(nextTime);
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleFullscreen = () => {
+    const container = containerRef.current as FullscreenElement | null;
+    if (!container) return;
+
+    const doc = document as FullscreenDocument;
+
+    const isCurrentlyFullscreen = !!(
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+    );
+
+    if (!isCurrentlyFullscreen) {
+      if (container.requestFullscreen) container.requestFullscreen();
+      else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+      else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
+      else if (container.msRequestFullscreen) container.msRequestFullscreen();
+    } else {
+      if (doc.exitFullscreen) doc.exitFullscreen();
+      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+      else if (doc.mozCancelFullScreen) doc.mozCancelFullScreen();
+      else if (doc.msExitFullscreen) doc.msExitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const onFsChange = () => {
+      const doc = document as FullscreenDocument;
+      const fsElement =
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement;
+      setIsFullscreen(!!fsElement);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("webkitfullscreenchange", onFsChange as EventListener);
+    document.addEventListener("msfullscreenchange", onFsChange as EventListener);
+    document.addEventListener("mozfullscreenchange", onFsChange as EventListener);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("webkitfullscreenchange", onFsChange as EventListener);
+      document.removeEventListener("msfullscreenchange", onFsChange as EventListener);
+      document.removeEventListener("mozfullscreenchange", onFsChange as EventListener);
+    };
+  }, []);
+
+  // Sync duration and current time
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const handleLoaded = () => {
+      setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+    };
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime || 0);
+    };
+    const handlePlayEvent = () => setIsPlaying(true);
+    const handlePauseEvent = () => setIsPlaying(false);
+
+    video.addEventListener('loadedmetadata', handleLoaded);
+    video.addEventListener('durationchange', handleLoaded);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('play', handlePlayEvent);
+    video.addEventListener('pause', handlePauseEvent);
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoaded);
+      video.removeEventListener('durationchange', handleLoaded);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('play', handlePlayEvent);
+      video.removeEventListener('pause', handlePauseEvent);
+    };
+  }, [url]);
+
+  const handleScrub = (value: number) => {
+    const video = videoRef.current;
+    if (!video || !Number.isFinite(duration) || duration <= 0) return;
+    const clamped = Math.max(0, Math.min(value, duration));
+    video.currentTime = clamped;
+    setCurrentTime(clamped);
+  };
+
+  // If no video URL is provided, just show the poster as an image
+  if (!url) {
+    return (
+      <div className={`relative w-full h-full ${aspectRatio || ''}`}>
+        {poster && <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />}
+      </div>
+    );
+  }
 
   return (
     <div
+      ref={containerRef}
       className={`relative w-full group ${aspectRatio || ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -113,6 +246,95 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
         loop={autoplay} // Loop when autoplay is enabled
         poster={poster?.url || undefined}
       />
+      {/* Hover/active controls */}
+      <div
+        className={`pointer-events-none absolute left-0 right-0 bottom-0 z-20 transition-opacity duration-200 ${(showControls && isPlaying) ? 'opacity-100' : 'opacity-0'}`}
+        onMouseMove={handleMouseMove}
+      >
+        {/* Progress / Scrub bar */}
+        <div className="pointer-events-auto px-3 pt-3">
+          {
+            // Calculate played percentage for gradient background
+          }
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={Number.isFinite(currentTime) ? currentTime : 0}
+            onChange={(e) => handleScrub(parseFloat(e.target.value))}
+            onMouseDown={() => setShowControls(true)}
+            onTouchStart={() => setShowControls(true)}
+            className="video-scrub w-full cursor-pointer"
+            aria-label="Seek"
+            style={{
+              background: `linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,1) ${duration > 0 ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.5) ${duration > 0 ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.5) 100%)`,
+            }}
+          />
+        </div>
+        <div className="pointer-events-auto flex items-center gap-3 p-3 pb-4 bg-gradient-to-t from-black/60 to-transparent">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handlePlay(); }}
+            className="text-white/90 hover:text-white focus:outline-none"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              // Pause icon
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            ) : (
+              // Play icon
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5v14l11-7L8 5z" />
+              </svg>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); seek(-10); }}
+            className="text-white/90 hover:text-white focus:outline-none"
+            aria-label="Rewind 10 seconds"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M10 6L4 12l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); seek(10); }}
+            className="text-white/90 hover:text-white focus:outline-none"
+            aria-label="Forward 10 seconds"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 12h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M14 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+            className="text-white/90 hover:text-white focus:outline-none"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          >
+            {isFullscreen ? (
+              // Exit fullscreen icon
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 10V4h6v2h-4v4h-2zM10 10H8V6H4V4h6v6zM14 14h2v4h4v2h-6v-6zM10 14v6H4v-2h4v-4h2z"/>
+              </svg>
+            ) : (
+              // Enter fullscreen icon
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 4h6v6h-2V6h-4V4zM4 4h6v2H6v4H4V4zm16 16h-6v-2h4v-4h2v6zM10 20H4v-6h2v4h4v2z"/>
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
       <button
         onClick={handlePlay}
         className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-20 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
@@ -132,6 +354,51 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
           </svg>
         )}
       </button>
+      {/* Scoped styles for the custom scrub bar */}
+      <style jsx>{`
+        .video-scrub {
+          -webkit-appearance: none;
+          appearance: none;
+          height: 6px;
+          border-radius: 9999px;
+          outline: none;
+        }
+        .video-scrub::-webkit-slider-runnable-track {
+          height: 6px;
+          border-radius: 9999px;
+          background: transparent; /* actual background set on input element */
+        }
+        .video-scrub::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 14px;
+          height: 14px;
+          border-radius: 9999px;
+          background: #ffffff;
+          border: none;
+          margin-top: -4px; /* center the thumb */
+          box-shadow: 0 0 0 2px rgba(0,0,0,0.15);
+        }
+        /* Firefox */
+        .video-scrub::-moz-range-track {
+          height: 6px;
+          border-radius: 9999px;
+          background: rgba(255,255,255,0.5);
+        }
+        .video-scrub::-moz-range-progress {
+          height: 6px;
+          border-radius: 9999px;
+          background: rgba(255,255,255,1);
+        }
+        .video-scrub::-moz-range-thumb {
+          width: 14px;
+          height: 14px;
+          border-radius: 9999px;
+          background: #ffffff;
+          border: none;
+          box-shadow: 0 0 0 2px rgba(0,0,0,0.15);
+        }
+      `}</style>
     </div>
   );
 };
