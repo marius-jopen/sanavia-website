@@ -7,6 +7,7 @@ interface VideoProps {
   poster?: ImageField;
   aspectRatio?: string;
   autoplay?: boolean;
+  classes?: string;
 }
 
 type FullscreenDocument = Document & {
@@ -32,7 +33,7 @@ type IOSVideoElement = HTMLVideoElement & {
   webkitDisplayingFullscreen?: boolean;
 };
 
-const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }) => {
+const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, classes }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -288,7 +289,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay }
       <video
         ref={videoRef}
         src={url}
-        className="w-full z-10 relative"
+        className={`w-full z-10 relative ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
