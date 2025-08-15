@@ -75,7 +75,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
     
     // Function to attempt autoplay
     const tryAutoplay = () => {
-      if (video && !isPlaying) {
+      if (video && video.paused) {
         // Check if video is visible
         const rect = video.getBoundingClientRect();
         const isVisible = rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight && rect.bottom > 0;
@@ -97,7 +97,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !isPlaying) {
+          if (entry.isIntersecting && video.paused) {
             tryAutoplay();
           }
         });
@@ -118,7 +118,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       observer.disconnect();
       window.removeEventListener('resize', handleResize);
     };
-  }, [autoplay, url, isPlaying]);
+  }, [autoplay, url]);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -335,7 +335,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       <video
         ref={videoRef}
         src={url}
-        className={`w-full h-full object-cover z-0 relative block ${classes || ''}`}
+        className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'} z-0 relative block ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
