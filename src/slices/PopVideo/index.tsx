@@ -32,7 +32,8 @@ const PopVideo: FC<PopVideoProps> = ({ slice }) => {
     <section ref={sectionRef} className="w-full mb-4">
       <div className="relative md:w-10/12 rounded-r-2xl overflow-hidden mr-4">
         <VideoBasic
-          classes="rounded-r-2xl overflow-hidden  object-cover"
+          wrapperClasses="rounded-r-2xl overflow-hidden"
+          classes=""
           url={slice.primary.video_url || undefined}
           poster={slice.primary.poster}
           autoplay={slice.primary.autoplay}

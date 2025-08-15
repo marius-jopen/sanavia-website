@@ -8,6 +8,7 @@ interface VideoProps {
   aspectRatio?: string;
   autoplay?: boolean;
   classes?: string;
+  wrapperClasses?: string;
 }
 
 type FullscreenDocument = Document & {
@@ -33,7 +34,7 @@ type IOSVideoElement = HTMLVideoElement & {
   webkitDisplayingFullscreen?: boolean;
 };
 
-const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, classes }) => {
+const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, classes, wrapperClasses }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -42,6 +43,25 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   const hideControlsTimerRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Force rounded corners on Safari by mirroring wrapper border radii via clip-path
+  useEffect(() => {
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!container || !video) return;
+    const computed = window.getComputedStyle(container);
+    const tl = computed.getPropertyValue('border-top-left-radius') || '0px';
+    const tr = computed.getPropertyValue('border-top-right-radius') || '0px';
+    const br = computed.getPropertyValue('border-bottom-right-radius') || '0px';
+    const bl = computed.getPropertyValue('border-bottom-left-radius') || '0px';
+    const values = [tl, tr, br, bl].map(v => v.trim()).join(' ');
+    // Apply both standard and webkit prefixed just in case
+    video.style.clipPath = `inset(0 round ${values})`;
+    // Nudge Safari’s compositor
+    video.style.setProperty('-webkit-clip-path', `inset(0 round ${values})`);
+    // Make sure the wrapper actually clips
+    container.style.overflow = container.style.overflow || 'hidden';
+  }, [wrapperClasses]);
 
   // Handle autoplay functionality
   useEffect(() => {
@@ -281,7 +301,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full group ${aspectRatio || ''}`}
+      className={`relative w-full group overflow-hidden safari-mask ${aspectRatio || ''} ${wrapperClasses || ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onTouchStart={() => { setShowControls(true); scheduleHideControls(); }}
@@ -289,7 +309,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       <video
         ref={videoRef}
         src={url}
-        className={`w-full z-10 relative ${classes || ''}`}
+        className={`w-full z-10 relative block ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
@@ -297,6 +317,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
         muted={autoplay} // Videos need to be muted to autoplay in most browsers
         loop={autoplay} // Loop when autoplay is enabled
         poster={poster?.url || undefined}
+        style={{ borderRadius: 'inherit' }}
       />
       {/* Hover/active controls */}
       <div
@@ -408,6 +429,10 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       </button>
       {/* Scoped styles for the custom scrub bar */}
       <style jsx>{`
+        .safari-mask {
+          -webkit-mask-image: -webkit-radial-gradient(white, black);
+          mask-image: radial-gradient(white, black);
+        }
         .video-scrub {
           -webkit-appearance: none;
           appearance: none;
