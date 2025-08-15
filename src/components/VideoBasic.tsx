@@ -319,7 +319,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full group overflow-hidden safari-mask ${aspectRatio || ''} ${wrapperClasses || ''}`}
+      className={`relative w-full group overflow-hidden flex justify-center items-center safari-mask ${aspectRatio || ''} ${wrapperClasses || ''}`}
       style={{ aspectRatio: cssAspectRatio }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -335,7 +335,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       <video
         ref={videoRef}
         src={url}
-        className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'} z-0 relative block ${classes || ''}`}
+        className={`w-auto h-full ${isFullscreen ? 'object-contain' : 'object-contain'} z-0 relative block ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
@@ -351,7 +351,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
         onMouseMove={handleMouseMove}
       >
         {/* Progress / Scrub bar */}
-        <div className="pointer-events-auto px-3 pt-3">
+        <div className="pointer-events-auto px-6 md:px-12 pt-3">
           {
             // Calculate played percentage for gradient background
           }
@@ -371,7 +371,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
             }}
           />
         </div>
-        <div className="pointer-events-auto flex items-center gap-3 p-3 pb-4 bg-gradient-to-t from-black/60 to-transparent">
+        <div className="pointer-events-auto flex items-center gap-3 pt-3 px-6 md:px-12 pb-4 ">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); handlePlay(); }}
