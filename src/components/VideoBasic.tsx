@@ -37,6 +37,7 @@ type IOSVideoElement = HTMLVideoElement & {
 const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, classes, wrapperClasses }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [showPosterOverlay, setShowPosterOverlay] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -65,6 +66,9 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
 
   // Handle autoplay functionality
   useEffect(() => {
+    // initialize poster overlay visibility based on props
+    setShowPosterOverlay(Boolean(url) && Boolean(poster));
+
     if (!autoplay || !url || !videoRef.current) return;
 
     const video = videoRef.current;
@@ -262,9 +266,14 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       setDuration(Number.isFinite(video.duration) ? video.duration : 0);
     };
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime || 0);
+      const time = video.currentTime || 0;
+      setCurrentTime(time);
+      if (time > 0 && showPosterOverlay) setShowPosterOverlay(false);
     };
-    const handlePlayEvent = () => setIsPlaying(true);
+    const handlePlayEvent = () => {
+      setIsPlaying(true);
+      if (showPosterOverlay) setShowPosterOverlay(false);
+    };
     const handlePauseEvent = () => setIsPlaying(false);
 
     video.addEventListener('loadedmetadata', handleLoaded);
@@ -279,7 +288,16 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       video.removeEventListener('play', handlePlayEvent);
       video.removeEventListener('pause', handlePauseEvent);
     };
-  }, [url]);
+  }, [url, showPosterOverlay]);
+
+  // Compute an aspect ratio to prevent layout jumps before metadata loads
+  const cssAspectRatio = (() => {
+    if (aspectRatio && aspectRatio.includes('/')) return aspectRatio;
+    const w = poster?.dimensions?.width;
+    const h = poster?.dimensions?.height;
+    if (w && h) return `${w} / ${h}`;
+    return '16 / 9';
+  })();
 
   const handleScrub = (value: number) => {
     const video = videoRef.current;
@@ -292,7 +310,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
-      <div className={`relative w-full h-full ${aspectRatio || ''}`}>
+      <div className={`relative w-full h-full ${aspectRatio || ''}`} style={{ aspectRatio: cssAspectRatio }}>
         {poster && <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />}
       </div>
     );
@@ -302,26 +320,34 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
     <div
       ref={containerRef}
       className={`relative w-full group overflow-hidden safari-mask ${aspectRatio || ''} ${wrapperClasses || ''}`}
+      style={{ aspectRatio: cssAspectRatio }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onTouchStart={() => { setShowControls(true); scheduleHideControls(); }}
     >
+      {/* Poster overlay above the video, hidden once playback starts */}
+      {poster && showPosterOverlay && (
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />
+        </div>
+      )}
+
       <video
         ref={videoRef}
         src={url}
-        className={`w-full z-10 relative block ${classes || ''}`}
+        className={`w-full h-full object-cover z-0 relative block ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
         autoPlay={autoplay}
         muted={autoplay} // Videos need to be muted to autoplay in most browsers
         loop={autoplay} // Loop when autoplay is enabled
-        poster={poster?.url || undefined}
+        poster={undefined}
         style={{ borderRadius: 'inherit' }}
       />
       {/* Hover/active controls */}
       <div
-        className={`pointer-events-none absolute left-0 right-0 bottom-0 z-20 transition-opacity duration-200 ${(showControls && isPlaying) ? 'opacity-100' : 'opacity-0'}`}
+        className={`pointer-events-none absolute left-0 right-0 bottom-0 z-30 transition-opacity duration-200 ${(showControls && isPlaying) ? 'opacity-100' : 'opacity-0'}`}
         onMouseMove={handleMouseMove}
       >
         {/* Progress / Scrub bar */}
@@ -410,7 +436,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       </div>
       <button
         onClick={handlePlay}
-        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-20 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center transition-all duration-300 p-0 border-none bg-transparent z-40 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
         style={{ outline: 'none' }}
         tabIndex={0}
         aria-label={isPlaying ? 'Pause video' : 'Play video'}
