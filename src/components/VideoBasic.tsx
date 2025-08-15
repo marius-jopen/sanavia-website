@@ -118,7 +118,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       observer.disconnect();
       window.removeEventListener('resize', handleResize);
     };
-  }, [autoplay, url]);
+  }, [autoplay, url, poster]);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -290,14 +290,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
     };
   }, [url, showPosterOverlay]);
 
-  // Compute an aspect ratio to prevent layout jumps before metadata loads
-  const cssAspectRatio = (() => {
-    if (aspectRatio && aspectRatio.includes('/')) return aspectRatio;
-    const w = poster?.dimensions?.width;
-    const h = poster?.dimensions?.height;
-    if (w && h) return `${w} / ${h}`;
-    return '16 / 9';
-  })();
+  // Note: aspect ratio is currently handled via layout/CSS, not with inline aspect-ratio style
 
   const handleScrub = (value: number) => {
     const video = videoRef.current;
@@ -310,7 +303,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
-      <div className={`relative w-full h-auto `} >
+      <div className={`relative w-full h-auto TEST${aspectRatio || ''}`} >
         {poster && <PrismicNextImage className="w-full h-full object-cover " field={poster} alt="" />}
       </div>
     );
