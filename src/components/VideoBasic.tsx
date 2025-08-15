@@ -310,8 +310,8 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
-      <div className={`relative w-full h-full ${aspectRatio || ''}`} style={{ aspectRatio: cssAspectRatio }}>
-        {poster && <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />}
+      <div className={`relative w-full h-auto `} >
+        {poster && <PrismicNextImage className="w-full h-full object-cover " field={poster} alt="" />}
       </div>
     );
   }
@@ -319,8 +319,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full group overflow-hidden flex justify-center items-center safari-mask ${aspectRatio || ''} ${wrapperClasses || ''}`}
-      style={{ aspectRatio: cssAspectRatio }}
+      className={`relative w-full group overflow-hidden flex justify-center items-center safari-mask ${wrapperClasses || ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onTouchStart={() => { setShowControls(true); scheduleHideControls(); }}
@@ -328,14 +327,14 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       {/* Poster overlay above the video, hidden once playback starts */}
       {poster && showPosterOverlay && (
         <div className="absolute inset-0 z-10 pointer-events-none">
-          <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />
+          <PrismicNextImage className="w-full h-full object-cover " field={poster} alt="" />
         </div>
       )}
 
       <video
         ref={videoRef}
         src={url}
-        className={`w-auto h-full ${isFullscreen ? 'object-contain' : 'object-contain'} z-0 relative block ${classes || ''}`}
+        className={`w-full h-auto ${isFullscreen ? '' : ''} z-0 relative block ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
@@ -351,7 +350,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
         onMouseMove={handleMouseMove}
       >
         {/* Progress / Scrub bar */}
-        <div className="pointer-events-auto px-6 md:px-12 pt-3">
+        <div className="pointer-events-auto px-6  pt-3">
           {
             // Calculate played percentage for gradient background
           }
@@ -371,7 +370,7 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
             }}
           />
         </div>
-        <div className="pointer-events-auto flex items-center gap-3 pt-3 px-6 md:px-12 pb-4 ">
+        <div className="pointer-events-auto flex items-center gap-3 pt-3 px-6  pb-4 ">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); handlePlay(); }}
