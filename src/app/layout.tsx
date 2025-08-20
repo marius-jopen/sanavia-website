@@ -5,6 +5,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./globals.css";
 import Script from "next/script";
+import type { Viewport } from "next";
+
+// Ensure iOS uses the visual viewport and allows content under safe areas
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export default async function RootLayout({
   children,
@@ -15,8 +23,8 @@ export default async function RootLayout({
   const settings = await client.getSingle("header");
 
   return (
-    <html lang="en">
-      <body className="w-full overflow-x-hidden">
+    <html lang="en" className="overflow-x-clip">
+      <body className="w-full overflow-x-clip">
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-9WB5C8BYNX"
           strategy="afterInteractive"

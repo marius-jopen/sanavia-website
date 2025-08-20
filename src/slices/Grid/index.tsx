@@ -878,13 +878,14 @@ const Grid: FC<GridProps> = ({ slice, settings }) => {
         style={{ 
           margin: 0, 
           padding: 0,
-          width: '100vw',
-          maxWidth: '100vw',
+          // Use visual viewport width on iOS to avoid landscape gutters
+          width: '100svw',
+          maxWidth: '100svw',
           position: 'relative',
           left: '50%',
           right: '50%',
-          marginLeft: '-50vw',
-          marginRight: '-50vw'
+          marginLeft: 'calc(-50svw)',
+          marginRight: 'calc(-50svw)'
         }}
       >    
 
