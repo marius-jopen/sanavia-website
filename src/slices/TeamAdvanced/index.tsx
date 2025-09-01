@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
-import VideoBasic from "@/components/VideoBasic";
+import VideoMinimal from "@/components/VideoMinimal";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
@@ -98,11 +98,10 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
                 }}
               >
                 <div className="fade-in-card" style={{ animation: 'fadeIn 0.6s' }}>
-                  <div className={`overflow-hidden rounded-2xl mb-4 ${isFirstInRow ? 'md:w-[calc(100%+1rem)] md:-ml-4' : ''}`}>
-                    <VideoBasic
+                  <div className={`overflow-hidden rounded-2xl mb-4 aspect-[5/3] ${isFirstInRow ? 'md:w-[calc(100%+1rem)] md:-ml-4' : ''}`}>
+                    <VideoMinimal
                       url={item.video_url || undefined}
                       poster={item.image}
-                      aspectRatio="aspect-[16/9]"
                     />
                   </div>
                   {item.headline && (
@@ -122,11 +121,11 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
       <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
         {selectedItem && (
           <div className="p-8">
-            <div className="overflow-hidden rounded-2xl mb-6">
-              <VideoBasic
+            <div className="overflow-hidden rounded-2xl mb-6 aspect-[5/3]">
+              <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
-                aspectRatio="aspect-[16/9]"
+                autoplay
               />
             </div>
             {selectedItem.headline && (

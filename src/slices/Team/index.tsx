@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
-import VideoBasic from "@/components/VideoBasic";
+import VideoMinimal from "@/components/VideoMinimal";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
@@ -67,8 +67,8 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   }
                 }}
               >
-                <div className="overflow-hidden rounded-2xl aspect-[4/3] mb-4">
-                  <VideoBasic
+                <div className={`overflow-hidden rounded-2xl aspect-[5/3] mb-4 ${isFirstInRow ? 'w-[calc(100%+1rem)] -ml-4' : ''}`}>
+                  <VideoMinimal
                     url={item.video_url || undefined}
                     poster={item.image}
                   />
@@ -90,8 +90,8 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
         {selectedItem && (
           <div className="p-8">
-            <div className="overflow-hidden rounded-2xl aspect-[16/9] mb-6">
-              <VideoBasic
+            <div className="overflow-hidden rounded-2xl aspect-[5/3] mb-6">
+              <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
               />
