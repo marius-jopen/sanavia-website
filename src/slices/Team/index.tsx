@@ -77,7 +77,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   <h3 className="pt-2 pb-2 text-xl font-bold mb-2">{item.headline}</h3>
                 )}
                 {item.richtext && (
-                  <div className="px-12 text-sm text-gray-500">
+                  <div className="px-12 text-xl text-gray-500">
                     <PrismicRichText field={item.richtext} />
                   </div>
                 )}
@@ -100,7 +100,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
               <h2 className="text-2xl font-bold mb-4">{selectedItem.headline}</h2>
             )}
             {selectedItem.richtext && (
-              <div className="text-gray-600">
+              <div className="text-gray-600 text-xl">
                 <PrismicRichText field={selectedItem.richtext} />
               </div>
             )}
