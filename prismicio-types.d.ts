@@ -104,6 +104,50 @@ interface HeaderDocumentData {
   footer_bottom_line: prismic.KeyTextField;
 
   /**
+   * Grid Problem Title field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.grid_problem_title
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  grid_problem_title: prismic.KeyTextField;
+
+  /**
+   * Grid Solution Title field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.grid_solution_title
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  grid_solution_title: prismic.KeyTextField;
+
+  /**
+   * Grid Button Text field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.grid_button_text
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  grid_button_text: prismic.KeyTextField;
+
+  /**
+   * Grid Button Text Clicked field in *Settings*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: header.grid_button_text_clicked
+   * - **Tab**: Main
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  grid_button_text_clicked: prismic.KeyTextField;
+
+  /**
    * Grid Problem field in *Settings*
    *
    * - **Field Type**: Text
@@ -1118,6 +1162,16 @@ export interface TeamSliceDefaultPrimaryItemsItem {
   headline: prismic.KeyTextField;
 
   /**
+   * Teaser field in *Team → Default → Primary → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: team.default.primary.items[].teaser
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  teaser: prismic.KeyTextField;
+
+  /**
    * Richtext field in *Team → Default → Primary → Items*
    *
    * - **Field Type**: Rich Text
@@ -1214,6 +1268,16 @@ export interface TeamAdvancedSliceDefaultPrimaryItemsItem {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   headline: prismic.KeyTextField;
+
+  /**
+   * Teaser field in *TeamAdvanced → Default → Primary → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: team_advanced.default.primary.items[].teaser
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  teaser: prismic.KeyTextField;
 
   /**
    * Richtext field in *TeamAdvanced → Default → Primary → Items*

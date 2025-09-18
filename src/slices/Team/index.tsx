@@ -55,7 +55,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
             return (
               <div 
                 key={index} 
-                className={`flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
+                className={` flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
                   isFirstInRow ? 'pl-8 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
                 }`}
                 onClick={() => handleItemClick(item)}
@@ -74,11 +74,11 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   />
                 </div>
                 {item.headline && (
-                  <h3 className="pt-2 pb-2 text-xl font-bold mb-2">{item.headline}</h3>
+                  <div className={`pt-2 pb-2 text-2xl ${item.teaser ? 'mb-0' : 'mb-2'}`}>{item.headline}</div>
                 )}
-                {item.richtext && (
-                  <div className="px-12 text-xl text-gray-500">
-                    <PrismicRichText field={item.richtext} />
+                {item.teaser && (
+                  <div className="px-6  text-base text-gray-500 mb-2">
+                    {item.teaser}
                   </div>
                 )}
               </div>
@@ -89,18 +89,18 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
 
       <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
         {selectedItem && (
-          <div className="p-8">
-            <div className="overflow-hidden rounded-2xl aspect-[5/3] mb-6">
+          <div className="p-5">
+            <div className="overflow-hidden md:w-1/2 rounded-2xl aspect-[5/3] mb-6">
               <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
               />
             </div>
             {selectedItem.headline && (
-              <h2 className="text-2xl font-bold mb-4">{selectedItem.headline}</h2>
+              <div className="md:text-3xl  mb-4">{selectedItem.headline}</div>
             )}
             {selectedItem.richtext && (
-              <div className="text-gray-600 text-xl">
+              <div className="text-gray-600 text-base">
                 <PrismicRichText field={selectedItem.richtext} />
               </div>
             )}

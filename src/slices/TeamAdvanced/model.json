@@ -49,6 +49,13 @@
                   "placeholder": ""
                 }
               },
+              "teaser": {
+                "type": "Text",
+                "config": {
+                  "label": "Teaser",
+                  "placeholder": ""
+                }
+              },
               "richtext": {
                 "type": "StructuredText",
                 "config": {

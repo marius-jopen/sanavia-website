@@ -100,12 +100,12 @@ const Modal: React.FC<ModalProps> = ({
 
       <div 
         ref={modalRef}
-        className={`bg-white rounded-2xl ${maxWidth} w-full max-h-[90vh] ${className}`}
+        className={`bg-white rounded-2xl overflow-y-scroll overflow-x-hidden no-scrollbar ${maxWidth} w-full max-h-[90vh] overflow-y-auto ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative">
-          {/* Desktop close button - positioned outside modal */}
-          <div ref={closeButtonDesktopRef} className="absolute top-0 -right-12 z-10 w-10 h-10 hidden md:block">
+          {/* Desktop close button - positioned inside modal */}
+          <div ref={closeButtonDesktopRef} className="absolute top-4 right-4 z-10 w-10 h-10 hidden md:block">
             <SimplePlusButton 
               onClick={handleClose}
               isActive={true}

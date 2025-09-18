@@ -64,6 +64,14 @@
 										}
 									]
 								}
+							],
+							[
+								"teaser",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "television",
+									"type": "Text"
+								}
 							]
 						]
 					}

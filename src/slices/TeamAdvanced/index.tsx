@@ -107,9 +107,9 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
                   {item.headline && (
                     <h3 className="pt-2 pb-2 text-xl font-bold mb-2">{item.headline}</h3>
                   )}
-                  {item.richtext && (
+                  {item.teaser && (
                     <div className="px-12 text-xl text-gray-500">
-                      <PrismicRichText field={item.richtext} />
+                      {item.teaser}
                     </div>
                   )}
                 </div>

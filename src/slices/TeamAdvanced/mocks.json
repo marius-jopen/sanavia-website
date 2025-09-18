@@ -71,6 +71,14 @@
 									"__TYPE__": "BooleanContent",
 									"value": true
 								}
+							],
+							[
+								"teaser",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "pond",
+									"type": "Text"
+								}
 							]
 						]
 					}
