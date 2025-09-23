@@ -16,7 +16,7 @@ interface Item1ColumnProps {
 
 const Item1Column: React.FC<Item1ColumnProps> = (props) => {
   return (
-    <div className="pop-text-one-column md:py-4">
+    <div className="pop-text-one-column md:pt-4">
         {props.image?.url && (
             <div className='mb-4 rounded-2xl overflow-hidden brightness-[0.97] '>
                 <VideoBasic
@@ -28,7 +28,7 @@ const Item1Column: React.FC<Item1ColumnProps> = (props) => {
         )}
 
         {props.headline && (
-            <h3 className='pb-4'>
+            <h3 className={(props.richtext && props.richtext.length > 0) || props.button?.text ? 'pb-4' : 'pb-0'}>
                 {props.headline}
             </h3>
         )}
