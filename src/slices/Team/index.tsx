@@ -67,7 +67,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   }
                 }}
               >
-                <div className={`overflow-hidden rounded-2xl aspect-[5/4] mb-4 ${isFirstInRow ? 'w-[calc(100%+1rem)] -ml-4' : ''}`}>
+                <div className={`overflow-hidden hover:scale-102 transition-all duration-300 rounded-2xl aspect-[5/4] mb-4 ${isFirstInRow ? 'w-[calc(100%+1rem)] -ml-4' : ''}`}>
                   <VideoMinimal
                     url={item.video_url || undefined}
                     poster={item.image}
