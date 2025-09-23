@@ -67,7 +67,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   }
                 }}
               >
-                <div className={`overflow-hidden rounded-2xl aspect-[5/3] mb-4 ${isFirstInRow ? 'w-[calc(100%+1rem)] -ml-4' : ''}`}>
+                <div className={`overflow-hidden rounded-2xl aspect-[5/4] mb-4 ${isFirstInRow ? 'w-[calc(100%+1rem)] -ml-4' : ''}`}>
                   <VideoMinimal
                     url={item.video_url || undefined}
                     poster={item.image}
@@ -90,7 +90,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
         {selectedItem && (
           <div className="p-5">
-            <div className="overflow-hidden md:w-1/2 rounded-2xl aspect-[5/3] mb-6">
+            <div className="overflow-hidden md:w-1/2 rounded-2xl aspect-[5/4] mb-6">
               <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}

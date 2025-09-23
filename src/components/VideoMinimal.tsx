@@ -62,7 +62,7 @@ const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapp
   // If no video, just render the image in the enforced aspect ratio
   if (!url) {
     return (
-      <div ref={containerRef} className={`relative w-full aspect-[5/3] overflow-hidden ${wrapperClasses || ""}`}>
+      <div ref={containerRef} className={`relative w-full aspect-[5/4] overflow-hidden ${wrapperClasses || ""}`}>
         {poster && (
           <PrismicNextImage field={poster} fallbackAlt="" className="absolute inset-0 object-cover" fill />
         )}
@@ -73,7 +73,7 @@ const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapp
   return (
     <div
       ref={containerRef}
-      className={`relative w-full aspect-[5/3] overflow-hidden ${wrapperClasses || ""}`}
+      className={`relative w-full aspect-[5/4] overflow-hidden ${wrapperClasses || ""}`}
       onMouseEnter={autoplay ? undefined : play}
       onMouseLeave={autoplay ? undefined : stop}
       onTouchStart={autoplay ? undefined : (() => (isPlaying ? stop() : play()))}
