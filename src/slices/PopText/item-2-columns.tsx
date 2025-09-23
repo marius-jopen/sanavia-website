@@ -18,7 +18,7 @@ const Item2Columns: React.FC<Item2ColumnsProps> = (props) => {
     <div className="pop-text-one-column flex gap-8 md:py-4">
       {props.image && (
         <div className='w-1/2 flex justify-center flex-col'>
-          <div className='mb-4 rounded-2xl overflow-hidden  '>
+          <div className='mb-4 rounded-2xl overflow-hidden brightness-[0.97] '>
             <VideoBasic
             url={props.video_url || undefined}
             poster={props.image}
