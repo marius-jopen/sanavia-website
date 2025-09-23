@@ -16,7 +16,7 @@ interface Item1ColumnProps {
 
 const Item1Column: React.FC<Item1ColumnProps> = (props) => {
   return (
-    <div className="pop-text-one-column md:pt-4">
+    <div className="pop-text-one-column md:pt-4 pb-4 md:pb-0">
         {props.image?.url && (
             <div className='mb-4 rounded-2xl overflow-hidden brightness-[0.97] '>
                 <VideoBasic
