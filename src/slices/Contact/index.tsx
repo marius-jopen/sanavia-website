@@ -79,7 +79,9 @@ const Contact: FC<ContactProps> = ({ slice }) => {
         if (!hasFadedForm && formEl.childElementCount > 0) {
           gsap.to(formEl, { duration: 0.4, opacity: 1, delay: 0.15, ease: "power2.out" });
           hasFadedForm = true;
-          mutationObserver && mutationObserver.disconnect();
+          if (mutationObserver) {
+            mutationObserver.disconnect();
+          }
         }
       });
       mutationObserver.observe(formEl, { childList: true, subtree: true });
@@ -87,7 +89,9 @@ const Contact: FC<ContactProps> = ({ slice }) => {
 
     return () => {
       observer.disconnect();
-      mutationObserver && mutationObserver.disconnect();
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+      }
       window.clearTimeout(timeoutId);
     };
   }, []);
