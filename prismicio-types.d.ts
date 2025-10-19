@@ -187,6 +187,7 @@ export type HeaderDocument<Lang extends string = string> =
   >;
 
 type PageDocumentDataSlicesSlice =
+  | ContactSlice
   | SmallTextSlice
   | CardsSlice
   | AboutUsSlice
@@ -463,6 +464,36 @@ type CardsSliceVariation = CardsSliceDefault;
  * - **Documentation**: https://prismic.io/docs/slice
  */
 export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
+
+/**
+ * Default variation for Contact Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type ContactSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *Contact*
+ */
+type ContactSliceVariation = ContactSliceDefault;
+
+/**
+ * Contact Shared Slice
+ *
+ * - **API ID**: `contact`
+ * - **Description**: Contact
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type ContactSlice = prismic.SharedSlice<
+  "contact",
+  ContactSliceVariation
+>;
 
 /**
  * Default variation for Grid Slice
@@ -1469,6 +1500,9 @@ declare module "@prismicio/client" {
       CardsSliceDefaultPrimary,
       CardsSliceVariation,
       CardsSliceDefault,
+      ContactSlice,
+      ContactSliceVariation,
+      ContactSliceDefault,
       GridSlice,
       GridSliceVariation,
       GridSliceDefault,
