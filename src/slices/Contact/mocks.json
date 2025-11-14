@@ -2,7 +2,40 @@
 	{
 		"__TYPE__": "SharedSliceContent",
 		"variation": "default",
-		"primary": {},
+		"primary": {
+			"text_1": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Nostrud dolor qui est reprehenderit non fugiat voluptate et qui."
+						}
+					}
+				]
+			},
+			"button_1": {
+				"__TYPE__": "FieldContent",
+				"value": "wood",
+				"type": "Text"
+			},
+			"text_2": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Pariatur nulla pariatur eu duis excepteur irure veniam pariatur nisi veniam occaecat consectetur officia eiusmod. Pariatur nostrud sint nulla ut in do enim cillum cupidatat aliquip."
+						}
+					}
+				]
+			},
+			"button_2": {
+				"__TYPE__": "FieldContent",
+				"value": "instant",
+				"type": "Text"
+			}
+		},
 		"items": []
 	}
 ]

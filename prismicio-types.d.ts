@@ -466,6 +466,51 @@ type CardsSliceVariation = CardsSliceDefault;
 export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
 
 /**
+ * Primary content in *Contact → Default → Primary*
+ */
+export interface ContactSliceDefaultPrimary {
+  /**
+   * Text 1 field in *Contact → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contact.default.primary.text_1
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  text_1: prismic.RichTextField;
+
+  /**
+   * Button 1 field in *Contact → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contact.default.primary.button_1
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  button_1: prismic.KeyTextField;
+
+  /**
+   * Text 2 field in *Contact → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contact.default.primary.text_2
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  text_2: prismic.RichTextField;
+
+  /**
+   * Button 2 field in *Contact → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: contact.default.primary.button_2
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  button_2: prismic.KeyTextField;
+}
+
+/**
  * Default variation for Contact Slice
  *
  * - **API ID**: `default`
@@ -474,7 +519,7 @@ export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
  */
 export type ContactSliceDefault = prismic.SharedSliceVariation<
   "default",
-  Record<string, never>,
+  Simplify<ContactSliceDefaultPrimary>,
   never
 >;
 
@@ -1501,6 +1546,7 @@ declare module "@prismicio/client" {
       CardsSliceVariation,
       CardsSliceDefault,
       ContactSlice,
+      ContactSliceDefaultPrimary,
       ContactSliceVariation,
       ContactSliceDefault,
       GridSlice,

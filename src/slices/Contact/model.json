@@ -10,7 +10,42 @@
       "docURL": "...",
       "version": "initial",
       "description": "Default",
-      "imageUrl": ""
+      "imageUrl": "",
+      "primary": {
+        "text_1": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Text 1",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
+          }
+        },
+        "button_1": {
+          "type": "Text",
+          "config": {
+            "label": "Button 1",
+            "placeholder": ""
+          }
+        },
+        "text_2": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Text 2",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,rtl"
+          }
+        },
+        "button_2": {
+          "type": "Text",
+          "config": {
+            "label": "Button 2",
+            "placeholder": ""
+          }
+        }
+      },
+      "items": {}
     }
   ]
 }
