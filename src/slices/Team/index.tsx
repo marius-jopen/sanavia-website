@@ -6,6 +6,7 @@ import { PrismicRichText } from "@prismicio/react";
 import VideoMinimal from "@/components/VideoMinimal";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
+import Image from "next/image";
 
 // Helper type to add visible field to slice primary
 type WithVisible<T> = T & { visible?: boolean };
@@ -25,6 +26,14 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedItem, setSelectedItem] = useState<Content.TeamSlice['primary']['items'][0] | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  const normalizeLinkedinUrl = (value?: string | null) => {
+    if (!value) return undefined;
+    const trimmed = String(value).trim();
+    if (!trimmed) return undefined;
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
 
   useEffect(() => {
     if (!gridRef.current || !enableAnimation) return;
@@ -72,7 +81,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
             return (
               <div 
                 key={index} 
-                className={` flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
+                className={` group flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
                   isFirstInRow ? 'pl-8 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
                 }`}
                 onClick={() => handleItemClick(item)}
@@ -100,6 +109,21 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                     {item.teaser}
                   </div>
                 )}
+                {/* LinkedIn icon – always visible on mobile, fades in on hover on desktop, centered at bottom of text */}
+                {!!normalizeLinkedinUrl(item.linkedin as unknown as string) && (
+                  <div className="flex items-center justify-center md:justify-center mt-0 pb-1 h-5">
+                    <a
+                      href={normalizeLinkedinUrl(item.linkedin as unknown as string)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
+                      aria-label="Open LinkedIn profile"
+                    >
+                      <Image src="/linkedin.svg" alt="LinkedIn" width={17} height={17} priority />
+                    </a>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -123,6 +147,19 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
             {selectedItem.richtext && (
               <div className="text-gray-600 text-base">
                 <PrismicRichText field={selectedItem.richtext} />
+              </div>
+            )}
+            {/* LinkedIn icon – always visible in modal, left-aligned below text */}
+            {!!normalizeLinkedinUrl(selectedItem.linkedin as unknown as string) && (
+              <div className="flex items-center justify-start mt-0 pb-1 h-5">
+                <a
+                  href={normalizeLinkedinUrl(selectedItem.linkedin as unknown as string)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open LinkedIn profile"
+                >
+                  <Image src="/linkedin.svg" alt="LinkedIn" width={17} height={17} priority />
+                </a>
               </div>
             )}
           </div>
