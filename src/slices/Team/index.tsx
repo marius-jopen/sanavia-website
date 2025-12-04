@@ -89,6 +89,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                     url={item.video_url || undefined}
                     poster={item.image}
                     autoplay={isMobile}
+                    loop={isMobile}
                   />
                 </div>
                 {item.headline && (
@@ -108,11 +109,12 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
         {selectedItem && (
           <div className="p-5">
-            <div className="overflow-hidden md:w-1/2 rounded-2xl aspect-[5/4] mb-6">
+            <div className="overflow-hidden w-full rounded-2xl aspect-[5/4] mb-6">
               <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
-                autoplay={isMobile}
+                autoplay
+                loop
               />
             </div>
             {selectedItem.headline && (

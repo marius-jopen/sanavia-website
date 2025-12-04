@@ -72,6 +72,14 @@
 									"value": "television",
 									"type": "Text"
 								}
+							],
+							[
+								"linkedin",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "minute",
+									"type": "Text"
+								}
 							]
 						]
 					}

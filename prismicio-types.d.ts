@@ -1256,6 +1256,16 @@ export interface TeamSliceDefaultPrimaryItemsItem {
    * - **Documentation**: https://prismic.io/docs/field#rich-text-title
    */
   richtext: prismic.RichTextField;
+
+  /**
+   * Linkedin field in *Team → Default → Primary → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: team.default.primary.items[].linkedin
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  linkedin: prismic.KeyTextField;
 }
 
 /**

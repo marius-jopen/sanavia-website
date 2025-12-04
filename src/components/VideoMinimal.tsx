@@ -8,9 +8,10 @@ interface VideoMinimalProps {
   classes?: string;
   wrapperClasses?: string;
   autoplay?: boolean;
+  loop?: boolean;
 }
 
-const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapperClasses, autoplay }) => {
+const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapperClasses, autoplay, loop }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -89,6 +90,7 @@ const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapp
         muted
         controls={false}
         preload="metadata"
+        loop={Boolean(loop)}
         poster={poster?.url || undefined}
         style={{ borderRadius: "inherit" }}
       />
