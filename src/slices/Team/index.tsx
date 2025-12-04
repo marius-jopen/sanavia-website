@@ -104,11 +104,14 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                 {item.headline && (
                   <div className={`pt-2 pb-2 text-2xl ${item.teaser ? 'mb-0' : 'mb-2'}`}>{item.headline}</div>
                 )}
-                {item.teaser && (
+                <div className="text-gray-600 text-base">
+                  <PrismicRichText field={item.richtext} />
+                </div>
+                {/* {item.teaser && (
                   <div className="px-6  text-base text-gray-500 mb-2">
                     {item.teaser}
                   </div>
-                )}
+                )} */}
                 {/* LinkedIn icon – always visible on mobile, fades in on hover on desktop, centered at bottom of text */}
                 {!!normalizeLinkedinUrl(item.linkedin as unknown as string) && (
                   <div className="flex items-center justify-center md:justify-center mt-0 pb-1 h-5">
@@ -130,10 +133,10 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
         </div>
       </div>
 
-      <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)}>
+      <Modal isOpen={!!selectedItem} onClose={() => setSelectedItem(null)} maxWidth="max-w-lg">
         {selectedItem && (
           <div className="p-5">
-            <div className="overflow-hidden w-full rounded-2xl aspect-[5/4] mb-6">
+            <div className="overflow-hidden w-full mx-auto rounded-2xl aspect-[5/4] mb-6">
               <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
