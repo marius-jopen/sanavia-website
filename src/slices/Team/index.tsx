@@ -24,6 +24,7 @@ export type TeamProps = SliceComponentProps<Content.TeamSlice> & {
 const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = true }) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedItem, setSelectedItem] = useState<Content.TeamSlice['primary']['items'][0] | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!gridRef.current || !enableAnimation) return;
@@ -33,6 +34,22 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       ease: "power2.out"
     });
   }, [enableStagger, enableAnimation]);
+
+  // Detect mobile viewport (align with Tailwind's md breakpoint at 768px)
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia === "undefined") return;
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mediaQuery.matches);
+    update();
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", update);
+      return () => mediaQuery.removeEventListener("change", update);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(update);
+      return () => mediaQuery.removeListener(update);
+    }
+  }, []);
 
   const handleItemClick = (item: Content.TeamSlice['primary']['items'][0]) => {
     setSelectedItem(item);
@@ -71,6 +88,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   <VideoMinimal
                     url={item.video_url || undefined}
                     poster={item.image}
+                    autoplay={isMobile}
                   />
                 </div>
                 {item.headline && (
@@ -94,6 +112,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
               <VideoMinimal
                 url={selectedItem.video_url || undefined}
                 poster={selectedItem.image}
+                autoplay={isMobile}
               />
             </div>
             {selectedItem.headline && (
