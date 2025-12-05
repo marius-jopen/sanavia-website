@@ -40,3 +40,7 @@ h4 {
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+.text-box a {
+  @apply underline;
+}

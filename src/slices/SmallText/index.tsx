@@ -25,7 +25,7 @@ const SmallText: FC<SmallTextProps> = ({ slice }) => {
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <div className="mx-auto max-w-screen-sm">
+      <div className="mx-auto px-4  max-w-screen-sm text-box">
         <PrismicRichText field={slice.primary.richtext} />
       </div>
     </section>
