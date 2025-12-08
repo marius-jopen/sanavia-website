@@ -7,14 +7,17 @@ type SimplePlusButtonProps = {
   className?: string;
   big?: boolean;
   isActive?: boolean;
+  disableAutoSize?: boolean;
 };
 
-export default function SimplePlusButton({ onClick, className = "", big = false, isActive = false }: SimplePlusButtonProps) {
+export default function SimplePlusButton({ onClick, className = "", big = false, isActive = false, disableAutoSize = false }: SimplePlusButtonProps) {
   const iconRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Update container width to match height
+  // Update container width to match height (only if not disabled)
   useEffect(() => {
+    if (disableAutoSize) return;
+
     const updateContainerWidth = () => {
       if (containerRef.current) {
         const height = containerRef.current.offsetHeight;
@@ -22,17 +25,34 @@ export default function SimplePlusButton({ onClick, className = "", big = false,
       }
     };
 
-    // Initial update
-    updateContainerWidth();
+    // Initial update with a small delay to ensure layout is ready
+    const initialTimeout = setTimeout(() => {
+      updateContainerWidth();
+    }, 0);
 
     // Create ResizeObserver to watch for height changes
-    const resizeObserver = new ResizeObserver(updateContainerWidth);
+    const resizeObserver = new ResizeObserver(() => {
+      // Use requestAnimationFrame to ensure layout has settled
+      requestAnimationFrame(updateContainerWidth);
+    });
+    
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }
 
-    return () => resizeObserver.disconnect();
-  }, []);
+    // Also listen to window resize events for better responsiveness
+    const handleResize = () => {
+      requestAnimationFrame(updateContainerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [disableAutoSize]);
 
   // Handle active state rotation
   useEffect(() => {
