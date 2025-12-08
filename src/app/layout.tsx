@@ -5,13 +5,20 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./globals.css";
 import Script from "next/script";
-import type { Viewport } from "next";
+import type { Viewport, Metadata } from "next";
 
 // Ensure iOS uses the visual viewport and allows content under safe areas
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+};
+
+export const metadata: Metadata = {
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default async function RootLayout({
