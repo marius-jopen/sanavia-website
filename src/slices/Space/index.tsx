@@ -24,7 +24,7 @@ const heightMap: Record<HeightSize, string> = {
   "m": "h-8",
   "lg": "h-16",
   "xl": "h-24",
-  "2xl": "h-32",
+  "2xl": "h-44",
 };
 
 /**
