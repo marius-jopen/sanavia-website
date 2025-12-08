@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
-import VideoMinimal from "@/components/VideoMinimal";
+import VideoMinimal, { VideoMinimalHandle } from "@/components/VideoMinimal";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 import Image from "next/image";
@@ -26,6 +26,9 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
   const gridRef = useRef<HTMLDivElement>(null);
   const [selectedItem, setSelectedItem] = useState<Content.TeamSlice['primary']['items'][0] | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const videoRefs = useRef<(VideoMinimalHandle | null)[]>([]);
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const prevMobileRef = useRef<boolean>(false);
 
   const normalizeLinkedinUrl = (value?: string | null) => {
     if (!value) return undefined;
@@ -48,8 +51,21 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia === "undefined") return;
     const mediaQuery = window.matchMedia("(max-width: 767px)");
-    const update = () => setIsMobile(mediaQuery.matches);
+    
+    const update = () => {
+      const isNowMobile = mediaQuery.matches;
+      const wasMobile = prevMobileRef.current;
+      setIsMobile(isNowMobile);
+      // If switching from mobile to desktop, stop any playing video
+      if (wasMobile && !isNowMobile && playingIndex !== null) {
+        videoRefs.current[playingIndex]?.stop();
+        setPlayingIndex(null);
+      }
+      prevMobileRef.current = isNowMobile;
+    };
+    
     update();
+    
     if (typeof mediaQuery.addEventListener === "function") {
       mediaQuery.addEventListener("change", update);
       return () => mediaQuery.removeEventListener("change", update);
@@ -58,10 +74,36 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
       mediaQuery.addListener(update);
       return () => mediaQuery.removeListener(update);
     }
-  }, []);
+  }, [playingIndex]);
 
-  const handleItemClick = (item: Content.TeamSlice['primary']['items'][0]) => {
-    setSelectedItem(item);
+  const handleItemClick = (item: Content.TeamSlice['primary']['items'][0], index: number) => {
+    if (isMobile) {
+      // On mobile: control video playback instead of opening modal
+      if (playingIndex !== null && playingIndex !== index) {
+        // Stop the previously playing video
+        videoRefs.current[playingIndex]?.stop();
+      }
+      
+      const currentVideoRef = videoRefs.current[index];
+      if (currentVideoRef) {
+        if (playingIndex === index) {
+          // If clicking the same video, stop it
+          currentVideoRef.stop();
+          setPlayingIndex(null);
+        } else {
+          // Start the new video
+          currentVideoRef.play();
+          setPlayingIndex(index);
+        }
+      }
+    } else {
+      // On desktop: stop any playing video and open modal
+      if (playingIndex !== null) {
+        videoRefs.current[playingIndex]?.stop();
+        setPlayingIndex(null);
+      }
+      setSelectedItem(item);
+    }
   };
 
   // Early return if not visible
@@ -84,21 +126,25 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                 className={` group flex flex-col bg-white px-4 py-4 text-center cursor-pointer transition-all duration-300 hover:cursor-pointer ${
                   isFirstInRow ? 'pl-8 rounded-l-0 rounded-r-2xl' : 'rounded-2xl '
                 }`}
-                onClick={() => handleItemClick(item)}
+                onClick={() => handleItemClick(item, index)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    handleItemClick(item);
+                    handleItemClick(item, index);
                   }
                 }}
               >
                 <div className={`overflow-hidden hover:scale-102 transition-all duration-300 rounded-2xl aspect-[5/4] mb-4 ${isFirstInRow ? 'w-[calc(100%+1rem)] -ml-4' : ''}`}>
                   <VideoMinimal
+                    ref={(el) => {
+                      videoRefs.current[index] = el;
+                    }}
                     url={item.video_url || undefined}
                     poster={item.image}
-                    autoplay={isMobile}
-                    loop={isMobile}
+                    autoplay={false}
+                    loop={true}
+                    disableTouchHandlers={isMobile}
                   />
                 </div>
                 {item.headline && (

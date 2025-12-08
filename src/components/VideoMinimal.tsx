@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { PrismicNextImage } from "@prismicio/next";
 import { ImageField } from "@prismicio/client";
 
@@ -9,9 +9,15 @@ interface VideoMinimalProps {
   wrapperClasses?: string;
   autoplay?: boolean;
   loop?: boolean;
+  disableTouchHandlers?: boolean;
 }
 
-const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapperClasses, autoplay, loop }) => {
+export interface VideoMinimalHandle {
+  play: () => void;
+  stop: () => void;
+}
+
+const VideoMinimal = forwardRef<VideoMinimalHandle, VideoMinimalProps>(({ url, poster, classes, wrapperClasses, autoplay, loop, disableTouchHandlers = false }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -52,6 +58,12 @@ const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapp
     setIsPlaying(false);
   };
 
+  // Expose play and stop methods via ref
+  useImperativeHandle(ref, () => ({
+    play,
+    stop,
+  }));
+
   // Autoplay when requested (e.g., inside a modal)
   useEffect(() => {
     if (autoplay && url) {
@@ -75,9 +87,9 @@ const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapp
     <div
       ref={containerRef}
       className={`relative w-full aspect-[5/4] overflow-hidden ${wrapperClasses || ""}`}
-      onMouseEnter={autoplay ? undefined : play}
-      onMouseLeave={autoplay ? undefined : stop}
-      onTouchStart={autoplay ? undefined : (() => (isPlaying ? stop() : play()))}
+      onMouseEnter={autoplay || disableTouchHandlers ? undefined : play}
+      onMouseLeave={autoplay || disableTouchHandlers ? undefined : stop}
+      onTouchStart={autoplay || disableTouchHandlers ? undefined : (() => (isPlaying ? stop() : play()))}
     >
       {poster && !hasStarted && (
         <PrismicNextImage field={poster} fallbackAlt="" className="absolute inset-0 object-cover z-10 pointer-events-none" fill />
@@ -96,6 +108,8 @@ const VideoMinimal: React.FC<VideoMinimalProps> = ({ url, poster, classes, wrapp
       />
     </div>
   );
-};
+});
+
+VideoMinimal.displayName = "VideoMinimal";
 
 export default VideoMinimal;
