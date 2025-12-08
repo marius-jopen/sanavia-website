@@ -36,7 +36,7 @@ export default function Navigation({ links, enableStagger = true, enableAnimatio
   }, [enableStagger, enableAnimation]);
 
   return (
-    <nav ref={navRef} className="flex-wrap flex gap-1 mb-2">
+    <nav ref={navRef} className="hidden flex-wrap md:flex gap-1 mb-2">
       {links.map((link, index) => (
         <PrismicNextLink 
           field={link.link}
