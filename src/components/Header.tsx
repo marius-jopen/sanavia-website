@@ -26,7 +26,7 @@ export default function Header({ data }: HeaderProps) {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="fixed z-50 top-0 mt-20">
+            <div className="fixed z-50 top-0 mt-20 hidden md:block">
               <Navigation 
                 enableStagger={false} 
                 enableAnimation={false}
