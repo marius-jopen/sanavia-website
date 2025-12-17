@@ -48,6 +48,18 @@ export default async function RootLayout({
         {children}
         <Footer data={settings.data} />
         <Background />
+        <Script id="accessibe-widget" strategy="afterInteractive">
+          {`
+            (function(){
+              var s = document.createElement('script');
+              var h = document.querySelector('head') || document.body;
+              s.src = 'https://acsbapp.com/apps/app/dist/js/app.js';
+              s.async = true;
+              s.onload = function(){ acsbJS.init(); };
+              h.appendChild(s);
+            })();
+          `}
+        </Script>
       </body>
       <PrismicPreview repositoryName={repositoryName} />
     </html>
