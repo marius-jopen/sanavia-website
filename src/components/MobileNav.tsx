@@ -1,6 +1,6 @@
 "use client"
 import { PrismicNextLink } from "@prismicio/next";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { LinkField, ImageField } from "@prismicio/client";
 import { gsap } from "gsap";
 import Logo from "./Logo";
@@ -9,10 +9,12 @@ type MobileNavProps = {
   links: { text: string; link: LinkField }[];
   cta?: LinkField;
   logo?: ImageField;
+  isHeaderVisible?: boolean;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
 };
 
-export default function MobileNav({ links, cta, logo }: MobileNavProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+export default function MobileNav({ links, cta, logo, isHeaderVisible = true, isMobileMenuOpen, setIsMobileMenuOpen }: MobileNavProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement[]>([]);
@@ -105,7 +107,9 @@ export default function MobileNav({ links, cta, logo }: MobileNavProps) {
       {/* Burger Menu Button - Top Right */}
       <button
         onClick={toggleMobileMenu}
-        className="fixed top-4 right-4 z-50 flex flex-col justify-center items-center w-14 h-14 bg-white rounded-full px-2 py-2 focus:outline-none"
+        className={`fixed top-4 right-4 z-50 flex flex-col justify-center items-center w-14 h-14 bg-white rounded-full px-2 py-2 focus:outline-none transition-transform duration-800 ease-in-out ${
+          isHeaderVisible ? "translate-y-0" : "-translate-y-40"
+        }`}
         aria-label="Toggle mobile menu"
       >
         <span className={`block w-6 h-0.5 bg-black transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
