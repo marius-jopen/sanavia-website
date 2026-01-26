@@ -47,16 +47,19 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
         opacity: 0,
         y: -20,
         duration: 0.2,
-        stagger: 0.05
+        stagger: 0.05,
+        force3D: true
       })
       .to(menuRef.current, {
         opacity: 0,
         y: -30,
-        duration: 0.3
+        duration: 0.3,
+        force3D: true
       }, "-=0.1")
       .to(overlayRef.current, {
         opacity: 0,
-        duration: 0.2
+        duration: 0.2,
+        force3D: true
       }, "-=0.2");
     }
   };
@@ -84,20 +87,23 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
       
       tl.to(overlayRef.current, {
         opacity: 1,
-        duration: 0.3
+        duration: 0.3,
+        force3D: true
       })
       .to(menuRef.current, {
         opacity: 1,
         y: 0,
         duration: 0.4,
-        ease: "power2.out"
+        ease: "power2.out",
+        force3D: true
       }, "-=0.1")
       .to(linksRef.current, {
         opacity: 1,
         y: 0,
         duration: 0.3,
         stagger: 0.1,
-        ease: "power2.out"
+        ease: "power2.out",
+        force3D: true
       }, "-=0.2");
     }
   }, [isMobileMenuOpen]);
@@ -107,14 +113,15 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
       {/* Burger Menu Button - Top Right */}
       <button
         onClick={toggleMobileMenu}
-        className={`fixed top-4 right-4 z-50 flex flex-col justify-center items-center w-14 h-14 bg-white rounded-full px-2 py-2 focus:outline-none transition-transform duration-800 ease-in-out ${
+        className={`fixed top-4 right-4 z-50 flex flex-col justify-center items-center w-14 h-14 bg-white rounded-full px-2 py-2 focus:outline-none transition-transform duration-300 ease-in-out ${
           isHeaderVisible ? "translate-y-0" : "-translate-y-40"
         }`}
+        style={{ willChange: 'transform', transform: 'translateZ(0)' }}
         aria-label="Toggle mobile menu"
       >
-        <span className={`block w-6 h-0.5 bg-black transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-        <span className={`block w-6 h-0.5 bg-black transition-all duration-300 my-1 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-        <span className={`block w-6 h-0.5 bg-black transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+        <span className={`block w-6 h-0.5 bg-black transition-all duration-200 ease-in-out ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+        <span className={`block w-6 h-0.5 bg-black transition-all duration-200 ease-in-out my-1 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+        <span className={`block w-6 h-0.5 bg-black transition-all duration-200 ease-in-out ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
       </button>
 
       {/* Mobile Menu Overlay */}
@@ -123,6 +130,7 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
           ref={overlayRef}
           className="fixed inset-0 z-40" 
           onClick={closeMobileMenu}
+          style={{ willChange: 'opacity' }}
         >
           {/* Fixed Logo when menu is open */}
             {logo && <Logo logo={logo} fixed={true} enableAnimation={false} />}
@@ -130,6 +138,7 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
           <div 
             ref={menuRef}
             className="fixed inset-0 bg-white shadow-lg flex flex-col"
+            style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
           >
             {/* Mobile Navigation Links */}
             <nav className="px-4 pb-4 flex-1 pt-20">

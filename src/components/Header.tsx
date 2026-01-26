@@ -25,6 +25,13 @@ export default function Header({ data }: HeaderProps) {
       if (!ticking.current) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
+          const scrollDifference = Math.abs(currentScrollY - lastScrollY.current);
+          
+          // Only update if scroll difference is significant (reduces unnecessary updates)
+          if (scrollDifference < 5) {
+            ticking.current = false;
+            return;
+          }
           
           // Only hide/show after scrolling past a threshold (e.g., 100px)
           if (currentScrollY > 100) {
@@ -61,18 +68,20 @@ export default function Header({ data }: HeaderProps) {
         <Cta cta={data.cta} isVisible={isVisible} />
 
         <div
-          className={`fixed z-50 top-0 transition-transform duration-800 ease-in-out ${
+          className={`fixed z-50 top-0 transition-transform duration-300 ease-in-out ${
             isVisible ? "translate-y-0 md:delay-100" : "-translate-y-40 delay-0"
           }`}
+          style={{ willChange: 'transform', transform: 'translateZ(0)' }}
         >
             <Logo logo={data.logo} enableAnimation={false} />
         </div>
 
         {/* Desktop Navigation */}
         <div 
-          className={`fixed z-50 top-0 mt-20 hidden md:block transition-transform duration-1000 ease-in-out ${
+          className={`fixed z-50 top-0 mt-20 hidden md:block transition-transform duration-300 ease-in-out ${
             isVisible ? "translate-y-0 delay-0" : "-translate-y-40 delay-100"
           }`}
+          style={{ willChange: 'transform', transform: 'translateZ(0)' }}
         >
           <Navigation 
             enableStagger={false} 
