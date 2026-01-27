@@ -5,6 +5,13 @@ import { LinkField, ImageField } from "@prismicio/client";
 import { gsap } from "gsap";
 import Logo from "./Logo";
 
+/**
+ * iOS 18 Safari Performance Note:
+ * iOS 18 introduced performance regressions with CSS transforms/transitions.
+ * This component uses translate3d, force3D, and backface-visibility optimizations
+ * to ensure smooth animations on real iOS devices (BrowserStack may not reproduce the issue).
+ */
+
 type MobileNavProps = {
   links: { text: string; link: LinkField }[];
   cta?: LinkField;
@@ -70,10 +77,10 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
       // Disable pointer events initially to prevent clicks during animation
       menuRef.current.style.pointerEvents = 'none';
       
-      // Set initial states
+      // Set initial states - force3D ensures translate3d for iOS 18 performance
       gsap.set(overlayRef.current, { opacity: 0 });
-      gsap.set(menuRef.current, { opacity: 0, y: -30 });
-      gsap.set(linksRef.current, { opacity: 0, y: -20 });
+      gsap.set(menuRef.current, { opacity: 0, y: -30, force3D: true });
+      gsap.set(linksRef.current, { opacity: 0, y: -20, force3D: true });
 
       // Animate in
       const tl = gsap.timeline({
@@ -113,15 +120,14 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
       {/* Burger Menu Button - Top Right */}
       <button
         onClick={toggleMobileMenu}
-        className={`fixed top-4 right-4 z-50 flex flex-col justify-center items-center w-14 h-14 bg-white rounded-full px-2 py-2 focus:outline-none transition-transform duration-300 ease-in-out ${
-          isHeaderVisible ? "translate-y-0" : "-translate-y-40"
-        }`}
-        style={{ willChange: 'transform', transform: 'translateZ(0)' }}
+        className={`burger-button fixed top-4 right-4 z-50 flex flex-col justify-center items-center w-14 h-14 bg-white rounded-full px-2 py-2 focus:outline-none ${
+          isHeaderVisible ? "burger-visible" : "burger-hidden"
+        } ${isMobileMenuOpen ? "burger-open" : ""}`}
         aria-label="Toggle mobile menu"
       >
-        <span className={`block w-6 h-0.5 bg-black transition-all duration-200 ease-in-out ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-        <span className={`block w-6 h-0.5 bg-black transition-all duration-200 ease-in-out my-1 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-        <span className={`block w-6 h-0.5 bg-black transition-all duration-200 ease-in-out ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+        <span className="burger-line burger-line-1"></span>
+        <span className="burger-line burger-line-2"></span>
+        <span className="burger-line burger-line-3"></span>
       </button>
 
       {/* Mobile Menu Overlay */}
@@ -138,7 +144,13 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
           <div 
             ref={menuRef}
             className="fixed inset-0 bg-white shadow-lg flex flex-col"
-            style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
+            style={{ 
+              willChange: 'transform, opacity', 
+              transform: 'translate3d(0, 0, 0)',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden'
+            }}
           >
             {/* Mobile Navigation Links */}
             <nav className="px-4 pb-4 flex-1 pt-20">
