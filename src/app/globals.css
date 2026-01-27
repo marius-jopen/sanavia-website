@@ -71,7 +71,7 @@ h4 {
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transition: transform 0.3s ease-in-out;
+  /* transition: transform 0.3s ease-in-out; */
 }
 
 .burger-button.burger-visible {
@@ -90,43 +90,48 @@ h4 {
   width: 24px;
   height: 2px;
   background-color: #000;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transition: all 0.2s ease-in-out;
-  will-change: transform, opacity;
+  -webkit-transform-origin: center;
+  transform-origin: center;
+  /* -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+  /* transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+  /* will-change: transform, opacity; */
 }
 
 .burger-line-1 {
   margin-bottom: 4px;
+  -webkit-transform: translateY(0) rotate(0deg);
+  transform: translateY(0) rotate(0deg);
 }
 
 .burger-line-2 {
   margin-bottom: 4px;
+  -webkit-transform: scale(1);
+  transform: scale(1);
+  opacity: 1;
+  /* -webkit-transition: opacity 0.2s ease-in-out, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+  /* transition: opacity 0.2s ease-in-out, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 .burger-line-3 {
-  /* No margin needed for last line */
+  -webkit-transform: translateY(0) rotate(0deg);
+  transform: translateY(0) rotate(0deg);
 }
 
-/* Hamburger to X transformation – delayed so X appears only after menu opens */
-.burger-button.burger-open .burger-line {
-  transition: all 0.2s ease-in-out 0.28s; /* delay 0.28s = after overlay/menu fade-in */
-}
-
+/* Hamburger to X transformation */
 .burger-button.burger-open .burger-line-1 {
-  -webkit-transform: translate3d(0, 6px, 0) rotate(45deg);
-  transform: translate3d(0, 6px, 0) rotate(45deg);
+  -webkit-transform: translateY(6px) rotate(45deg);
+  transform: translateY(6px) rotate(45deg);
 }
 
 .burger-button.burger-open .burger-line-2 {
   opacity: 0;
-  -webkit-transform: translate3d(0, 0, 0) scale(0);
-  transform: translate3d(0, 0, 0) scale(0);
+  -webkit-transform: scale(0);
+  transform: scale(0);
 }
 
 .burger-button.burger-open .burger-line-3 {
-  -webkit-transform: translate3d(0, -6px, 0) rotate(-45deg);
-  transform: translate3d(0, -6px, 0) rotate(-45deg);
+  -webkit-transform: translateY(-6px) rotate(-45deg);
+  transform: translateY(-6px) rotate(-45deg);
 }

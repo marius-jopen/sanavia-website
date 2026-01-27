@@ -71,47 +71,24 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
     }
   };
 
-  // Animate in when menu opens
+  // Animate in when menu opens - menu appears instantly, only links animate
   useEffect(() => {
     if (isMobileMenuOpen && overlayRef.current && menuRef.current) {
-      // Disable pointer events initially to prevent clicks during animation
-      menuRef.current.style.pointerEvents = 'none';
+      // Menu and overlay appear instantly (no animation)
+      gsap.set(overlayRef.current, { opacity: 1 });
+      gsap.set(menuRef.current, { opacity: 1, y: 0, force3D: true });
       
-      // Set initial states - force3D ensures translate3d for iOS 18 performance
-      gsap.set(overlayRef.current, { opacity: 0 });
-      gsap.set(menuRef.current, { opacity: 0, y: -30, force3D: true });
+      // Only animate the links flying in
       gsap.set(linksRef.current, { opacity: 0, y: -20, force3D: true });
-
-      // Animate in
-      const tl = gsap.timeline({
-        onComplete: () => {
-          // Re-enable pointer events after animation completes
-          if (menuRef.current) {
-            menuRef.current.style.pointerEvents = 'auto';
-          }
-        }
-      });
       
-      tl.to(overlayRef.current, {
-        opacity: 1,
-        duration: 0.3,
-        force3D: true
-      })
-      .to(menuRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.4,
-        ease: "power2.out",
-        force3D: true
-      }, "-=0.1")
-      .to(linksRef.current, {
+      gsap.to(linksRef.current, {
         opacity: 1,
         y: 0,
         duration: 0.3,
         stagger: 0.1,
         ease: "power2.out",
         force3D: true
-      }, "-=0.2");
+      });
     }
   }, [isMobileMenuOpen]);
 
