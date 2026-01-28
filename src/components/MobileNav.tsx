@@ -22,6 +22,13 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
     setIsMobileMenuOpen(false);
   };
 
+  const closeMobileMenuWithDelay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTimeout(() => {
+      setIsMobileMenuOpen(false);
+    }, 550);
+  };
+
   return (
     <div className="md:hidden">
       {/* Burger Menu Button - Top Right */}
@@ -57,7 +64,7 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
                   <PrismicNextLink 
                     field={link.link}
                     className="block w-full px-4 py-3 bg-gray-50 rounded-2xl hover:bg-black hover:text-white transition-colors text-center text-lg"
-                    onClick={closeMobileMenu}
+                    onClick={closeMobileMenuWithDelay}
                   >
                     {link.text}
                   </PrismicNextLink>
@@ -71,7 +78,7 @@ export default function MobileNav({ links, cta, logo, isHeaderVisible = true, is
                 <PrismicNextLink 
                   className="block w-full text-center text-white bg-black rounded-2xl px-6 py-3 hover:bg-gray-800 transition-all duration-200" 
                   field={cta}
-                  onClick={closeMobileMenu}
+                  onClick={closeMobileMenuWithDelay}
                 >
                   {cta.text || "GET IN TOUCH"}
                 </PrismicNextLink>

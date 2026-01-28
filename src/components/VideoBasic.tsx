@@ -45,6 +45,11 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Calculate aspect ratio from poster image to prevent layout shift
+  const posterAspectRatio = poster?.dimensions 
+    ? `${poster.dimensions.width} / ${poster.dimensions.height}` 
+    : aspectRatio || '16 / 9';
+
   // Force rounded corners on Safari by mirroring wrapper border radii via clip-path
   useEffect(() => {
     const container = containerRef.current;
@@ -303,8 +308,11 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   // If no video URL is provided, just show the poster as an image
   if (!url) {
     return (
-      <div className={`relative w-full h-auto TEST${aspectRatio || ''}`} >
-        {poster && <PrismicNextImage className="w-full h-full object-cover " field={poster} alt="" />}
+      <div 
+        className={`relative w-full overflow-hidden ${wrapperClasses || ''}`}
+        style={{ aspectRatio: posterAspectRatio }}
+      >
+        {poster && <PrismicNextImage className="absolute inset-0 w-full h-full object-cover" field={poster} alt="" />}
       </div>
     );
   }
@@ -312,7 +320,8 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full group overflow-hidden flex justify-center items-center safari-mask ${wrapperClasses || ''}`}
+      className={`relative w-full group overflow-hidden safari-mask ${wrapperClasses || ''}`}
+      style={{ aspectRatio: posterAspectRatio }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onTouchStart={() => { setShowControls(true); scheduleHideControls(); }}
@@ -320,14 +329,14 @@ const VideoBasic: React.FC<VideoProps> = ({ url, poster, aspectRatio, autoplay, 
       {/* Poster overlay above the video, hidden once playback starts */}
       {poster && showPosterOverlay && (
         <div className="absolute inset-0 z-10 pointer-events-none">
-          <PrismicNextImage className="w-full h-full object-cover " field={poster} alt="" />
+          <PrismicNextImage className="w-full h-full object-cover" field={poster} alt="" />
         </div>
       )}
 
       <video
         ref={videoRef}
         src={url}
-        className={`w-full h-auto ${isFullscreen ? '' : ''} z-0 relative block ${classes || ''}`}
+        className={`absolute inset-0 w-full h-full object-cover ${isFullscreen ? '' : ''} z-0 ${classes || ''}`}
         onClick={handlePlay}
         playsInline
         controls={false}
