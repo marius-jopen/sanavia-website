@@ -71,13 +71,6 @@ export default function Header({ data }: HeaderProps) {
           className={`fixed z-50 top-0 transition-transform duration-300 ease-in-out ${
             isVisible ? "translate-y-0 md:delay-100" : "-translate-y-40 delay-0"
           }`}
-          style={{ 
-            willChange: 'transform', 
-            transform: isVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, -160px, 0)',
-            WebkitTransform: isVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, -160px, 0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden'
-          }}
         >
             <Logo logo={data.logo} enableAnimation={false} />
         </div>
@@ -87,13 +80,6 @@ export default function Header({ data }: HeaderProps) {
           className={`fixed z-50 top-0 mt-20 hidden md:block transition-transform duration-300 ease-in-out ${
             isVisible ? "translate-y-0 delay-0" : "-translate-y-40 delay-100"
           }`}
-          style={{ 
-            willChange: 'transform', 
-            transform: isVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, -160px, 0)',
-            WebkitTransform: isVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, -160px, 0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden'
-          }}
         >
           <Navigation 
             enableStagger={false} 
