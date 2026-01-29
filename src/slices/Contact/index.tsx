@@ -151,7 +151,7 @@ const Contact: FC<ContactProps> = ({ slice }) => {
         </div>
       </div>
 
-      {/* Left modal */}
+      {/* Left modal - Pharma form */}
       <Modal isOpen={openModal === "left"} onClose={() => setOpenModal(null)} maxWidth="max-w-3xl">
         <div className="p-6 md:p-8">
           <div
@@ -164,14 +164,14 @@ const Contact: FC<ContactProps> = ({ slice }) => {
         </div>
       </Modal>
 
-      {/* Right modal */}
+      {/* Right modal - General form */}
       <Modal isOpen={openModal === "right"} onClose={() => setOpenModal(null)} maxWidth="max-w-3xl">
         <div className="p-6 md:p-8">
           <div
             ref={formRefRight}
             className="hs-form-frame"
             data-region="na1"
-            data-form-id="d9c97177-bfda-4828-bd3b-ef6a4bd23ada"
+            data-form-id="8d1ee0c4-63f0-48ac-a7cc-5574182c149e"
             data-portal-id="50539793"
           />
         </div>
