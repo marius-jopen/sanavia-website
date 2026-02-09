@@ -109,7 +109,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [devAutoRotate, setDevAutoRotate] = useState(autoRotate);
   const [devEnableZoom, setDevEnableZoom] = useState(enableZoom);
   const [devExposure, setDevExposure] = useState(1.0);
+  const [devHighlightColor, setDevHighlightColor] = useState("#ff0000");
+  const highlightColorRef = useRef("#ff0000");
+  highlightColorRef.current = devHighlightColor;
+  const [devTransparentBg, setDevTransparentBg] = useState(true);
   const [sceneGraph, setSceneGraph] = useState<string[]>([]);
+
+  // Elements dropdown state
+  const [elementsOpen, setElementsOpen] = useState(false);
 
   // ───────────────────────────────────────────────
   // Initialise Three.js scene & load model
@@ -135,7 +142,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     cameraRef.current = camera;
 
     // ── Renderer ──
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -209,9 +216,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = camera.fov * (Math.PI / 180);
-        const cameraZ = (maxDim / (2 * Math.tan(fov / 2))) * 1.5;
+        const cameraZ = (maxDim / (2 * Math.tan(fov / 2))) * 0.9;
 
-        camera.position.set(0, size.y * 0.3, cameraZ);
+        camera.position.set(0, size.y * 0.15, cameraZ);
         camera.near = cameraZ / 100;
         camera.far = cameraZ * 100;
         camera.updateProjectionMatrix();
@@ -320,7 +327,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             mesh: hit,
             originalEmissive: mat.emissive.clone(),
           };
-          mat.emissive.set(0x444444);
+          mat.emissive.set(highlightColorRef.current);
         }
 
         // ── Annotation popup ──
@@ -331,6 +338,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               (n) => n === a.meshName || n.startsWith(a.meshName) || a.meshName.startsWith(n),
             ),
           );
+
           setActiveAnnotation(match ?? null);
         }
 
@@ -464,10 +472,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   useEffect(() => {
     if (!devMode) return;
-    if (sceneRef.current && sceneRef.current.background instanceof THREE.Color) {
-      sceneRef.current.background.set(devBgColor);
+    if (!sceneRef.current) return;
+    if (devTransparentBg) {
+      sceneRef.current.background = null;
+    } else {
+      sceneRef.current.background = new THREE.Color(devBgColor);
     }
-  }, [devMode, devBgColor]);
+  }, [devMode, devBgColor, devTransparentBg]);
 
   useEffect(() => {
     if (!devMode) return;
@@ -518,8 +529,28 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     }
   }, [activeAnnotation]);
 
+  // ── Close annotation with fade-out ──
+
   const closeAnnotation = useCallback(() => {
-    setActiveAnnotation(null);
+    const el = annotationRef.current;
+    if (el) {
+      gsap.killTweensOf(el);
+      gsap.to(el, {
+        duration: 0.25,
+        x: -40,
+        opacity: 0,
+        scale: 0.95,
+        ease: "back.in(1.7)",
+        onComplete: () => {
+          setActiveAnnotation(null);
+          setShowAnnotation(false);
+        },
+      });
+    } else {
+      setActiveAnnotation(null);
+      setShowAnnotation(false);
+    }
+
     // Restore highlight
     if (previousHighlight.current) {
       const mat = previousHighlight.current.mesh
@@ -563,11 +594,87 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     navigator.clipboard.writeText(text).catch(() => {});
   }, []);
 
+  // ── Select element from Elements dropdown ──
+  const handleElementSelect = useCallback(
+    (annotation: MeshAnnotation) => {
+      const root = modelGroupRef.current;
+      if (!root) return;
+
+      // Restore previous highlight
+      if (previousHighlight.current) {
+        const prevMat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        if (prevMat.emissive) prevMat.emissive.copy(previousHighlight.current.originalEmissive);
+        previousHighlight.current = null;
+      }
+
+      // Find the matching 3D object by annotation meshName
+      let matchedNode: THREE.Object3D | null = null;
+
+      // Try direct children first
+      for (const child of root.children) {
+        if (
+          child.name === annotation.meshName ||
+          child.name.startsWith(annotation.meshName) ||
+          annotation.meshName.startsWith(child.name)
+        ) {
+          matchedNode = child;
+          break;
+        }
+      }
+
+      // Fallback: traverse entire tree
+      if (!matchedNode) {
+        root.traverse((node) => {
+          if (
+            !matchedNode &&
+            (node.name === annotation.meshName ||
+              node.name.startsWith(annotation.meshName) ||
+              annotation.meshName.startsWith(node.name))
+          ) {
+            matchedNode = node;
+          }
+        });
+      }
+
+      if (!matchedNode) return;
+
+      // Highlight the first mesh found in the matched node
+      let targetMesh: THREE.Mesh | null = null;
+      if ((matchedNode as THREE.Mesh).isMesh) {
+        targetMesh = matchedNode as THREE.Mesh;
+      } else {
+        matchedNode.traverse((child) => {
+          if (!targetMesh && (child as THREE.Mesh).isMesh) {
+            targetMesh = child as THREE.Mesh;
+          }
+        });
+      }
+
+      if (targetMesh) {
+        const mat = (targetMesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
+        if (mat.emissive) {
+          previousHighlight.current = {
+            mesh: targetMesh,
+            originalEmissive: mat.emissive.clone(),
+          };
+          mat.emissive.set(highlightColorRef.current);
+        }
+      }
+
+      // Open annotation popup
+      setActiveAnnotation(annotation);
+
+      // Close the elements dropdown
+      setElementsOpen(false);
+    },
+    [],
+  );
+
   // ── Render ──
 
   return (
     <div
-      className={`relative w-full overflow-hidden ${className || ""}`}
+      className={`relative w-full overflow-hidden border-2 border-white ${className || ""}`}
       style={{ aspectRatio: "16 / 9" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -608,7 +715,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
           {/* Panel */}
           {devPanelOpen && (
-            <div className="absolute top-12 right-3 z-40 w-72 max-h-[calc(100%-60px)] overflow-y-auto bg-black/80 backdrop-blur-md text-white text-xs font-mono rounded-lg border border-white/20 shadow-2xl">
+            <div className="absolute top-12 right-3 z-40 w-72 max-h-[calc(100%-60px)] overflow-y-auto bg-black/80 backdrop-blur-md text-white text-xs font-mono rounded-lg border border-white/20 ">
               {/* ── Object Inspector ── */}
               <div className="p-3 border-b border-white/10">
                 <h3 className="text-[11px] uppercase tracking-wider text-white/50 mb-2">
@@ -718,11 +825,18 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                   Display
                 </h3>
                 <div className="space-y-2">
-                  <DevColor
-                    label="Background"
-                    value={devBgColor}
-                    onChange={setDevBgColor}
+                  <DevToggle
+                    label="Transparent BG"
+                    value={devTransparentBg}
+                    onChange={setDevTransparentBg}
                   />
+                  {!devTransparentBg && (
+                    <DevColor
+                      label="Background"
+                      value={devBgColor}
+                      onChange={setDevBgColor}
+                    />
+                  )}
                   <DevToggle
                     label="Auto Rotate"
                     value={devAutoRotate}
@@ -732,6 +846,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                     label="Enable Zoom"
                     value={devEnableZoom}
                     onChange={setDevEnableZoom}
+                  />
+                  <DevColor
+                    label="Selection Highlight"
+                    value={devHighlightColor}
+                    onChange={setDevHighlightColor}
                   />
                 </div>
               </div>
@@ -756,6 +875,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                   type="button"
                   onClick={() => {
                     const settings = {
+                      transparentBackground: devTransparentBg,
                       backgroundColor: devBgColor,
                       ambientLightIntensity: devAmbientIntensity,
                       ambientLightColor: devAmbientColor,
@@ -764,6 +884,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                       exposure: devExposure,
                       autoRotate: devAutoRotate,
                       enableZoom: devEnableZoom,
+                      highlightColor: devHighlightColor,
                     };
                     copyToClipboard(JSON.stringify(settings, null, 2));
                   }}
@@ -775,10 +896,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             </div>
           )}
 
-          {/* Dev mode indicator */}
-          <div className="absolute bottom-3 left-3 z-40 bg-amber-500/80 text-black text-[10px] font-mono font-bold px-2 py-0.5 rounded">
-            DEV MODE
-          </div>
         </>
       )}
 
@@ -789,7 +906,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           className="absolute top-4 left-4 z-30 max-w-sm"
           style={{ opacity: 0 }}
         >
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl  overflow-hidden">
             {/* Header with close button */}
             <div className="flex items-start justify-between gap-3 pt-5 pb-2 px-5 md:px-7">
               <h3 className="text-gray-800">
@@ -892,6 +1009,72 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             />
           </svg>
         </button>
+      )}
+
+      {/* ─── ELEMENTS DROPDOWN ─── */}
+      {annotations.length > 0 && !isLoading && !error && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
+          <div className="relative">
+            {/* Dropdown menu (opens upward) */}
+            {elementsOpen && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 min-w-[200px] bg-white rounded-xl  overflow-hidden">
+                <div className="max-h-60 overflow-y-auto py-1">
+                  {annotations.map((a, i) => (
+                    <button
+                      key={`${a.meshName}-${i}`}
+                      type="button"
+                      onClick={() => handleElementSelect(a)}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer border-none bg-transparent hover:bg-gray-100 ${
+                        activeAnnotation?.meshName === a.meshName
+                          ? "text-gray-900 font-medium bg-gray-50"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      {a.title || a.meshName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Toggle button */}
+            <button
+              type="button"
+              onClick={() => setElementsOpen((prev) => !prev)}
+              className="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-5 py-2.5 rounded-full  cursor-pointer border border-gray-200/50 transition-all "
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+              </svg>
+              Elements
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform ${elementsOpen ? "rotate-180" : ""}`}
+              >
+                <path d="M18 15l-6-6-6 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
