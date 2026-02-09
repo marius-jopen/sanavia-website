@@ -82,12 +82,17 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     mesh: THREE.Mesh;
     originalEmissive: THREE.Color;
   } | null>(null);
+  const hoverHighlight = useRef<{
+    mesh: THREE.Mesh;
+    originalEmissive: THREE.Color;
+  } | null>(null);
+  const suppressHoverUntil = useRef(0);
 
   // UI state
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(autoRotate);
   const [hasAnimations, setHasAnimations] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -99,7 +104,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   annotationsRef.current = annotations;
 
   // Dev mode state
-  const [devPanelOpen, setDevPanelOpen] = useState(true);
+  const [devPanelOpen, setDevPanelOpen] = useState(false);
   const [selectedObject, setSelectedObject] = useState<SelectedObjectInfo | null>(null);
   const [devBgColor, setDevBgColor] = useState(backgroundColor);
   const [devAmbientIntensity, setDevAmbientIntensity] = useState(ambientLightIntensity);
@@ -300,11 +305,22 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         true,
       );
 
-      // Restore previous highlight
+      // Restore previous click highlight
       if (previousHighlight.current) {
         const mat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
         if (mat.emissive) mat.emissive.copy(previousHighlight.current.originalEmissive);
         previousHighlight.current = null;
+      }
+
+      // Clear hover highlight — restore its true original emissive first
+      // so that the click highlight captures the correct base color
+      if (hoverHighlight.current) {
+        const hMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        if (hMat.emissive) {
+          gsap.killTweensOf(hMat.emissive);
+          hMat.emissive.copy(hoverHighlight.current.originalEmissive);
+        }
+        hoverHighlight.current = null;
       }
 
       if (intersects.length > 0) {
@@ -320,7 +336,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           current = current.parent;
         }
 
-        // Highlight clicked mesh
+        // Highlight clicked mesh — emissive is now at its true original
+        // (hover was restored above) so the clone captures the correct base
         const mat = hit.material as THREE.MeshStandardMaterial;
         if (mat.emissive) {
           previousHighlight.current = {
@@ -371,8 +388,111 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       }
     };
 
+    // ── Hover highlight handler (throttled) ──
+    const hoverMouse = new THREE.Vector2();
+    const hoverTargetColor = new THREE.Color();
+    let hoverThrottleId: ReturnType<typeof setTimeout> | null = null;
+    let pendingHoverEvent: PointerEvent | null = null;
+
+    const processHover = (e: PointerEvent) => {
+      // Skip hover if recently closed annotation
+      if (Date.now() < suppressHoverUntil.current) {
+        renderer.domElement.style.cursor = "";
+        return;
+      }
+
+      const hasAnnotations = annotationsRef.current.length > 0;
+      if (!devMode && !hasAnnotations) {
+        renderer.domElement.style.cursor = "";
+        return;
+      }
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      hoverMouse.set(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+
+      raycaster.setFromCamera(hoverMouse, camera);
+
+      if (!modelGroupRef.current) return;
+      const intersects = raycaster.intersectObjects(
+        modelGroupRef.current.children,
+        true,
+      );
+
+      if (intersects.length > 0) {
+        const hit = intersects[0].object as THREE.Mesh;
+
+        // Skip if already hovering this mesh or it's click-highlighted
+        if (
+          (hoverHighlight.current && hoverHighlight.current.mesh === hit) ||
+          (previousHighlight.current && previousHighlight.current.mesh === hit)
+        ) {
+          renderer.domElement.style.cursor = "pointer";
+          return;
+        }
+
+        // Restore previous hover
+        if (hoverHighlight.current) {
+          const prevMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+          if (prevMat.emissive) {
+            gsap.killTweensOf(prevMat.emissive);
+            const orig = hoverHighlight.current.originalEmissive;
+            prevMat.emissive.set(orig);
+          }
+          hoverHighlight.current = null;
+        }
+
+        // Apply hover highlight
+        const mat = hit.material as THREE.MeshStandardMaterial;
+        if (mat.emissive) {
+          hoverHighlight.current = {
+            mesh: hit,
+            originalEmissive: mat.emissive.clone(),
+          };
+          hoverTargetColor.set(highlightColorRef.current);
+          gsap.killTweensOf(mat.emissive);
+          gsap.to(mat.emissive, {
+            r: hoverTargetColor.r,
+            g: hoverTargetColor.g,
+            b: hoverTargetColor.b,
+            duration: 0.4,
+            ease: "power2.out",
+          });
+        }
+
+        renderer.domElement.style.cursor = "pointer";
+      } else {
+        // Restore hover highlight
+        if (hoverHighlight.current) {
+          const prevMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+          if (prevMat.emissive) {
+            gsap.killTweensOf(prevMat.emissive);
+            const orig = hoverHighlight.current.originalEmissive;
+            prevMat.emissive.set(orig);
+          }
+          hoverHighlight.current = null;
+        }
+        renderer.domElement.style.cursor = "";
+      }
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      pendingHoverEvent = e;
+      if (hoverThrottleId !== null) return;
+      hoverThrottleId = setTimeout(() => {
+        hoverThrottleId = null;
+        if (pendingHoverEvent) {
+          processHover(pendingHoverEvent);
+          pendingHoverEvent = null;
+        }
+      }, 60);
+    };
+
     renderer.domElement.addEventListener("pointerdown", onPointerDown);
     renderer.domElement.addEventListener("pointerup", onPointerUp);
+    renderer.domElement.addEventListener("pointermove", onPointerMove);
 
     // ── Render loop ──
     const animate = () => {
@@ -400,6 +520,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       cancelAnimationFrame(frameRef.current);
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
       renderer.domElement.removeEventListener("pointerup", onPointerUp);
+      renderer.domElement.removeEventListener("pointermove", onPointerMove);
+      if (hoverThrottleId !== null) clearTimeout(hoverThrottleId);
       controls.dispose();
       renderer.dispose();
 
@@ -551,42 +673,30 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       setShowAnnotation(false);
     }
 
-    // Restore highlight
+    // Suppress hover re-highlighting for 500ms
+    suppressHoverUntil.current = Date.now() + 500;
+
+    // Restore click highlight
     if (previousHighlight.current) {
       const mat = previousHighlight.current.mesh
         .material as THREE.MeshStandardMaterial;
-      if (mat.emissive)
+      if (mat.emissive) {
+        gsap.killTweensOf(mat.emissive);
         mat.emissive.copy(previousHighlight.current.originalEmissive);
+      }
       previousHighlight.current = null;
     }
-  }, []);
 
-  // ── Animation controls ──
-
-  const handlePlayPause = useCallback(() => {
-    const actions = actionsRef.current;
-    if (!actions.length) return;
-
-    if (isPlaying) {
-      actions.forEach((a) => (a.paused = true));
-      setIsPlaying(false);
-    } else {
-      actions.forEach((a) => {
-        a.paused = false;
-        if (!a.isRunning()) a.play();
-      });
-      setIsPlaying(true);
+    // Restore hover highlight
+    if (hoverHighlight.current) {
+      const mat = hoverHighlight.current.mesh
+        .material as THREE.MeshStandardMaterial;
+      if (mat.emissive) {
+        gsap.killTweensOf(mat.emissive);
+        mat.emissive.copy(hoverHighlight.current.originalEmissive);
+      }
+      hoverHighlight.current = null;
     }
-  }, [isPlaying]);
-
-  const handleStop = useCallback(() => {
-    const actions = actionsRef.current;
-    const mixer = mixerRef.current;
-    if (!actions.length || !mixer) return;
-
-    actions.forEach((a) => a.stop());
-    mixer.setTime(0);
-    setIsPlaying(false);
   }, []);
 
   // ── Copy to clipboard helper ──
@@ -600,10 +710,23 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       const root = modelGroupRef.current;
       if (!root) return;
 
-      // Restore previous highlight
+      // Restore hover highlight to true original first
+      if (hoverHighlight.current) {
+        const hMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        if (hMat.emissive) {
+          gsap.killTweensOf(hMat.emissive);
+          hMat.emissive.copy(hoverHighlight.current.originalEmissive);
+        }
+        hoverHighlight.current = null;
+      }
+
+      // Restore previous click highlight
       if (previousHighlight.current) {
         const prevMat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-        if (prevMat.emissive) prevMat.emissive.copy(previousHighlight.current.originalEmissive);
+        if (prevMat.emissive) {
+          gsap.killTweensOf(prevMat.emissive);
+          prevMat.emissive.copy(previousHighlight.current.originalEmissive);
+        }
         previousHighlight.current = null;
       }
 
@@ -708,83 +831,83 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           <button
             type="button"
             onClick={() => setDevPanelOpen((v) => !v)}
-            className="absolute top-3 right-3 z-40 bg-black/70 hover:bg-black/90 text-white text-xs font-mono px-3 py-1.5 rounded-md cursor-pointer backdrop-blur-sm border border-white/20"
+            className="absolute top-3 right-3 z-40 bg-white/90 hover:bg-white text-gray-700 text-xs font-mono px-3 py-1.5 rounded-md cursor-pointer backdrop-blur-sm border border-gray-200/50 shadow-sm transition-colors"
           >
             {devPanelOpen ? "Close Dev" : "Dev Mode"}
           </button>
 
           {/* Panel */}
           {devPanelOpen && (
-            <div className="absolute top-12 right-3 z-40 w-72 max-h-[calc(100%-60px)] overflow-y-auto bg-black/80 backdrop-blur-md text-white text-xs font-mono rounded-lg border border-white/20 ">
+            <div className="absolute top-12 right-3 z-40 w-72 max-h-[calc(100%-60px)] overflow-y-auto bg-white/95 backdrop-blur-md text-gray-800 text-xs font-mono rounded-xl border border-gray-200/50 shadow-xl">
               {/* ── Object Inspector ── */}
-              <div className="p-3 border-b border-white/10">
-                <h3 className="text-[11px] uppercase tracking-wider text-white/50 mb-2">
+              <div className="p-3 border-b border-gray-200">
+                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
                   Object Inspector
                 </h3>
                 {selectedObject ? (
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-start gap-2">
-                      <span className="text-white/50 shrink-0">Name</span>
+                      <span className="text-gray-400 shrink-0">Name</span>
                       <button
                         onClick={() => copyToClipboard(selectedObject.name)}
-                        className="text-right text-amber-300 hover:text-amber-200 cursor-pointer break-all bg-transparent border-none p-0 text-xs font-mono"
+                        className="text-right text-blue-600 hover:text-blue-500 cursor-pointer break-all bg-transparent border-none p-0 text-xs font-mono"
                         title="Click to copy"
                       >
                         {selectedObject.name}
                       </button>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Type</span>
+                      <span className="text-gray-400">Type</span>
                       <span>{selectedObject.type}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">UUID</span>
-                      <span className="text-white/70">{selectedObject.uuid}…</span>
+                      <span className="text-gray-400">UUID</span>
+                      <span className="text-gray-500">{selectedObject.uuid}…</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Parent</span>
+                      <span className="text-gray-400">Parent</span>
                       <span>{selectedObject.parentName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Position</span>
+                      <span className="text-gray-400">Position</span>
                       <span>
                         {selectedObject.position.x}, {selectedObject.position.y},{" "}
                         {selectedObject.position.z}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Material</span>
+                      <span className="text-gray-400">Material</span>
                       <span>{selectedObject.materialName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Mat. Type</span>
+                      <span className="text-gray-400">Mat. Type</span>
                       <span>{selectedObject.materialType}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Vertices</span>
+                      <span className="text-gray-400">Vertices</span>
                       <span>{selectedObject.vertexCount.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-white/50">Triangles</span>
+                      <span className="text-gray-400">Triangles</span>
                       <span>{Math.round(selectedObject.triangleCount).toLocaleString()}</span>
                     </div>
                     {Object.keys(selectedObject.userData).length > 0 && (
-                      <div className="mt-1 pt-1 border-t border-white/10">
-                        <span className="text-white/50">userData:</span>
-                        <pre className="mt-1 text-[10px] text-white/70 whitespace-pre-wrap break-all">
+                      <div className="mt-1 pt-1 border-t border-gray-200">
+                        <span className="text-gray-400">userData:</span>
+                        <pre className="mt-1 text-[10px] text-gray-500 whitespace-pre-wrap break-all">
                           {JSON.stringify(selectedObject.userData, null, 2)}
                         </pre>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-white/30 italic">Click an object to inspect it</p>
+                  <p className="text-gray-300 italic">Click an object to inspect it</p>
                 )}
               </div>
 
               {/* ── Lighting Controls ── */}
-              <div className="p-3 border-b border-white/10">
-                <h3 className="text-[11px] uppercase tracking-wider text-white/50 mb-2">
+              <div className="p-3 border-b border-gray-200">
+                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
                   Lighting
                 </h3>
                 <div className="space-y-2">
@@ -820,8 +943,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               </div>
 
               {/* ── Display Controls ── */}
-              <div className="p-3 border-b border-white/10">
-                <h3 className="text-[11px] uppercase tracking-wider text-white/50 mb-2">
+              <div className="p-3 border-b border-gray-200">
+                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
                   Display
                 </h3>
                 <div className="space-y-2">
@@ -857,20 +980,20 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
               {/* ── Scene Graph ── */}
               <div className="p-3">
-                <h3 className="text-[11px] uppercase tracking-wider text-white/50 mb-2">
+                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
                   Scene Graph
                 </h3>
                 {sceneGraph.length > 0 ? (
-                  <pre className="text-[10px] text-white/60 whitespace-pre overflow-x-auto max-h-40 overflow-y-auto">
+                  <pre className="text-[10px] text-gray-500 whitespace-pre overflow-x-auto max-h-40 overflow-y-auto">
                     {sceneGraph.join("\n")}
                   </pre>
                 ) : (
-                  <p className="text-white/30 italic">Loading…</p>
+                  <p className="text-gray-300 italic">Loading…</p>
                 )}
               </div>
 
               {/* ── Export Settings ── */}
-              <div className="p-3 border-t border-white/10">
+              <div className="p-3 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -888,7 +1011,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                     };
                     copyToClipboard(JSON.stringify(settings, null, 2));
                   }}
-                  className="w-full bg-white/10 hover:bg-white/20 text-white text-[11px] font-mono py-1.5 px-3 rounded cursor-pointer border border-white/20 transition-colors"
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-mono py-1.5 px-3 rounded cursor-pointer border border-gray-200 transition-colors"
                 >
                   Copy Settings as JSON
                 </button>
@@ -931,149 +1054,97 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         </div>
       )}
 
-      {/* ─── ANIMATION CONTROLS (non-dev) ─── */}
-      {showControls && hasAnimations && !isLoading && !error && (
-        <div
-          className={`pointer-events-none absolute left-0 right-0 bottom-0 z-20 transition-opacity duration-300 ${
-            hovered ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {/* Gradient fade */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)",
-            }}
-          />
-
-          <div className="relative pointer-events-auto flex items-center gap-3 px-6 py-4">
-            {/* Play / Pause */}
-            <button
-              type="button"
-              onClick={handlePlayPause}
-              className="text-white/90 hover:text-white focus:outline-none cursor-pointer"
-              aria-label={isPlaying ? "Pause animation" : "Play animation"}
-            >
-              {isPlaying ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="4" width="4" height="16" rx="1" />
-                  <rect x="14" y="4" width="4" height="16" rx="1" />
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7L8 5z" />
-                </svg>
-              )}
-            </button>
-
-            {/* Stop / Reset */}
-            <button
-              type="button"
-              onClick={handleStop}
-              className="text-white/90 hover:text-white focus:outline-none cursor-pointer"
-              aria-label="Stop animation"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="1" />
-              </svg>
-            </button>
-
-            <div className="flex-1" />
-          </div>
-        </div>
-      )}
-
-      {/* Large centred play button when animation is stopped */}
-      {showControls && hasAnimations && !isPlaying && !isLoading && !error && (
-        <button
-          onClick={handlePlayPause}
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center p-0 border-none bg-transparent cursor-pointer transition-opacity duration-300 ${
-            hovered ? "opacity-100" : "opacity-0"
-          }`}
-          aria-label="Play animation"
-        >
-          <svg
-            width="72"
-            height="72"
-            viewBox="0 0 72 72"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M18 12 Q18 36 18 60 Q18 66 24 63 L60 39 Q66 36 60 33 L24 9 Q18 6 18 12 Z"
-              fill="white"
-              stroke="white"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-        </button>
-      )}
-
-      {/* ─── ELEMENTS DROPDOWN ─── */}
-      {annotations.length > 0 && !isLoading && !error && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
-          <div className="relative">
-            {/* Dropdown menu (opens upward) */}
-            {elementsOpen && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 min-w-[200px] bg-white rounded-xl  overflow-hidden">
-                <div className="max-h-60 overflow-y-auto py-1">
-                  {annotations.map((a, i) => (
-                    <button
-                      key={`${a.meshName}-${i}`}
-                      type="button"
-                      onClick={() => handleElementSelect(a)}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer border-none bg-transparent hover:bg-gray-100 ${
-                        activeAnnotation?.meshName === a.meshName
-                          ? "text-gray-900 font-medium bg-gray-50"
-                          : "text-gray-600"
-                      }`}
-                    >
-                      {a.title || a.meshName}
-                    </button>
-                  ))}
+      {/* ─── BOTTOM-LEFT CONTROLS: Elements dropdown + Play/Pause auto-rotate ─── */}
+      {!isLoading && !error && (
+        <div className="absolute bottom-4 left-4 z-30 flex items-end gap-2">
+          {/* Elements dropdown */}
+          {annotations.length > 0 && (
+            <div className="relative">
+              {/* Dropdown menu (opens upward) */}
+              {elementsOpen && (
+                <div className="absolute bottom-full left-0 mb-2 min-w-[200px] bg-white rounded-xl overflow-hidden shadow-xl">
+                  <div className="max-h-60 overflow-y-auto py-1">
+                    {annotations.map((a, i) => (
+                      <button
+                        key={`${a.meshName}-${i}`}
+                        type="button"
+                        onClick={() => handleElementSelect(a)}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer border-none bg-transparent hover:bg-gray-100 ${
+                          activeAnnotation?.meshName === a.meshName
+                            ? "text-gray-900 font-medium bg-gray-50"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {a.title || a.meshName}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Toggle button */}
-            <button
-              type="button"
-              onClick={() => setElementsOpen((prev) => !prev)}
-              className="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-5 py-2.5 rounded-full  cursor-pointer border border-gray-200/50 transition-all "
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              {/* Elements toggle button */}
+              <button
+                type="button"
+                onClick={() => setElementsOpen((prev) => !prev)}
+                className="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-4 py-2.5 rounded-full cursor-pointer border border-gray-200/50 transition-all shadow-lg"
               >
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                </svg>
+                Elements
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform ${elementsOpen ? "rotate-180" : ""}`}
+                >
+                  <path d="M18 15l-6-6-6 6" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Play / Pause auto-rotate button */}
+          <button
+            type="button"
+            onClick={() => {
+              const controls = controlsRef.current;
+              if (!controls) return;
+              const next = !controls.autoRotate;
+              controls.autoRotate = next;
+              setIsPlaying(next);
+            }}
+            className="flex items-center justify-center w-10 h-10 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 rounded-full cursor-pointer border border-gray-200/50 transition-all shadow-lg"
+            aria-label={isPlaying ? "Pause rotation" : "Play rotation"}
+          >
+            {isPlaying ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
               </svg>
-              Elements
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`transition-transform ${elementsOpen ? "rotate-180" : ""}`}
-              >
-                <path d="M18 15l-6-6-6 6" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7L8 5z" />
               </svg>
-            </button>
-          </div>
+            )}
+          </button>
         </div>
       )}
     </div>
@@ -1112,8 +1183,8 @@ function DevSlider({
   return (
     <div>
       <div className="flex justify-between mb-0.5">
-        <span className="text-white/50">{label}</span>
-        <span className="text-white/80">{value.toFixed(2)}</span>
+        <span className="text-gray-400">{label}</span>
+        <span className="text-gray-600">{value.toFixed(2)}</span>
       </div>
       <input
         type="range"
@@ -1122,7 +1193,7 @@ function DevSlider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1 appearance-none bg-white/20 rounded cursor-pointer accent-amber-400"
+        className="w-full h-1 appearance-none bg-gray-200 rounded cursor-pointer accent-gray-800"
       />
     </div>
   );
@@ -1139,14 +1210,14 @@ function DevColor({
 }) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-white/50">{label}</span>
+      <span className="text-gray-400">{label}</span>
       <div className="flex items-center gap-1.5">
-        <span className="text-white/60">{value}</span>
+        <span className="text-gray-500">{value}</span>
         <input
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-5 h-5 rounded cursor-pointer border border-white/30 bg-transparent p-0"
+          className="w-5 h-5 rounded cursor-pointer border border-gray-300 bg-transparent p-0"
         />
       </div>
     </div>
@@ -1164,12 +1235,12 @@ function DevToggle({
 }) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-white/50">{label}</span>
+      <span className="text-gray-400">{label}</span>
       <button
         type="button"
         onClick={() => onChange(!value)}
         className={`w-8 h-4 rounded-full cursor-pointer transition-colors border-none ${
-          value ? "bg-amber-400" : "bg-white/20"
+          value ? "bg-gray-800" : "bg-gray-200"
         }`}
       >
         <div
