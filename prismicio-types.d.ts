@@ -187,6 +187,8 @@ export type HeaderDocument<Lang extends string = string> =
   >;
 
 type PageDocumentDataSlicesSlice =
+  | ScrollytellingSlice
+  | MoleculeVieverSlice
   | ContactSlice
   | SmallTextSlice
   | CardsSlice
@@ -656,6 +658,36 @@ export type HeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Default variation for MoleculeViever Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type MoleculeVieverSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *MoleculeViever*
+ */
+type MoleculeVieverSliceVariation = MoleculeVieverSliceDefault;
+
+/**
+ * MoleculeViever Shared Slice
+ *
+ * - **API ID**: `molecule_viever`
+ * - **Description**: MoleculeViever
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type MoleculeVieverSlice = prismic.SharedSlice<
+  "molecule_viever",
+  MoleculeVieverSliceVariation
+>;
+
+/**
  * Primary content in *PopButton → Default → Primary*
  */
 export interface PopButtonSliceDefaultPrimary {
@@ -1014,6 +1046,36 @@ type PopVideoSliceVariation = PopVideoSliceDefault;
 export type PopVideoSlice = prismic.SharedSlice<
   "pop_video",
   PopVideoSliceVariation
+>;
+
+/**
+ * Default variation for Scrollytelling Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type ScrollytellingSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Record<string, never>,
+  never
+>;
+
+/**
+ * Slice variation for *Scrollytelling*
+ */
+type ScrollytellingSliceVariation = ScrollytellingSliceDefault;
+
+/**
+ * Scrollytelling Shared Slice
+ *
+ * - **API ID**: `scrollytelling`
+ * - **Description**: Scrollytelling
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type ScrollytellingSlice = prismic.SharedSlice<
+  "scrollytelling",
+  ScrollytellingSliceVariation
 >;
 
 /**
@@ -1566,6 +1628,9 @@ declare module "@prismicio/client" {
       HeadlineSliceDefaultPrimary,
       HeadlineSliceVariation,
       HeadlineSliceDefault,
+      MoleculeVieverSlice,
+      MoleculeVieverSliceVariation,
+      MoleculeVieverSliceDefault,
       PopButtonSlice,
       PopButtonSliceDefaultPrimary,
       PopButtonSliceVariation,
@@ -1583,6 +1648,9 @@ declare module "@prismicio/client" {
       PopVideoSliceDefaultPrimary,
       PopVideoSliceVariation,
       PopVideoSliceDefault,
+      ScrollytellingSlice,
+      ScrollytellingSliceVariation,
+      ScrollytellingSliceDefault,
       SliderSlice,
       SliderSliceDefaultPrimaryItemsItem,
       SliderSliceDefaultPrimary,

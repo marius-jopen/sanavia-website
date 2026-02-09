@@ -27,6 +27,12 @@
         "fieldset": "Slice Zone",
         "config": {
           "choices": {
+            "scrollytelling": {
+              "type": "SharedSlice"
+            },
+            "molecule_viever": {
+              "type": "SharedSlice"
+            },
             "contact": {
               "type": "SharedSlice"
             },

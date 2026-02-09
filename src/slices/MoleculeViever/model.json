@@ -1,0 +1,16 @@
+{
+  "id": "molecule_viever",
+  "type": "SharedSlice",
+  "name": "MoleculeViever",
+  "description": "MoleculeViever",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "docURL": "...",
+      "version": "initial",
+      "description": "Default",
+      "imageUrl": ""
+    }
+  ]
+}
