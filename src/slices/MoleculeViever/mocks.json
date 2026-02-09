@@ -1,8 +1,43 @@
 [
-	{
-		"__TYPE__": "SharedSliceContent",
-		"variation": "default",
-		"primary": {},
-		"items": []
-	}
+  {
+    "__TYPE__": "SharedSliceContent",
+    "variation": "default",
+    "primary": {
+      "visible": true,
+      "model_url": "/models/molecule.glb",
+      "model_file": {
+        "link_type": "Media"
+      },
+      "autoplay": true,
+      "auto_rotate": false,
+      "background_color": "#191919",
+      "enable_zoom": true,
+      "show_controls": true,
+      "dev_mode": false
+    },
+    "items": [
+      {
+        "mesh_name": "antibodyActiveLighter",
+        "info_title": "Antibody",
+        "info_text": [
+          {
+            "type": "paragraph",
+            "text": "This is the antibody text",
+            "spans": []
+          }
+        ]
+      },
+      {
+        "mesh_name": "Atoms_Epitope",
+        "info_title": "Epitope",
+        "info_text": [
+          {
+            "type": "paragraph",
+            "text": "Good old Epitopes",
+            "spans": []
+          }
+        ]
+      }
+    ]
+  }
 ]

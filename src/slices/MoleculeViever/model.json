@@ -10,7 +10,110 @@
       "docURL": "...",
       "version": "initial",
       "description": "Default",
-      "imageUrl": ""
+      "imageUrl": "",
+      "primary": {
+        "visible": {
+          "type": "Boolean",
+          "config": {
+            "label": "Visible",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": true
+          }
+        },
+        "model_url": {
+          "type": "Text",
+          "config": {
+            "label": "Model URL (fallback)",
+            "placeholder": "Path to .glb or .gltf file, e.g. /models/molecule.glb"
+          }
+        },
+        "model_file": {
+          "type": "Link",
+          "config": {
+            "label": "3D Model File",
+            "placeholder": "Upload a .glb or .gltf file",
+            "select": "media"
+          }
+        },
+        "autoplay": {
+          "type": "Boolean",
+          "config": {
+            "label": "Autoplay Animation",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": true
+          }
+        },
+        "auto_rotate": {
+          "type": "Boolean",
+          "config": {
+            "label": "Auto Rotate",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": false
+          }
+        },
+        "background_color": {
+          "type": "Text",
+          "config": {
+            "label": "Background Color",
+            "placeholder": "#191919"
+          }
+        },
+        "enable_zoom": {
+          "type": "Boolean",
+          "config": {
+            "label": "Enable Scroll Zoom",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": true
+          }
+        },
+        "show_controls": {
+          "type": "Boolean",
+          "config": {
+            "label": "Show Controls",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": true
+          }
+        },
+        "dev_mode": {
+          "type": "Boolean",
+          "config": {
+            "label": "Developer Mode",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": false
+          }
+        }
+      },
+      "items": {
+        "mesh_name": {
+          "type": "Text",
+          "config": {
+            "label": "Mesh Name",
+            "placeholder": "e.g. antibodyActiveLighter"
+          }
+        },
+        "info_title": {
+          "type": "Text",
+          "config": {
+            "label": "Info Title",
+            "placeholder": "Title shown in the popup"
+          }
+        },
+        "info_text": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Info Text",
+            "placeholder": "Description shown when this mesh is clicked",
+            "allowTargetBlank": true,
+            "multi": "paragraph,strong,em"
+          }
+        }
+      }
     }
   ]
 }
