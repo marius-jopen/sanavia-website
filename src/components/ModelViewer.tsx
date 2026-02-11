@@ -27,7 +27,10 @@ export interface MeshAnnotation {
   meshName: string;
   title: string;
   content: React.ReactNode;
+  color?: string;
 }
+
+const FALLBACK_PALETTE = ["#bdd1ff", "#bdfffe", "#ffa34d"];
 
 interface ModelViewerProps {
   modelUrl: string;
@@ -39,6 +42,7 @@ interface ModelViewerProps {
   directLightIntensity?: number;
   directLightColor?: string;
   enableZoom?: boolean;
+  simpleMaterials?: boolean;
   showControls?: boolean;
   devMode?: boolean;
   annotations?: MeshAnnotation[];
@@ -55,6 +59,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   directLightIntensity = 1.5,
   directLightColor = "#FFFFFF",
   enableZoom = true,
+  simpleMaterials = true,
   showControls = true,
   devMode = false,
   annotations = [],
@@ -118,10 +123,113 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const highlightColorRef = useRef("#ff0000");
   highlightColorRef.current = devHighlightColor;
   const [devTransparentBg, setDevTransparentBg] = useState(true);
+  const [devSimpleMaterials, setDevSimpleMaterials] = useState(true);
+  const originalMaterials = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
   const [sceneGraph, setSceneGraph] = useState<string[]>([]);
 
   // Elements dropdown state
   const [elementsOpen, setElementsOpen] = useState(false);
+
+  // ── Helper: apply or revert simple materials ──
+  const applySimpleMaterials = useCallback((model: THREE.Group) => {
+    const shouldApply = devMode ? devSimpleMaterials : simpleMaterials;
+
+    if (shouldApply) {
+      // Build a map: meshName → color from annotations
+      const annotationColorMap = new Map<string, string>();
+      annotationsRef.current.forEach((a) => {
+        if (a.color) annotationColorMap.set(a.meshName, a.color);
+      });
+
+      // Tag every node whose name matches an annotation
+      const nodeColorMap = new Map<string, string>();
+      model.traverse((node) => {
+        if (!node.name) return;
+        for (const [meshName, color] of annotationColorMap) {
+          if (
+            node.name === meshName ||
+            node.name.startsWith(meshName) ||
+            meshName.startsWith(node.name)
+          ) {
+            nodeColorMap.set(node.uuid, color);
+            break;
+          }
+        }
+      });
+
+      // Fallback palette per top-level group
+      let fallbackIndex = 0;
+      const fallbackMap = new Map<string, string>();
+
+      model.traverse((node) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+
+        // Save original material(s)
+        if (!originalMaterials.current.has(mesh.uuid)) {
+          originalMaterials.current.set(
+            mesh.uuid,
+            Array.isArray(mesh.material) ? [...mesh.material] : mesh.material,
+          );
+        }
+
+        // Walk up parent chain for nearest annotation color
+        let assignedColor: string | undefined;
+        let cur: THREE.Object3D | null = mesh;
+        while (cur && cur !== model) {
+          if (nodeColorMap.has(cur.uuid)) {
+            assignedColor = nodeColorMap.get(cur.uuid);
+            break;
+          }
+          cur = cur.parent;
+        }
+
+        // Fallback
+        if (!assignedColor) {
+          let topParent: THREE.Object3D = mesh;
+          while (topParent.parent && topParent.parent !== model) {
+            topParent = topParent.parent;
+          }
+          if (!fallbackMap.has(topParent.uuid)) {
+            fallbackMap.set(
+              topParent.uuid,
+              FALLBACK_PALETTE[fallbackIndex % FALLBACK_PALETTE.length],
+            );
+            fallbackIndex++;
+          }
+          assignedColor = fallbackMap.get(topParent.uuid)!;
+        }
+
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        const newMats = mats.map((mat) => {
+          const std = mat as THREE.MeshStandardMaterial;
+          const simple = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(assignedColor),
+            roughness: std.roughness ?? 0.6,
+            metalness: 0.0,
+            transparent: std.transparent,
+            opacity: std.opacity,
+            side: std.side,
+          });
+          simple.name = std.name;
+          return simple;
+        });
+
+        mesh.material = newMats.length === 1 ? newMats[0] : newMats;
+      });
+    } else {
+      // Restore original materials
+      model.traverse((node) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const saved = originalMaterials.current.get(mesh.uuid);
+        if (saved) {
+          mesh.material = saved;
+        }
+      });
+      originalMaterials.current.clear();
+    }
+  }, [devMode, devSimpleMaterials, simpleMaterials]);
 
   // ───────────────────────────────────────────────
   // Initialise Three.js scene & load model
@@ -234,18 +342,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         scene.add(model);
         modelGroupRef.current = model;
 
-        // ── Build scene graph for dev mode ──
-        if (devMode) {
-          const names: string[] = [];
-          model.traverse((node) => {
-            const indent = "  ".repeat(getDepth(node, model));
-            const type = (node as THREE.Mesh).isMesh
-              ? "Mesh"
-              : node.type;
-            names.push(`${indent}${type}: "${node.name || "(unnamed)"}"`);
-          });
-          setSceneGraph(names);
-        }
+        // ── Build scene graph ──
+        const names: string[] = [];
+        model.traverse((node) => {
+          const indent = "  ".repeat(getDepth(node, model));
+          const type = (node as THREE.Mesh).isMesh
+            ? "Mesh"
+            : node.type;
+          names.push(`${indent}${type}: "${node.name || "(unnamed)"}"`);
+        });
+        setSceneGraph(names);
+
+        // ── Apply simple materials immediately on load ──
+        applySimpleMaterials(model);
 
         // ── Animations ──
         const clips = gltf.animations;
@@ -617,6 +726,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     if (rendererRef.current) rendererRef.current.toneMappingExposure = devExposure;
   }, [devMode, devExposure]);
 
+  // ── Re-apply simple materials when toggled from dev panel ──
+  useEffect(() => {
+    const model = modelGroupRef.current;
+    if (!model) return;
+    applySimpleMaterials(model);
+  }, [applySimpleMaterials]);
+
   // ── Annotation popup animation ──
 
   useEffect(() => {
@@ -970,6 +1086,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                     value={devEnableZoom}
                     onChange={setDevEnableZoom}
                   />
+                  <DevToggle
+                    label="Simple Materials"
+                    value={devSimpleMaterials}
+                    onChange={setDevSimpleMaterials}
+                  />
                   <DevColor
                     label="Selection Highlight"
                     value={devHighlightColor}
@@ -1007,6 +1128,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                       exposure: devExposure,
                       autoRotate: devAutoRotate,
                       enableZoom: devEnableZoom,
+                      simpleMaterials: devSimpleMaterials,
                       highlightColor: devHighlightColor,
                     };
                     copyToClipboard(JSON.stringify(settings, null, 2));

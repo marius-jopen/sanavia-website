@@ -87,6 +87,15 @@
             "placeholder_true": "true",
             "default_value": false
           }
+        },
+        "simple_materials": {
+          "type": "Boolean",
+          "config": {
+            "label": "Simple Materials (remove baked shadows)",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": false
+          }
         }
       },
       "items": {
@@ -95,6 +104,12 @@
           "config": {
             "label": "Mesh Name",
             "placeholder": "e.g. antibodyActiveLighter"
+          }
+        },
+        "mesh_color": {
+          "type": "Color",
+          "config": {
+            "label": "Mesh Color"
           }
         },
         "info_title": {

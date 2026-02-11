@@ -59,6 +59,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   const enableZoom = (primary.enable_zoom as boolean) ?? true;
   const showControls = (primary.show_controls as boolean) ?? true;
   const devModeEnabled = (primary.dev_mode as boolean) ?? false;
+  const simpleMaterialsEnabled = (primary.simple_materials as boolean) ?? false;
 
   // Build annotation map from repeater items
   const items = (slice.items ?? []) as Array<Record<string, unknown>>;
@@ -70,6 +71,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
       content: item.info_text ? (
         <PrismicRichText field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]} />
       ) : null,
+      color: (item.mesh_color as string) || undefined,
     }));
 
   if (!modelUrl) return null;
@@ -90,6 +92,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
           enableZoom={enableZoom}
           showControls={showControls}
           devMode={devModeEnabled}
+          simpleMaterials={simpleMaterialsEnabled}
           annotations={annotations}
           className="rounded-2xl"
         />
