@@ -6,7 +6,7 @@ import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import dynamic from "next/dynamic";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
-import type { MeshAnnotation, AnimationMode } from "../../components/ModelViewer";
+import type { MeshAnnotation, AnimationMode, HighlightBlendMode } from "../../components/ModelViewer";
 
 // Dynamic import with SSR disabled — Three.js requires the browser
 const ModelViewer = dynamic(() => import("../../components/ModelViewer"), {
@@ -58,9 +58,12 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   let settings: Record<string, unknown> = {};
   try {
     const raw = (primary.settings_json as string) || "{}";
+    console.log("[MoleculeViewer] settings_json raw value:", primary.settings_json);
+    console.log("[MoleculeViewer] parsing JSON:", raw);
     settings = JSON.parse(raw);
-  } catch {
-    // Invalid JSON — use defaults
+    console.log("[MoleculeViewer] parsed settings:", settings);
+  } catch (err) {
+    console.warn("[MoleculeViewer] Failed to parse settings_json:", err, "| raw value:", primary.settings_json);
   }
 
   const autoplay = (settings.autoplay as boolean) ?? true;
@@ -75,6 +78,8 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   const directLightColor = (settings.directLightColor as string) ?? undefined;
   const exposureValue = (settings.exposure as number) ?? undefined;
   const highlightColorValue = (settings.highlightColor as string) ?? undefined;
+  const highlightBlendModeValue = (settings.highlightBlendMode as HighlightBlendMode) ?? undefined;
+  const highlightOpacityValue = (settings.highlightOpacity as number) ?? undefined;
   const animationModeValue = (settings.animationMode as AnimationMode) ?? undefined;
   const animationSpeedValue = (settings.animationSpeed as number) ?? undefined;
 
@@ -116,6 +121,8 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
           {...(directLightColor !== undefined && { directLightColor })}
           {...(exposureValue !== undefined && { exposure: exposureValue })}
           {...(highlightColorValue !== undefined && { highlightColor: highlightColorValue })}
+          {...(highlightBlendModeValue !== undefined && { highlightBlendMode: highlightBlendModeValue })}
+          {...(highlightOpacityValue !== undefined && { highlightOpacity: highlightOpacityValue })}
           {...(animationModeValue !== undefined && { animationMode: animationModeValue })}
           {...(animationSpeedValue !== undefined && { animationSpeed: animationSpeedValue })}
           annotations={annotations}

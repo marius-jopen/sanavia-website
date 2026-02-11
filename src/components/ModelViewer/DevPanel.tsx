@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { SelectedObjectInfo, AnimationMode } from "./types";
+import type { SelectedObjectInfo, AnimationMode, HighlightBlendMode } from "./types";
 
 // ── Collapsible Section ──
 
@@ -224,6 +224,10 @@ export interface DevPanelProps {
   setDevSimpleMaterials: (v: boolean) => void;
   devHighlightColor: string;
   setDevHighlightColor: (v: string) => void;
+  devHighlightBlend: HighlightBlendMode;
+  setDevHighlightBlend: (v: HighlightBlendMode) => void;
+  devHighlightOpacity: number;
+  setDevHighlightOpacity: (v: number) => void;
 
   // Animation
   hasAnimations: boolean;
@@ -268,6 +272,10 @@ export function DevPanel({
   setDevSimpleMaterials,
   devHighlightColor,
   setDevHighlightColor,
+  devHighlightBlend,
+  setDevHighlightBlend,
+  devHighlightOpacity,
+  setDevHighlightOpacity,
   hasAnimations,
   devAnimPlaying,
   onAnimPlay,
@@ -361,6 +369,23 @@ export function DevPanel({
             <DevToggle label="Zoom" value={devEnableZoom} onChange={setDevEnableZoom} />
             <DevToggle label="Simple Mat" value={devSimpleMaterials} onChange={setDevSimpleMaterials} />
             <DevColor label="Highlight" value={devHighlightColor} onChange={setDevHighlightColor} />
+            <DevSelect<HighlightBlendMode>
+              label="Blend"
+              value={devHighlightBlend}
+              options={[
+                { value: "screen", label: "Screen" },
+                { value: "normal", label: "Normal" },
+                { value: "multiply", label: "Multiply" },
+                { value: "difference", label: "Difference" },
+              ]}
+              onChange={setDevHighlightBlend}
+            />
+            <DevSlider
+              label="Opacity"
+              value={devHighlightOpacity}
+              min={0} max={1} step={0.05}
+              onChange={setDevHighlightOpacity}
+            />
           </Section>
 
           {/* ── Animation ── */}
@@ -422,6 +447,8 @@ export function DevPanel({
                   enableZoom: devEnableZoom,
                   simpleMaterials: devSimpleMaterials,
                   highlightColor: devHighlightColor,
+                  highlightBlendMode: devHighlightBlend,
+                  highlightOpacity: devHighlightOpacity,
                   animationMode: devAnimMode,
                   animationSpeed: devAnimSpeed,
                   devMode: false,

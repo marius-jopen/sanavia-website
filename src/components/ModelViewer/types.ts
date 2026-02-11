@@ -23,6 +23,7 @@ export interface MeshAnnotation {
 export const FALLBACK_PALETTE = ["#bdd1ff", "#bdfffe", "#ffa34d"];
 
 export type AnimationMode = "ramp" | "boomerang" | "sinus" | "triangle";
+export type HighlightBlendMode = "screen" | "normal" | "multiply" | "difference";
 
 export interface ModelViewerProps {
   modelUrl: string;
@@ -38,6 +39,8 @@ export interface ModelViewerProps {
   enableZoom?: boolean;
   simpleMaterials?: boolean;
   highlightColor?: string;
+  highlightBlendMode?: HighlightBlendMode;
+  highlightOpacity?: number;
   animationMode?: AnimationMode;
   animationSpeed?: number;
   showControls?: boolean;

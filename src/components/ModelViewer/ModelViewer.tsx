@@ -8,7 +8,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-import type { SelectedObjectInfo, MeshAnnotation, ModelViewerProps, AnimationMode } from "./types";
+import type { SelectedObjectInfo, MeshAnnotation, ModelViewerProps, AnimationMode, HighlightBlendMode } from "./types";
 import { FALLBACK_PALETTE } from "./types";
 import { getDepth } from "./utils";
 import { DevPanel } from "./DevPanel";
@@ -30,6 +30,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   enableZoom = false,
   simpleMaterials = true,
   highlightColor = "#ff0000",
+  highlightBlendMode = "screen",
+  highlightOpacity = 1.0,
   animationMode = "ramp",
   animationSpeed = 1.0,
   showControls = true,
@@ -58,10 +60,12 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const previousHighlight = useRef<{
     mesh: THREE.Mesh;
     originalEmissive: THREE.Color;
+    originalColor: THREE.Color;
   } | null>(null);
   const hoverHighlight = useRef<{
     mesh: THREE.Mesh;
     originalEmissive: THREE.Color;
+    originalColor: THREE.Color;
   } | null>(null);
   const suppressHoverUntil = useRef(0);
 
@@ -81,6 +85,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   annotationsRef.current = annotations;
 
   // Dev mode state
+  const devModeRef = useRef(devMode);
+  devModeRef.current = devMode;
   const [devPanelOpen, setDevPanelOpen] = useState(false);
   const [selectedObject, setSelectedObject] = useState<SelectedObjectInfo | null>(null);
   const [devBgColor, setDevBgColor] = useState(backgroundColor);
@@ -94,6 +100,12 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [devHighlightColor, setDevHighlightColor] = useState(highlightColor);
   const highlightColorRef = useRef(highlightColor);
   highlightColorRef.current = devHighlightColor;
+  const [devHighlightBlend, setDevHighlightBlend] = useState<HighlightBlendMode>(highlightBlendMode);
+  const highlightBlendRef = useRef<HighlightBlendMode>(highlightBlendMode);
+  highlightBlendRef.current = devHighlightBlend;
+  const [devHighlightOpacity, setDevHighlightOpacity] = useState(highlightOpacity);
+  const highlightOpacityRef = useRef(highlightOpacity);
+  highlightOpacityRef.current = devHighlightOpacity;
   const [devTransparentBg, setDevTransparentBg] = useState(transparentBackground);
   const [devSimpleMaterials, setDevSimpleMaterials] = useState(simpleMaterials);
   const originalMaterials = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
@@ -114,6 +126,87 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   // Elements dropdown state
   const [elementsOpen, setElementsOpen] = useState(false);
+
+  // ── Highlight helpers — apply/restore based on blend mode ──
+
+  const applyHighlight = useCallback(
+    (mat: THREE.MeshStandardMaterial, color: string, animated = false) => {
+      const mode = highlightBlendRef.current;
+      const opacity = highlightOpacityRef.current;
+      const c = new THREE.Color(color);
+
+      if (mode === "screen") {
+        if (!mat.emissive) return;
+        const target = new THREE.Color(c.r * opacity, c.g * opacity, c.b * opacity);
+        if (animated) {
+          gsap.killTweensOf(mat.emissive);
+          gsap.to(mat.emissive, { r: target.r, g: target.g, b: target.b, duration: 0.4, ease: "power2.out" });
+        } else {
+          mat.emissive.copy(target);
+        }
+      } else if (mode === "normal") {
+        if (!mat.color) return;
+        const target = new THREE.Color().copy(mat.color).lerp(c, opacity);
+        if (animated) {
+          gsap.killTweensOf(mat.color);
+          gsap.to(mat.color, { r: target.r, g: target.g, b: target.b, duration: 0.4, ease: "power2.out" });
+        } else {
+          mat.color.copy(target);
+        }
+      } else if (mode === "multiply") {
+        if (!mat.color) return;
+        const multiplied = new THREE.Color().copy(mat.color).multiply(c);
+        const target = new THREE.Color().copy(mat.color).lerp(multiplied, opacity);
+        if (animated) {
+          gsap.killTweensOf(mat.color);
+          gsap.to(mat.color, { r: target.r, g: target.g, b: target.b, duration: 0.4, ease: "power2.out" });
+        } else {
+          mat.color.copy(target);
+        }
+      } else if (mode === "difference") {
+        if (!mat.color) return;
+        const diff = new THREE.Color(
+          Math.abs(mat.color.r - c.r),
+          Math.abs(mat.color.g - c.g),
+          Math.abs(mat.color.b - c.b),
+        );
+        const target = new THREE.Color().copy(mat.color).lerp(diff, opacity);
+        if (animated) {
+          gsap.killTweensOf(mat.color);
+          gsap.to(mat.color, { r: target.r, g: target.g, b: target.b, duration: 0.4, ease: "power2.out" });
+        } else {
+          mat.color.copy(target);
+        }
+      }
+    },
+    [],
+  );
+
+  const restoreHighlight = useCallback(
+    (mat: THREE.MeshStandardMaterial, origEmissive: THREE.Color, origColor: THREE.Color) => {
+      if (mat.emissive) {
+        gsap.killTweensOf(mat.emissive);
+        mat.emissive.copy(origEmissive);
+      }
+      if (mat.color) {
+        gsap.killTweensOf(mat.color);
+        mat.color.copy(origColor);
+      }
+    },
+    [],
+  );
+
+  const captureHighlightState = useCallback(
+    (mesh: THREE.Mesh) => {
+      const mat = mesh.material as THREE.MeshStandardMaterial;
+      return {
+        mesh,
+        originalEmissive: mat.emissive ? mat.emissive.clone() : new THREE.Color(0, 0, 0),
+        originalColor: mat.color ? mat.color.clone() : new THREE.Color(1, 1, 1),
+      };
+    },
+    [],
+  );
 
   // ── Helper: apply or revert simple materials ──
   const applySimpleMaterials = useCallback((model: THREE.Group) => {
@@ -378,7 +471,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
     const onPointerUp = (e: PointerEvent) => {
       const hasAnnotations = annotationsRef.current.length > 0;
-      if (!devMode && !hasAnnotations) return;
+      if (!devModeRef.current && !hasAnnotations) return;
 
       const dx = e.clientX - pointerDownPos.current.x;
       const dy = e.clientY - pointerDownPos.current.y;
@@ -401,18 +494,15 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       // Restore previous click highlight
       if (previousHighlight.current) {
         const mat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-        if (mat.emissive) mat.emissive.copy(previousHighlight.current.originalEmissive);
+        restoreHighlight(mat, previousHighlight.current.originalEmissive, previousHighlight.current.originalColor);
         previousHighlight.current = null;
       }
 
-      // Clear hover highlight — restore its true original emissive first
+      // Clear hover highlight — restore its true original first
       // so that the click highlight captures the correct base color
       if (hoverHighlight.current) {
         const hMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-        if (hMat.emissive) {
-          gsap.killTweensOf(hMat.emissive);
-          hMat.emissive.copy(hoverHighlight.current.originalEmissive);
-        }
+        restoreHighlight(hMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
         hoverHighlight.current = null;
       }
 
@@ -429,13 +519,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
         // Highlight clicked mesh
         const mat = hit.material as THREE.MeshStandardMaterial;
-        if (mat.emissive) {
-          previousHighlight.current = {
-            mesh: hit,
-            originalEmissive: mat.emissive.clone(),
-          };
-          mat.emissive.set(highlightColorRef.current);
-        }
+        previousHighlight.current = captureHighlightState(hit);
+        applyHighlight(mat, highlightColorRef.current, false);
 
         // ── Annotation popup ──
         if (hasAnnotations && hitNames.length > 0) {
@@ -449,7 +534,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         }
 
         // ── Dev mode inspector ──
-        if (devMode) {
+        if (devModeRef.current) {
           const geo = hit.geometry;
           const vertexCount = geo?.attributes?.position?.count ?? 0;
           const indexCount = geo?.index?.count ?? 0;
@@ -491,7 +576,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       }
 
       const hasAnnotations = annotationsRef.current.length > 0;
-      if (!devMode && !hasAnnotations) {
+      if (!devModeRef.current && !hasAnnotations) {
         renderer.domElement.style.cursor = "";
         return;
       }
@@ -525,42 +610,21 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         // Restore previous hover
         if (hoverHighlight.current) {
           const prevMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-          if (prevMat.emissive) {
-            gsap.killTweensOf(prevMat.emissive);
-            const orig = hoverHighlight.current.originalEmissive;
-            prevMat.emissive.set(orig);
-          }
+          restoreHighlight(prevMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
           hoverHighlight.current = null;
         }
 
-        // Apply hover highlight
+        // Apply hover highlight (animated)
         const mat = hit.material as THREE.MeshStandardMaterial;
-        if (mat.emissive) {
-          hoverHighlight.current = {
-            mesh: hit,
-            originalEmissive: mat.emissive.clone(),
-          };
-          hoverTargetColor.set(highlightColorRef.current);
-          gsap.killTweensOf(mat.emissive);
-          gsap.to(mat.emissive, {
-            r: hoverTargetColor.r,
-            g: hoverTargetColor.g,
-            b: hoverTargetColor.b,
-            duration: 0.4,
-            ease: "power2.out",
-          });
-        }
+        hoverHighlight.current = captureHighlightState(hit);
+        applyHighlight(mat, highlightColorRef.current, true);
 
         renderer.domElement.style.cursor = "pointer";
       } else {
         // Restore hover highlight
         if (hoverHighlight.current) {
           const prevMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-          if (prevMat.emissive) {
-            gsap.killTweensOf(prevMat.emissive);
-            const orig = hoverHighlight.current.originalEmissive;
-            prevMat.emissive.set(orig);
-          }
+          restoreHighlight(prevMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
           hoverHighlight.current = null;
         }
         renderer.domElement.style.cursor = "";
@@ -783,26 +847,18 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
     // Restore click highlight
     if (previousHighlight.current) {
-      const mat = previousHighlight.current.mesh
-        .material as THREE.MeshStandardMaterial;
-      if (mat.emissive) {
-        gsap.killTweensOf(mat.emissive);
-        mat.emissive.copy(previousHighlight.current.originalEmissive);
-      }
+      const mat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+      restoreHighlight(mat, previousHighlight.current.originalEmissive, previousHighlight.current.originalColor);
       previousHighlight.current = null;
     }
 
     // Restore hover highlight
     if (hoverHighlight.current) {
-      const mat = hoverHighlight.current.mesh
-        .material as THREE.MeshStandardMaterial;
-      if (mat.emissive) {
-        gsap.killTweensOf(mat.emissive);
-        mat.emissive.copy(hoverHighlight.current.originalEmissive);
-      }
+      const mat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+      restoreHighlight(mat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
       hoverHighlight.current = null;
     }
-  }, []);
+  }, [restoreHighlight]);
 
   // ── Copy to clipboard helper ──
   const copyToClipboard = useCallback((text: string) => {
@@ -840,20 +896,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       // Restore hover highlight to true original first
       if (hoverHighlight.current) {
         const hMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-        if (hMat.emissive) {
-          gsap.killTweensOf(hMat.emissive);
-          hMat.emissive.copy(hoverHighlight.current.originalEmissive);
-        }
+        restoreHighlight(hMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
         hoverHighlight.current = null;
       }
 
       // Restore previous click highlight
       if (previousHighlight.current) {
         const prevMat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
-        if (prevMat.emissive) {
-          gsap.killTweensOf(prevMat.emissive);
-          prevMat.emissive.copy(previousHighlight.current.originalEmissive);
-        }
+        restoreHighlight(prevMat, previousHighlight.current.originalEmissive, previousHighlight.current.originalColor);
         previousHighlight.current = null;
       }
 
@@ -902,13 +952,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
       if (targetMesh) {
         const mat = (targetMesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
-        if (mat.emissive) {
-          previousHighlight.current = {
-            mesh: targetMesh,
-            originalEmissive: mat.emissive.clone(),
-          };
-          mat.emissive.set(highlightColorRef.current);
-        }
+        previousHighlight.current = captureHighlightState(targetMesh);
+        applyHighlight(mat, highlightColorRef.current, false);
       }
 
       // Open annotation popup
@@ -967,6 +1012,10 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           setDevSimpleMaterials={setDevSimpleMaterials}
           devHighlightColor={devHighlightColor}
           setDevHighlightColor={setDevHighlightColor}
+          devHighlightBlend={devHighlightBlend}
+          setDevHighlightBlend={setDevHighlightBlend}
+          devHighlightOpacity={devHighlightOpacity}
+          setDevHighlightOpacity={setDevHighlightOpacity}
           hasAnimations={hasAnimations}
           devAnimPlaying={devAnimPlaying}
           onAnimPlay={handleDevAnimPlay}
