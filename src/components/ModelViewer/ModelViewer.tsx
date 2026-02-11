@@ -8,7 +8,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-import type { SelectedObjectInfo, MeshAnnotation, ModelViewerProps } from "./types";
+import type { SelectedObjectInfo, MeshAnnotation, ModelViewerProps, AnimationMode } from "./types";
 import { FALLBACK_PALETTE } from "./types";
 import { getDepth } from "./utils";
 import { DevPanel } from "./DevPanel";
@@ -93,6 +93,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [devSimpleMaterials, setDevSimpleMaterials] = useState(true);
   const originalMaterials = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
   const [sceneGraph, setSceneGraph] = useState<string[]>([]);
+
+  // Animation dev state
+  const [devAnimPlaying, setDevAnimPlaying] = useState(autoplay);
+  const [devAnimMode, setDevAnimMode] = useState<AnimationMode>("ramp");
+  const [devAnimSpeed, setDevAnimSpeed] = useState(1.0);
+  const animModeRef = useRef<AnimationMode>("ramp");
+  animModeRef.current = devAnimMode;
+  const devAnimPlayingRef = useRef(autoplay);
+  devAnimPlayingRef.current = devAnimPlaying;
+  const devAnimSpeedRef = useRef(1.0);
+  devAnimSpeedRef.current = devAnimSpeed;
+  const animTimeAccum = useRef(0);
+  const maxClipDurationRef = useRef(1);
 
   // Elements dropdown state
   const [elementsOpen, setElementsOpen] = useState(false);
@@ -327,6 +340,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         const clips = gltf.animations;
         if (clips && clips.length > 0) {
           setHasAnimations(true);
+          maxClipDurationRef.current = Math.max(...clips.map((c) => c.duration));
 
           const mixer = new THREE.AnimationMixer(model);
           mixerRef.current = mixer;
@@ -337,6 +351,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           if (autoplay) {
             actions.forEach((a) => a.play());
             setIsPlaying(true);
+            setDevAnimPlaying(true);
           }
         }
 
@@ -570,7 +585,49 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     const animate = () => {
       frameRef.current = requestAnimationFrame(animate);
       const delta = clock.getDelta();
-      if (mixerRef.current) mixerRef.current.update(delta);
+
+      if (mixerRef.current) {
+        const speed = devMode ? devAnimSpeedRef.current : 1;
+        if (devMode && !devAnimPlayingRef.current) {
+          // Dev mode: animation paused — don't update mixer
+        } else if (devMode && animModeRef.current !== "ramp") {
+          // Dev mode: custom animation mode
+          animTimeAccum.current += delta * speed;
+          const duration = maxClipDurationRef.current || 1;
+          const t = animTimeAccum.current;
+          let mappedTime: number;
+
+          switch (animModeRef.current) {
+            case "boomerang": {
+              // Smooth ping-pong with eased turnarounds (smoothstep)
+              const phase = (t % (duration * 2)) / duration;
+              const linear = phase <= 1 ? phase : 2 - phase;
+              mappedTime = (3 * linear * linear - 2 * linear * linear * linear) * duration;
+              break;
+            }
+            case "sinus": {
+              // Sine wave oscillation — smooth ease at both extremes
+              mappedTime =
+                ((Math.sin((t / duration) * Math.PI * 2 - Math.PI / 2) + 1) / 2) * duration;
+              break;
+            }
+            case "triangle": {
+              // Triangle wave — linear back and forth
+              const triPhase = (t % (duration * 2)) / duration;
+              mappedTime = (triPhase <= 1 ? triPhase : 2 - triPhase) * duration;
+              break;
+            }
+            default:
+              mappedTime = t % duration;
+          }
+
+          mixerRef.current.setTime(mappedTime);
+        } else {
+          // Normal forward playback (ramp or non-dev mode)
+          mixerRef.current.update(delta * speed);
+        }
+      }
+
       controls.update();
       renderer.render(scene, camera);
     };
@@ -689,6 +746,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     if (rendererRef.current) rendererRef.current.toneMappingExposure = devExposure;
   }, [devMode, devExposure]);
 
+  // ── Reset animation time accumulator when mode changes ──
+  useEffect(() => {
+    animTimeAccum.current = 0;
+  }, [devAnimMode]);
+
   // ── Re-apply simple materials when toggled from dev panel ──
   useEffect(() => {
     const model = modelGroupRef.current;
@@ -781,6 +843,28 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   // ── Copy to clipboard helper ──
   const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text).catch(() => {});
+  }, []);
+
+  // ── Dev animation play / pause ──
+  const handleDevAnimPlay = useCallback(() => {
+    const actions = actionsRef.current;
+    if (actions.length === 0) return;
+    actions.forEach((a) => {
+      if (a.paused) {
+        a.paused = false;
+      } else if (!a.isRunning()) {
+        a.play();
+      }
+    });
+    setDevAnimPlaying(true);
+  }, []);
+
+  const handleDevAnimPause = useCallback(() => {
+    const actions = actionsRef.current;
+    actions.forEach((a) => {
+      a.paused = true;
+    });
+    setDevAnimPlaying(false);
   }, []);
 
   // ── Select element from Elements dropdown ──
@@ -919,6 +1003,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           setDevSimpleMaterials={setDevSimpleMaterials}
           devHighlightColor={devHighlightColor}
           setDevHighlightColor={setDevHighlightColor}
+          hasAnimations={hasAnimations}
+          devAnimPlaying={devAnimPlaying}
+          onAnimPlay={handleDevAnimPlay}
+          onAnimPause={handleDevAnimPause}
+          devAnimMode={devAnimMode}
+          setDevAnimMode={setDevAnimMode}
+          devAnimSpeed={devAnimSpeed}
+          setDevAnimSpeed={setDevAnimSpeed}
           sceneGraph={sceneGraph}
         />
       )}

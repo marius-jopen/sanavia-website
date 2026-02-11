@@ -1,5 +1,5 @@
 import React from "react";
-import type { SelectedObjectInfo } from "./types";
+import type { SelectedObjectInfo, AnimationMode } from "./types";
 
 // ── Primitive Controls ──
 
@@ -91,6 +91,35 @@ export function DevToggle({
   );
 }
 
+export function DevSelect<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-gray-400">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="bg-gray-100 border border-gray-200 text-gray-700 text-xs font-mono rounded px-2 py-1 cursor-pointer outline-none"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 // ── DevPanel Props ──
 
 export interface DevPanelProps {
@@ -125,6 +154,16 @@ export interface DevPanelProps {
   devHighlightColor: string;
   setDevHighlightColor: (v: string) => void;
 
+  // Animation
+  hasAnimations: boolean;
+  devAnimPlaying: boolean;
+  onAnimPlay: () => void;
+  onAnimPause: () => void;
+  devAnimMode: AnimationMode;
+  setDevAnimMode: (v: AnimationMode) => void;
+  devAnimSpeed: number;
+  setDevAnimSpeed: (v: number) => void;
+
   // Scene graph
   sceneGraph: string[];
 }
@@ -158,6 +197,14 @@ export function DevPanel({
   setDevSimpleMaterials,
   devHighlightColor,
   setDevHighlightColor,
+  hasAnimations,
+  devAnimPlaying,
+  onAnimPlay,
+  onAnimPause,
+  devAnimMode,
+  setDevAnimMode,
+  devAnimSpeed,
+  setDevAnimSpeed,
   sceneGraph,
 }: DevPanelProps) {
   return (
@@ -318,6 +365,46 @@ export function DevPanel({
             </div>
           </div>
 
+          {/* ── Animation Controls ── */}
+          {hasAnimations && (
+            <div className="p-3 border-b border-gray-200">
+              <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
+                Animation
+              </h3>
+              <div className="space-y-2">
+                {/* Play / Pause button */}
+                <button
+                  type="button"
+                  onClick={devAnimPlaying ? onAnimPause : onAnimPlay}
+                  className="w-full text-[11px] font-mono py-1.5 rounded cursor-pointer border transition-colors bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200"
+                >
+                  {devAnimPlaying ? "Pause" : "Play"}
+                </button>
+                {/* Animation speed */}
+                <DevSlider
+                  label="Speed"
+                  value={devAnimSpeed}
+                  min={0.1}
+                  max={3}
+                  step={0.1}
+                  onChange={setDevAnimSpeed}
+                />
+                {/* Animation mode dropdown */}
+                <DevSelect<AnimationMode>
+                  label="Mode"
+                  value={devAnimMode}
+                  options={[
+                    { value: "ramp", label: "Ramp" },
+                    { value: "boomerang", label: "Boomerang" },
+                    { value: "sinus", label: "Sinus" },
+                    { value: "triangle", label: "Triangle" },
+                  ]}
+                  onChange={setDevAnimMode}
+                />
+              </div>
+            </div>
+          )}
+
           {/* ── Scene Graph ── */}
           <div className="p-3">
             <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
@@ -349,6 +436,7 @@ export function DevPanel({
                   enableZoom: devEnableZoom,
                   simpleMaterials: devSimpleMaterials,
                   highlightColor: devHighlightColor,
+                  animationMode: devAnimMode,
                 };
                 copyToClipboard(JSON.stringify(settings, null, 2));
               }}
