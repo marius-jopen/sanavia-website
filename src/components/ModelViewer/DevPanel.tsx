@@ -1,5 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import type { SelectedObjectInfo, AnimationMode } from "./types";
+
+// ── Collapsible Section ──
+
+function Section({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-gray-200/60">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-2.5 py-1.5 bg-transparent border-none cursor-pointer hover:bg-gray-50 transition-colors"
+      >
+        <span className="text-[9px] uppercase tracking-[0.08em] font-semibold text-gray-400">
+          {title}
+        </span>
+        <svg
+          className={`w-2.5 h-2.5 text-gray-300 transition-transform ${open ? "" : "-rotate-90"}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && <div className="px-2.5 pb-2 space-y-1">{children}</div>}
+    </div>
+  );
+}
 
 // ── Primitive Controls ──
 
@@ -19,11 +56,8 @@ export function DevSlider({
   onChange: (v: number) => void;
 }) {
   return (
-    <div>
-      <div className="flex justify-between mb-0.5">
-        <span className="text-gray-400">{label}</span>
-        <span className="text-gray-600">{value.toFixed(2)}</span>
-      </div>
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-gray-400 w-[72px] shrink-0">{label}</span>
       <input
         type="range"
         min={min}
@@ -31,8 +65,11 @@ export function DevSlider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1 appearance-none bg-gray-200 rounded cursor-pointer accent-gray-800"
+        className="flex-1 h-[3px] appearance-none bg-gray-200 rounded cursor-pointer accent-gray-600"
       />
+      <span className="text-[10px] text-gray-500 w-[32px] text-right tabular-nums">
+        {value.toFixed(2)}
+      </span>
     </div>
   );
 }
@@ -47,17 +84,16 @@ export function DevColor({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-gray-400">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-gray-500">{value}</span>
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-5 h-5 rounded cursor-pointer border border-gray-300 bg-transparent p-0"
-        />
-      </div>
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-gray-400 w-[72px] shrink-0">{label}</span>
+      <div className="flex-1" />
+      <span className="text-[10px] text-gray-500 tabular-nums">{value}</span>
+      <input
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-4 h-4 rounded cursor-pointer border border-gray-200 bg-transparent p-0"
+      />
     </div>
   );
 }
@@ -72,18 +108,19 @@ export function DevToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-gray-400">{label}</span>
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-gray-400 w-[72px] shrink-0">{label}</span>
+      <div className="flex-1" />
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className={`w-8 h-4 rounded-full cursor-pointer transition-colors border-none ${
-          value ? "bg-gray-800" : "bg-gray-200"
+        className={`w-6 h-3.5 rounded-full cursor-pointer transition-colors border-none ${
+          value ? "bg-gray-700" : "bg-gray-200"
         }`}
       >
         <div
-          className={`w-3 h-3 rounded-full bg-white transition-transform ${
-            value ? "translate-x-4" : "translate-x-0.5"
+          className={`w-2.5 h-2.5 rounded-full bg-white transition-transform ${
+            value ? "translate-x-[11px]" : "translate-x-[1px]"
           }`}
         />
       </button>
@@ -103,12 +140,13 @@ export function DevSelect<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-gray-400">{label}</span>
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-gray-400 w-[72px] shrink-0">{label}</span>
+      <div className="flex-1" />
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as T)}
-        className="bg-gray-100 border border-gray-200 text-gray-700 text-xs font-mono rounded px-2 py-1 cursor-pointer outline-none"
+        className="bg-gray-50 border border-gray-200 text-gray-600 text-[10px] font-mono rounded px-1.5 py-0.5 cursor-pointer outline-none"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -116,6 +154,39 @@ export function DevSelect<T extends string>({
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+// ── Compact key-value row ──
+
+function InfoRow({
+  label,
+  value,
+  copyable,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+  onCopy?: () => void;
+}) {
+  return (
+    <div className="flex justify-between items-start gap-2 leading-tight">
+      <span className="text-[10px] text-gray-400 shrink-0">{label}</span>
+      {copyable ? (
+        <button
+          onClick={onCopy}
+          className="text-right text-[10px] text-blue-500 hover:text-blue-400 cursor-pointer break-all bg-transparent border-none p-0 font-mono leading-tight"
+          title="Click to copy"
+        >
+          {value}
+        </button>
+      ) : (
+        <span className="text-[10px] text-gray-600 text-right break-all leading-tight">
+          {value}
+        </span>
+      )}
     </div>
   );
 }
@@ -209,218 +280,132 @@ export function DevPanel({
 }: DevPanelProps) {
   return (
     <>
-      {/* Toggle button — always visible */}
+      {/* Toggle button */}
       <button
         type="button"
         onClick={() => setDevPanelOpen((v: boolean) => !v)}
-        className="absolute top-3 right-3 z-40 bg-white/90 hover:bg-white text-gray-700 text-xs font-mono px-3 py-1.5 rounded-md cursor-pointer backdrop-blur-sm border border-gray-200/50 shadow-sm transition-colors"
+        className="absolute top-2.5 right-2.5 z-40 bg-white/90 hover:bg-white text-gray-600 text-[10px] font-mono px-2.5 py-1 rounded-md cursor-pointer backdrop-blur-sm border border-gray-200/50 shadow-sm transition-colors"
       >
-        {devPanelOpen ? "Close Dev" : "Dev Mode"}
+        {devPanelOpen ? "Close" : "Dev"}
       </button>
 
       {/* Panel */}
       {devPanelOpen && (
-        <div className="absolute top-12 right-3 z-40 w-72 max-h-[calc(100%-60px)] overflow-y-auto bg-white/95 backdrop-blur-md text-gray-800 text-xs font-mono rounded-xl border border-gray-200/50 shadow-xl">
-          {/* ── Object Inspector ── */}
-          <div className="p-3 border-b border-gray-200">
-            <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-              Object Inspector
-            </h3>
+        <div className="absolute top-10 right-2.5 z-40 w-64 max-h-[calc(100%-48px)] overflow-y-auto bg-white/95 backdrop-blur-md text-gray-700 text-[10px] font-mono rounded-lg border border-gray-200/50 shadow-xl scrollbar-thin">
+          {/* ── Inspector ── */}
+          <Section title="Inspector" defaultOpen={!!selectedObject}>
             {selectedObject ? (
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-gray-400 shrink-0">Name</span>
-                  <button
-                    onClick={() => copyToClipboard(selectedObject.name)}
-                    className="text-right text-blue-600 hover:text-blue-500 cursor-pointer break-all bg-transparent border-none p-0 text-xs font-mono"
-                    title="Click to copy"
-                  >
-                    {selectedObject.name}
-                  </button>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Type</span>
-                  <span>{selectedObject.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">UUID</span>
-                  <span className="text-gray-500">{selectedObject.uuid}…</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Parent</span>
-                  <span>{selectedObject.parentName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Position</span>
-                  <span>
-                    {selectedObject.position.x}, {selectedObject.position.y},{" "}
-                    {selectedObject.position.z}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Material</span>
-                  <span>{selectedObject.materialName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Mat. Type</span>
-                  <span>{selectedObject.materialType}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Vertices</span>
-                  <span>{selectedObject.vertexCount.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Triangles</span>
-                  <span>{Math.round(selectedObject.triangleCount).toLocaleString()}</span>
-                </div>
+              <div className="space-y-0.5">
+                <InfoRow
+                  label="Name"
+                  value={selectedObject.name}
+                  copyable
+                  onCopy={() => copyToClipboard(selectedObject.name)}
+                />
+                <InfoRow label="Type" value={selectedObject.type} />
+                <InfoRow label="UUID" value={`${selectedObject.uuid.slice(0, 8)}…`} />
+                <InfoRow label="Parent" value={selectedObject.parentName} />
+                <InfoRow
+                  label="Pos"
+                  value={`${selectedObject.position.x}, ${selectedObject.position.y}, ${selectedObject.position.z}`}
+                />
+                <InfoRow label="Material" value={selectedObject.materialName} />
+                <InfoRow label="Mat Type" value={selectedObject.materialType} />
+                <InfoRow label="Verts" value={selectedObject.vertexCount.toLocaleString()} />
+                <InfoRow
+                  label="Tris"
+                  value={Math.round(selectedObject.triangleCount).toLocaleString()}
+                />
                 {Object.keys(selectedObject.userData).length > 0 && (
-                  <div className="mt-1 pt-1 border-t border-gray-200">
-                    <span className="text-gray-400">userData:</span>
-                    <pre className="mt-1 text-[10px] text-gray-500 whitespace-pre-wrap break-all">
-                      {JSON.stringify(selectedObject.userData, null, 2)}
-                    </pre>
-                  </div>
+                  <pre className="mt-1 pt-1 border-t border-gray-100 text-[9px] text-gray-400 whitespace-pre-wrap break-all leading-tight">
+                    {JSON.stringify(selectedObject.userData, null, 2)}
+                  </pre>
                 )}
               </div>
             ) : (
-              <p className="text-gray-300 italic">Click an object to inspect it</p>
+              <p className="text-[10px] text-gray-300 italic">Click a mesh to inspect</p>
             )}
-          </div>
+          </Section>
 
-          {/* ── Lighting Controls ── */}
-          <div className="p-3 border-b border-gray-200">
-            <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-              Lighting
-            </h3>
-            <div className="space-y-2">
-              <DevSlider
-                label="Ambient Intensity"
-                value={devAmbientIntensity}
-                min={0} max={3} step={0.05}
-                onChange={setDevAmbientIntensity}
-              />
-              <DevColor
-                label="Ambient Color"
-                value={devAmbientColor}
-                onChange={setDevAmbientColor}
-              />
-              <DevSlider
-                label="Direct Intensity"
-                value={devDirectIntensity}
-                min={0} max={5} step={0.05}
-                onChange={setDevDirectIntensity}
-              />
-              <DevColor
-                label="Direct Color"
-                value={devDirectColor}
-                onChange={setDevDirectColor}
-              />
-              <DevSlider
-                label="Exposure"
-                value={devExposure}
-                min={0} max={3} step={0.05}
-                onChange={setDevExposure}
-              />
-            </div>
-          </div>
+          {/* ── Lighting ── */}
+          <Section title="Lighting">
+            <DevSlider
+              label="Ambient"
+              value={devAmbientIntensity}
+              min={0} max={3} step={0.05}
+              onChange={setDevAmbientIntensity}
+            />
+            <DevColor label="Amb Color" value={devAmbientColor} onChange={setDevAmbientColor} />
+            <DevSlider
+              label="Direct"
+              value={devDirectIntensity}
+              min={0} max={5} step={0.05}
+              onChange={setDevDirectIntensity}
+            />
+            <DevColor label="Dir Color" value={devDirectColor} onChange={setDevDirectColor} />
+            <DevSlider
+              label="Exposure"
+              value={devExposure}
+              min={0} max={3} step={0.05}
+              onChange={setDevExposure}
+            />
+          </Section>
 
-          {/* ── Display Controls ── */}
-          <div className="p-3 border-b border-gray-200">
-            <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-              Display
-            </h3>
-            <div className="space-y-2">
-              <DevToggle
-                label="Transparent BG"
-                value={devTransparentBg}
-                onChange={setDevTransparentBg}
-              />
-              {!devTransparentBg && (
-                <DevColor
-                  label="Background"
-                  value={devBgColor}
-                  onChange={setDevBgColor}
-                />
-              )}
-              <DevToggle
-                label="Auto Rotate"
-                value={devAutoRotate}
-                onChange={setDevAutoRotate}
-              />
-              <DevToggle
-                label="Enable Zoom"
-                value={devEnableZoom}
-                onChange={setDevEnableZoom}
-              />
-              <DevToggle
-                label="Simple Materials"
-                value={devSimpleMaterials}
-                onChange={setDevSimpleMaterials}
-              />
-              <DevColor
-                label="Selection Highlight"
-                value={devHighlightColor}
-                onChange={setDevHighlightColor}
-              />
-            </div>
-          </div>
+          {/* ── Display ── */}
+          <Section title="Display">
+            <DevToggle label="Transparent" value={devTransparentBg} onChange={setDevTransparentBg} />
+            {!devTransparentBg && (
+              <DevColor label="BG Color" value={devBgColor} onChange={setDevBgColor} />
+            )}
+            <DevToggle label="Auto Rotate" value={devAutoRotate} onChange={setDevAutoRotate} />
+            <DevToggle label="Zoom" value={devEnableZoom} onChange={setDevEnableZoom} />
+            <DevToggle label="Simple Mat" value={devSimpleMaterials} onChange={setDevSimpleMaterials} />
+            <DevColor label="Highlight" value={devHighlightColor} onChange={setDevHighlightColor} />
+          </Section>
 
-          {/* ── Animation Controls ── */}
+          {/* ── Animation ── */}
           {hasAnimations && (
-            <div className="p-3 border-b border-gray-200">
-              <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-                Animation
-              </h3>
-              <div className="space-y-2">
-                {/* Play / Pause button */}
-                <button
-                  type="button"
-                  onClick={devAnimPlaying ? onAnimPause : onAnimPlay}
-                  className="w-full text-[11px] font-mono py-1.5 rounded cursor-pointer border transition-colors bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200"
-                >
-                  {devAnimPlaying ? "Pause" : "Play"}
-                </button>
-                {/* Animation speed */}
-                <DevSlider
-                  label="Speed"
-                  value={devAnimSpeed}
-                  min={0.1}
-                  max={3}
-                  step={0.1}
-                  onChange={setDevAnimSpeed}
-                />
-                {/* Animation mode dropdown */}
-                <DevSelect<AnimationMode>
-                  label="Mode"
-                  value={devAnimMode}
-                  options={[
-                    { value: "ramp", label: "Ramp" },
-                    { value: "boomerang", label: "Boomerang" },
-                    { value: "sinus", label: "Sinus" },
-                    { value: "triangle", label: "Triangle" },
-                  ]}
-                  onChange={setDevAnimMode}
-                />
-              </div>
-            </div>
+            <Section title="Animation">
+              <button
+                type="button"
+                onClick={devAnimPlaying ? onAnimPause : onAnimPlay}
+                className="w-full text-[10px] font-mono py-1 rounded cursor-pointer border transition-colors bg-gray-50 hover:bg-gray-100 text-gray-600 border-gray-200"
+              >
+                {devAnimPlaying ? "Pause" : "Play"}
+              </button>
+              <DevSlider
+                label="Speed"
+                value={devAnimSpeed}
+                min={0.1} max={3} step={0.1}
+                onChange={setDevAnimSpeed}
+              />
+              <DevSelect<AnimationMode>
+                label="Mode"
+                value={devAnimMode}
+                options={[
+                  { value: "ramp", label: "Ramp" },
+                  { value: "boomerang", label: "Boomerang" },
+                  { value: "sinus", label: "Sinus" },
+                  { value: "triangle", label: "Triangle" },
+                ]}
+                onChange={setDevAnimMode}
+              />
+            </Section>
           )}
 
           {/* ── Scene Graph ── */}
-          <div className="p-3">
-            <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-              Scene Graph
-            </h3>
+          <Section title="Scene Graph" defaultOpen={false}>
             {sceneGraph.length > 0 ? (
-              <pre className="text-[10px] text-gray-500 whitespace-pre overflow-x-auto max-h-40 overflow-y-auto">
+              <pre className="text-[9px] text-gray-400 whitespace-pre overflow-x-auto max-h-32 overflow-y-auto leading-tight">
                 {sceneGraph.join("\n")}
               </pre>
             ) : (
-              <p className="text-gray-300 italic">Loading…</p>
+              <p className="text-[10px] text-gray-300 italic">Loading…</p>
             )}
-          </div>
+          </Section>
 
-          {/* ── Export Settings ── */}
-          <div className="p-3 border-t border-gray-200">
+          {/* ── Export ── */}
+          <div className="p-2.5">
             <button
               type="button"
               onClick={() => {
@@ -443,9 +428,9 @@ export function DevPanel({
                 };
                 copyToClipboard(JSON.stringify(settings, null, 2));
               }}
-              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-mono py-1.5 px-3 rounded cursor-pointer border border-gray-200 transition-colors"
+              className="w-full bg-gray-700 hover:bg-gray-800 text-white text-[10px] font-mono py-1.5 px-2 rounded cursor-pointer border-none transition-colors"
             >
-              Copy Settings as JSON
+              Copy Settings JSON
             </button>
           </div>
         </div>
