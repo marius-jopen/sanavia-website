@@ -8,46 +8,13 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-// ── Types ──
-
-interface SelectedObjectInfo {
-  name: string;
-  type: string;
-  uuid: string;
-  parentName: string;
-  position: { x: string; y: string; z: string };
-  materialName: string;
-  materialType: string;
-  vertexCount: number;
-  triangleCount: number;
-  userData: Record<string, unknown>;
-}
-
-export interface MeshAnnotation {
-  meshName: string;
-  title: string;
-  content: React.ReactNode;
-  color?: string;
-}
-
-const FALLBACK_PALETTE = ["#bdd1ff", "#bdfffe", "#ffa34d"];
-
-interface ModelViewerProps {
-  modelUrl: string;
-  autoplay?: boolean;
-  autoRotate?: boolean;
-  backgroundColor?: string;
-  ambientLightIntensity?: number;
-  ambientLightColor?: string;
-  directLightIntensity?: number;
-  directLightColor?: string;
-  enableZoom?: boolean;
-  simpleMaterials?: boolean;
-  showControls?: boolean;
-  devMode?: boolean;
-  annotations?: MeshAnnotation[];
-  className?: string;
-}
+import type { SelectedObjectInfo, MeshAnnotation, ModelViewerProps } from "./types";
+import { FALLBACK_PALETTE } from "./types";
+import { getDepth } from "./utils";
+import { DevPanel } from "./DevPanel";
+import { AnnotationPopup } from "./AnnotationPopup";
+import { BottomControls } from "./BottomControls";
+import { LoadingOverlay, ErrorOverlay } from "./Overlays";
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
   modelUrl,
@@ -436,8 +403,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         const hit = intersects[0].object as THREE.Mesh;
 
         // Collect ALL names from the hit mesh up through the parent chain
-        // so we can match annotations against any level of the hierarchy.
-        // glTF files often have: Group("antibodyActiveLighter") > Mesh("antibodyActiveLighter_0")
         const hitNames: string[] = [];
         let current: THREE.Object3D | null = hit;
         while (current && current !== modelGroupRef.current) {
@@ -445,8 +410,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           current = current.parent;
         }
 
-        // Highlight clicked mesh — emissive is now at its true original
-        // (hover was restored above) so the clone captures the correct base
+        // Highlight clicked mesh
         const mat = hit.material as THREE.MeshStandardMaterial;
         if (mat.emissive) {
           previousHighlight.current = {
@@ -458,7 +422,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
         // ── Annotation popup ──
         if (hasAnnotations && hitNames.length > 0) {
-          // Try exact match first, then startsWith, against all names in chain
           const match = annotationsRef.current.find((a) =>
             hitNames.some(
               (n) => n === a.meshName || n.startsWith(a.meshName) || a.meshName.startsWith(n),
@@ -922,448 +885,67 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       <div ref={containerRef} className="absolute inset-0" />
 
       {/* Loading overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="text-white text-center">
-            <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm opacity-75">
-              {loadProgress > 0 ? `Loading ${loadProgress}%` : "Loading model…"}
-            </p>
-          </div>
-        </div>
-      )}
+      {isLoading && <LoadingOverlay loadProgress={loadProgress} />}
 
       {/* Error overlay */}
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center z-10">
-          <p className="text-white/80 text-sm">{error}</p>
-        </div>
-      )}
+      {error && <ErrorOverlay error={error} />}
 
       {/* ─── DEV MODE PANEL ─── */}
       {devMode && !isLoading && !error && (
-        <>
-          {/* Toggle button — always visible */}
-          <button
-            type="button"
-            onClick={() => setDevPanelOpen((v) => !v)}
-            className="absolute top-3 right-3 z-40 bg-white/90 hover:bg-white text-gray-700 text-xs font-mono px-3 py-1.5 rounded-md cursor-pointer backdrop-blur-sm border border-gray-200/50 shadow-sm transition-colors"
-          >
-            {devPanelOpen ? "Close Dev" : "Dev Mode"}
-          </button>
-
-          {/* Panel */}
-          {devPanelOpen && (
-            <div className="absolute top-12 right-3 z-40 w-72 max-h-[calc(100%-60px)] overflow-y-auto bg-white/95 backdrop-blur-md text-gray-800 text-xs font-mono rounded-xl border border-gray-200/50 shadow-xl">
-              {/* ── Object Inspector ── */}
-              <div className="p-3 border-b border-gray-200">
-                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-                  Object Inspector
-                </h3>
-                {selectedObject ? (
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-gray-400 shrink-0">Name</span>
-                      <button
-                        onClick={() => copyToClipboard(selectedObject.name)}
-                        className="text-right text-blue-600 hover:text-blue-500 cursor-pointer break-all bg-transparent border-none p-0 text-xs font-mono"
-                        title="Click to copy"
-                      >
-                        {selectedObject.name}
-                      </button>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Type</span>
-                      <span>{selectedObject.type}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">UUID</span>
-                      <span className="text-gray-500">{selectedObject.uuid}…</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Parent</span>
-                      <span>{selectedObject.parentName}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Position</span>
-                      <span>
-                        {selectedObject.position.x}, {selectedObject.position.y},{" "}
-                        {selectedObject.position.z}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Material</span>
-                      <span>{selectedObject.materialName}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Mat. Type</span>
-                      <span>{selectedObject.materialType}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Vertices</span>
-                      <span>{selectedObject.vertexCount.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Triangles</span>
-                      <span>{Math.round(selectedObject.triangleCount).toLocaleString()}</span>
-                    </div>
-                    {Object.keys(selectedObject.userData).length > 0 && (
-                      <div className="mt-1 pt-1 border-t border-gray-200">
-                        <span className="text-gray-400">userData:</span>
-                        <pre className="mt-1 text-[10px] text-gray-500 whitespace-pre-wrap break-all">
-                          {JSON.stringify(selectedObject.userData, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-gray-300 italic">Click an object to inspect it</p>
-                )}
-              </div>
-
-              {/* ── Lighting Controls ── */}
-              <div className="p-3 border-b border-gray-200">
-                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-                  Lighting
-                </h3>
-                <div className="space-y-2">
-                  <DevSlider
-                    label="Ambient Intensity"
-                    value={devAmbientIntensity}
-                    min={0} max={3} step={0.05}
-                    onChange={setDevAmbientIntensity}
-                  />
-                  <DevColor
-                    label="Ambient Color"
-                    value={devAmbientColor}
-                    onChange={setDevAmbientColor}
-                  />
-                  <DevSlider
-                    label="Direct Intensity"
-                    value={devDirectIntensity}
-                    min={0} max={5} step={0.05}
-                    onChange={setDevDirectIntensity}
-                  />
-                  <DevColor
-                    label="Direct Color"
-                    value={devDirectColor}
-                    onChange={setDevDirectColor}
-                  />
-                  <DevSlider
-                    label="Exposure"
-                    value={devExposure}
-                    min={0} max={3} step={0.05}
-                    onChange={setDevExposure}
-                  />
-                </div>
-              </div>
-
-              {/* ── Display Controls ── */}
-              <div className="p-3 border-b border-gray-200">
-                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-                  Display
-                </h3>
-                <div className="space-y-2">
-                  <DevToggle
-                    label="Transparent BG"
-                    value={devTransparentBg}
-                    onChange={setDevTransparentBg}
-                  />
-                  {!devTransparentBg && (
-                    <DevColor
-                      label="Background"
-                      value={devBgColor}
-                      onChange={setDevBgColor}
-                    />
-                  )}
-                  <DevToggle
-                    label="Auto Rotate"
-                    value={devAutoRotate}
-                    onChange={setDevAutoRotate}
-                  />
-                  <DevToggle
-                    label="Enable Zoom"
-                    value={devEnableZoom}
-                    onChange={setDevEnableZoom}
-                  />
-                  <DevToggle
-                    label="Simple Materials"
-                    value={devSimpleMaterials}
-                    onChange={setDevSimpleMaterials}
-                  />
-                  <DevColor
-                    label="Selection Highlight"
-                    value={devHighlightColor}
-                    onChange={setDevHighlightColor}
-                  />
-                </div>
-              </div>
-
-              {/* ── Scene Graph ── */}
-              <div className="p-3">
-                <h3 className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">
-                  Scene Graph
-                </h3>
-                {sceneGraph.length > 0 ? (
-                  <pre className="text-[10px] text-gray-500 whitespace-pre overflow-x-auto max-h-40 overflow-y-auto">
-                    {sceneGraph.join("\n")}
-                  </pre>
-                ) : (
-                  <p className="text-gray-300 italic">Loading…</p>
-                )}
-              </div>
-
-              {/* ── Export Settings ── */}
-              <div className="p-3 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const settings = {
-                      transparentBackground: devTransparentBg,
-                      backgroundColor: devBgColor,
-                      ambientLightIntensity: devAmbientIntensity,
-                      ambientLightColor: devAmbientColor,
-                      directLightIntensity: devDirectIntensity,
-                      directLightColor: devDirectColor,
-                      exposure: devExposure,
-                      autoRotate: devAutoRotate,
-                      enableZoom: devEnableZoom,
-                      simpleMaterials: devSimpleMaterials,
-                      highlightColor: devHighlightColor,
-                    };
-                    copyToClipboard(JSON.stringify(settings, null, 2));
-                  }}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-mono py-1.5 px-3 rounded cursor-pointer border border-gray-200 transition-colors"
-                >
-                  Copy Settings as JSON
-                </button>
-              </div>
-            </div>
-          )}
-
-        </>
+        <DevPanel
+          devPanelOpen={devPanelOpen}
+          setDevPanelOpen={setDevPanelOpen}
+          selectedObject={selectedObject}
+          copyToClipboard={copyToClipboard}
+          devAmbientIntensity={devAmbientIntensity}
+          setDevAmbientIntensity={setDevAmbientIntensity}
+          devAmbientColor={devAmbientColor}
+          setDevAmbientColor={setDevAmbientColor}
+          devDirectIntensity={devDirectIntensity}
+          setDevDirectIntensity={setDevDirectIntensity}
+          devDirectColor={devDirectColor}
+          setDevDirectColor={setDevDirectColor}
+          devExposure={devExposure}
+          setDevExposure={setDevExposure}
+          devTransparentBg={devTransparentBg}
+          setDevTransparentBg={setDevTransparentBg}
+          devBgColor={devBgColor}
+          setDevBgColor={setDevBgColor}
+          devAutoRotate={devAutoRotate}
+          setDevAutoRotate={setDevAutoRotate}
+          devEnableZoom={devEnableZoom}
+          setDevEnableZoom={setDevEnableZoom}
+          devSimpleMaterials={devSimpleMaterials}
+          setDevSimpleMaterials={setDevSimpleMaterials}
+          devHighlightColor={devHighlightColor}
+          setDevHighlightColor={setDevHighlightColor}
+          sceneGraph={sceneGraph}
+        />
       )}
 
       {/* ─── ANNOTATION POPUP ─── */}
-      {(showAnnotation || activeAnnotation) && (
-        <div
-          ref={annotationRef}
-          className="absolute top-4 left-4 z-30 max-w-sm"
-          style={{ opacity: 0 }}
-        >
-          <div className="bg-white rounded-2xl  overflow-hidden">
-            {/* Header with close button */}
-            <div className="flex items-start justify-between gap-3 pt-5 pb-2 px-5 md:px-7">
-              <h3 className="text-gray-800">
-                {activeAnnotation?.title}
-              </h3>
-              <button
-                type="button"
-                onClick={closeAnnotation}
-                className="shrink-0 mt-1 text-neutral-400 hover:text-neutral-700 cursor-pointer bg-transparent border-none p-0 transition-colors"
-                aria-label="Close"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            {/* Body */}
-            <div className="px-5 md:px-7 pb-5 text-neutral-500 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
-              {activeAnnotation?.content}
-            </div>
-          </div>
-        </div>
-      )}
+      <AnnotationPopup
+        showAnnotation={showAnnotation}
+        activeAnnotation={activeAnnotation}
+        annotationRef={annotationRef}
+        closeAnnotation={closeAnnotation}
+      />
 
-      {/* ─── BOTTOM-LEFT CONTROLS: Elements dropdown + Play/Pause auto-rotate ─── */}
+      {/* ─── BOTTOM-LEFT CONTROLS ─── */}
       {!isLoading && !error && (
-        <div className="absolute bottom-4 left-4 z-30 flex items-end gap-2">
-          {/* Elements dropdown */}
-          {annotations.length > 0 && (
-            <div className="relative">
-              {/* Dropdown menu (opens upward) */}
-              {elementsOpen && (
-                <div className="absolute bottom-full left-0 mb-2 min-w-[200px] bg-white rounded-xl overflow-hidden shadow-xl">
-                  <div className="max-h-60 overflow-y-auto py-1">
-                    {annotations.map((a, i) => (
-                      <button
-                        key={`${a.meshName}-${i}`}
-                        type="button"
-                        onClick={() => handleElementSelect(a)}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer border-none bg-transparent hover:bg-gray-100 ${
-                          activeAnnotation?.meshName === a.meshName
-                            ? "text-gray-900 font-medium bg-gray-50"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        {a.title || a.meshName}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Elements toggle button */}
-              <button
-                type="button"
-                onClick={() => setElementsOpen((prev) => !prev)}
-                className="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-4 py-2.5 rounded-full cursor-pointer border border-gray-200/50 transition-all shadow-lg"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                </svg>
-                Elements
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`transition-transform ${elementsOpen ? "rotate-180" : ""}`}
-                >
-                  <path d="M18 15l-6-6-6 6" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          {/* Auto-rotate toggle button */}
-          <button
-            type="button"
-            onClick={() => {
-              const controls = controlsRef.current;
-              if (!controls) return;
-              const next = !controls.autoRotate;
-              controls.autoRotate = next;
-              setIsPlaying(next);
-            }}
-            className="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-4 py-2.5 rounded-full cursor-pointer border border-gray-200/50 transition-all shadow-lg"
-            aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
-          >
-            {isPlaying ? "Auto Rotate Off" : "Auto Rotate On"}
-          </button>
-        </div>
+        <BottomControls
+          annotations={annotations}
+          elementsOpen={elementsOpen}
+          setElementsOpen={setElementsOpen}
+          handleElementSelect={handleElementSelect}
+          activeAnnotation={activeAnnotation}
+          controlsRef={controlsRef}
+          isPlaying={isPlaying}
+          setIsPlaying={setIsPlaying}
+        />
       )}
     </div>
   );
 };
-
-// ── Helper: calculate depth of a node relative to root ──
-
-function getDepth(node: THREE.Object3D, root: THREE.Object3D): number {
-  let depth = 0;
-  let current = node.parent;
-  while (current && current !== root) {
-    depth++;
-    current = current.parent;
-  }
-  return depth;
-}
-
-// ── Dev Mode sub-components ──
-
-function DevSlider({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <div>
-      <div className="flex justify-between mb-0.5">
-        <span className="text-gray-400">{label}</span>
-        <span className="text-gray-600">{value.toFixed(2)}</span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1 appearance-none bg-gray-200 rounded cursor-pointer accent-gray-800"
-      />
-    </div>
-  );
-}
-
-function DevColor({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-gray-400">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-gray-500">{value}</span>
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-5 h-5 rounded cursor-pointer border border-gray-300 bg-transparent p-0"
-        />
-      </div>
-    </div>
-  );
-}
-
-function DevToggle({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-gray-400">{label}</span>
-      <button
-        type="button"
-        onClick={() => onChange(!value)}
-        className={`w-8 h-4 rounded-full cursor-pointer transition-colors border-none ${
-          value ? "bg-gray-800" : "bg-gray-200"
-        }`}
-      >
-        <div
-          className={`w-3 h-3 rounded-full bg-white transition-transform ${
-            value ? "translate-x-4" : "translate-x-0.5"
-          }`}
-        />
-      </button>
-    </div>
-  );
-}
 
 export default ModelViewer;
