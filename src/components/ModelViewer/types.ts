@@ -29,12 +29,17 @@ export interface ModelViewerProps {
   autoplay?: boolean;
   autoRotate?: boolean;
   backgroundColor?: string;
+  transparentBackground?: boolean;
   ambientLightIntensity?: number;
   ambientLightColor?: string;
   directLightIntensity?: number;
   directLightColor?: string;
+  exposure?: number;
   enableZoom?: boolean;
   simpleMaterials?: boolean;
+  highlightColor?: string;
+  animationMode?: AnimationMode;
+  animationSpeed?: number;
   showControls?: boolean;
   devMode?: boolean;
   annotations?: MeshAnnotation[];

@@ -21,12 +21,17 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   autoplay = true,
   autoRotate = false,
   backgroundColor = "#191919",
+  transparentBackground = true,
   ambientLightIntensity = 0.5,
   ambientLightColor = "#FFFFFF",
   directLightIntensity = 1.5,
   directLightColor = "#FFFFFF",
-  enableZoom = true,
+  exposure = 1.0,
+  enableZoom = false,
   simpleMaterials = true,
+  highlightColor = "#ff0000",
+  animationMode = "ramp",
+  animationSpeed = 1.0,
   showControls = true,
   devMode = false,
   annotations = [],
@@ -85,24 +90,24 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [devDirectColor, setDevDirectColor] = useState(directLightColor);
   const [devAutoRotate, setDevAutoRotate] = useState(autoRotate);
   const [devEnableZoom, setDevEnableZoom] = useState(enableZoom);
-  const [devExposure, setDevExposure] = useState(1.0);
-  const [devHighlightColor, setDevHighlightColor] = useState("#ff0000");
-  const highlightColorRef = useRef("#ff0000");
+  const [devExposure, setDevExposure] = useState(exposure);
+  const [devHighlightColor, setDevHighlightColor] = useState(highlightColor);
+  const highlightColorRef = useRef(highlightColor);
   highlightColorRef.current = devHighlightColor;
-  const [devTransparentBg, setDevTransparentBg] = useState(true);
-  const [devSimpleMaterials, setDevSimpleMaterials] = useState(true);
+  const [devTransparentBg, setDevTransparentBg] = useState(transparentBackground);
+  const [devSimpleMaterials, setDevSimpleMaterials] = useState(simpleMaterials);
   const originalMaterials = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
   const [sceneGraph, setSceneGraph] = useState<string[]>([]);
 
   // Animation dev state
   const [devAnimPlaying, setDevAnimPlaying] = useState(autoplay);
-  const [devAnimMode, setDevAnimMode] = useState<AnimationMode>("ramp");
-  const [devAnimSpeed, setDevAnimSpeed] = useState(1.0);
-  const animModeRef = useRef<AnimationMode>("ramp");
+  const [devAnimMode, setDevAnimMode] = useState<AnimationMode>(animationMode);
+  const [devAnimSpeed, setDevAnimSpeed] = useState(animationSpeed);
+  const animModeRef = useRef<AnimationMode>(animationMode);
   animModeRef.current = devAnimMode;
   const devAnimPlayingRef = useRef(autoplay);
   devAnimPlayingRef.current = devAnimPlaying;
-  const devAnimSpeedRef = useRef(1.0);
+  const devAnimSpeedRef = useRef(animationSpeed);
   devAnimSpeedRef.current = devAnimSpeed;
   const animTimeAccum = useRef(0);
   const maxClipDurationRef = useRef(1);
@@ -112,7 +117,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   // ── Helper: apply or revert simple materials ──
   const applySimpleMaterials = useCallback((model: THREE.Group) => {
-    const shouldApply = devMode ? devSimpleMaterials : simpleMaterials;
+    const shouldApply = devSimpleMaterials;
 
     if (shouldApply) {
       // Build a map: meshName → color from annotations
@@ -209,7 +214,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       });
       originalMaterials.current.clear();
     }
-  }, [devMode, devSimpleMaterials, simpleMaterials]);
+  }, [devSimpleMaterials]);
 
   // ───────────────────────────────────────────────
   // Initialise Three.js scene & load model
@@ -220,7 +225,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
     // ── Scene ──
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(devMode ? devBgColor : backgroundColor);
+    scene.background = devTransparentBg ? null : new THREE.Color(devBgColor);
     sceneRef.current = scene;
 
     // ── Camera ──
@@ -239,7 +244,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = devMode ? devExposure : 1.0;
+    renderer.toneMappingExposure = devExposure;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
@@ -255,23 +260,17 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
     controls.screenSpacePanning = true;
-    controls.enableZoom = devMode ? devEnableZoom : enableZoom;
-    controls.autoRotate = devMode ? devAutoRotate : autoRotate;
+    controls.enableZoom = devEnableZoom;
+    controls.autoRotate = devAutoRotate;
     controls.autoRotateSpeed = 2.0;
     controlsRef.current = controls;
 
     // ── Lights ──
-    const ambient = new THREE.AmbientLight(
-      devMode ? devAmbientColor : ambientLightColor,
-      devMode ? devAmbientIntensity : ambientLightIntensity,
-    );
+    const ambient = new THREE.AmbientLight(devAmbientColor, devAmbientIntensity);
     scene.add(ambient);
     ambientRef.current = ambient;
 
-    const direct = new THREE.DirectionalLight(
-      devMode ? devDirectColor : directLightColor,
-      devMode ? devDirectIntensity : directLightIntensity,
-    );
+    const direct = new THREE.DirectionalLight(devDirectColor, devDirectIntensity);
     direct.position.set(0.5, 1, 0.866);
     camera.add(direct);
     directRef.current = direct;
@@ -349,8 +348,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           actionsRef.current = actions;
 
           if (autoplay) {
-            actions.forEach((a) => a.play());
-            setIsPlaying(true);
+            actions.forEach((a) => {
+              a.loop = THREE.LoopRepeat;
+              a.clampWhenFinished = false;
+              a.play();
+            });
             setDevAnimPlaying(true);
           }
         }
@@ -587,32 +589,29 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       const delta = clock.getDelta();
 
       if (mixerRef.current) {
-        const speed = devMode ? devAnimSpeedRef.current : 1;
-        if (devMode && !devAnimPlayingRef.current) {
-          // Dev mode: animation paused — don't update mixer
-        } else if (devMode && animModeRef.current !== "ramp") {
-          // Dev mode: custom animation mode
+        const speed = devAnimSpeedRef.current;
+        const mode = animModeRef.current;
+
+        if (mode !== "ramp" && devAnimPlayingRef.current) {
+          // Custom animation mode — manually control time
           animTimeAccum.current += delta * speed;
           const duration = maxClipDurationRef.current || 1;
           const t = animTimeAccum.current;
           let mappedTime: number;
 
-          switch (animModeRef.current) {
+          switch (mode) {
             case "boomerang": {
-              // Smooth ping-pong with eased turnarounds (smoothstep)
               const phase = (t % (duration * 2)) / duration;
               const linear = phase <= 1 ? phase : 2 - phase;
               mappedTime = (3 * linear * linear - 2 * linear * linear * linear) * duration;
               break;
             }
             case "sinus": {
-              // Sine wave oscillation — smooth ease at both extremes
               mappedTime =
                 ((Math.sin((t / duration) * Math.PI * 2 - Math.PI / 2) + 1) / 2) * duration;
               break;
             }
             case "triangle": {
-              // Triangle wave — linear back and forth
               const triPhase = (t % (duration * 2)) / duration;
               mappedTime = (triPhase <= 1 ? triPhase : 2 - triPhase) * duration;
               break;
@@ -623,7 +622,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
           mixerRef.current.setTime(mappedTime);
         } else {
-          // Normal forward playback (ramp or non-dev mode)
+          // Normal ramp playback — pausing is handled via action.paused
           mixerRef.current.update(delta * speed);
         }
       }
@@ -631,6 +630,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       controls.update();
       renderer.render(scene, camera);
     };
+    clock.start();
     animate();
 
     // ── Responsive resize ──
@@ -676,41 +676,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelUrl]);
 
-  // ── Reactive prop updates (non-dev mode) ──
+  // ── Reactive updates (dev state is always the source of truth) ──
 
   useEffect(() => {
-    if (devMode) return; // dev mode controls its own values
-    if (ambientRef.current) {
-      ambientRef.current.intensity = ambientLightIntensity;
-      ambientRef.current.color.set(ambientLightColor);
-    }
-    if (directRef.current) {
-      directRef.current.intensity = directLightIntensity;
-      directRef.current.color.set(directLightColor);
-    }
-  }, [devMode, ambientLightIntensity, ambientLightColor, directLightIntensity, directLightColor]);
-
-  useEffect(() => {
-    if (devMode) return;
-    if (sceneRef.current && sceneRef.current.background instanceof THREE.Color) {
-      sceneRef.current.background.set(backgroundColor);
-    }
-  }, [devMode, backgroundColor]);
-
-  useEffect(() => {
-    if (devMode) return;
-    if (controlsRef.current) controlsRef.current.autoRotate = autoRotate;
-  }, [devMode, autoRotate]);
-
-  useEffect(() => {
-    if (devMode) return;
-    if (controlsRef.current) controlsRef.current.enableZoom = enableZoom;
-  }, [devMode, enableZoom]);
-
-  // ── Dev mode reactive updates ──
-
-  useEffect(() => {
-    if (!devMode) return;
     if (ambientRef.current) {
       ambientRef.current.intensity = devAmbientIntensity;
       ambientRef.current.color.set(devAmbientColor);
@@ -719,32 +687,28 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       directRef.current.intensity = devDirectIntensity;
       directRef.current.color.set(devDirectColor);
     }
-  }, [devMode, devAmbientIntensity, devAmbientColor, devDirectIntensity, devDirectColor]);
+  }, [devAmbientIntensity, devAmbientColor, devDirectIntensity, devDirectColor]);
 
   useEffect(() => {
-    if (!devMode) return;
     if (!sceneRef.current) return;
     if (devTransparentBg) {
       sceneRef.current.background = null;
     } else {
       sceneRef.current.background = new THREE.Color(devBgColor);
     }
-  }, [devMode, devBgColor, devTransparentBg]);
+  }, [devBgColor, devTransparentBg]);
 
   useEffect(() => {
-    if (!devMode) return;
     if (controlsRef.current) controlsRef.current.autoRotate = devAutoRotate;
-  }, [devMode, devAutoRotate]);
+  }, [devAutoRotate]);
 
   useEffect(() => {
-    if (!devMode) return;
     if (controlsRef.current) controlsRef.current.enableZoom = devEnableZoom;
-  }, [devMode, devEnableZoom]);
+  }, [devEnableZoom]);
 
   useEffect(() => {
-    if (!devMode) return;
     if (rendererRef.current) rendererRef.current.toneMappingExposure = devExposure;
-  }, [devMode, devExposure]);
+  }, [devExposure]);
 
   // ── Reset animation time accumulator when mode changes ──
   useEffect(() => {

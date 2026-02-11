@@ -6,7 +6,7 @@ import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
 import dynamic from "next/dynamic";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
-import type { MeshAnnotation } from "../../components/ModelViewer";
+import type { MeshAnnotation, AnimationMode } from "../../components/ModelViewer";
 
 // Dynamic import with SSR disabled — Three.js requires the browser
 const ModelViewer = dynamic(() => import("../../components/ModelViewer"), {
@@ -50,16 +50,33 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
 
   // Read CMS fields with sensible fallbacks
   const primary = slice.primary as Record<string, unknown>;
-  // Prefer uploaded media file, fall back to text URL
   const modelFile = primary.model_file as { url?: string } | undefined;
-  const modelUrl = modelFile?.url || (primary.model_url as string) || "";
-  const autoplay = (primary.autoplay as boolean) ?? true;
-  const autoRotate = (primary.auto_rotate as boolean) ?? false;
-  const bgColor = (primary.background_color as string) || "#191919";
-  const enableZoom = (primary.enable_zoom as boolean) ?? true;
-  const showControls = (primary.show_controls as boolean) ?? true;
+  const modelUrl = modelFile?.url || "";
   const devModeEnabled = (primary.dev_mode as boolean) ?? false;
-  const simpleMaterialsEnabled = (primary.simple_materials as boolean) ?? false;
+
+  // Parse the settings JSON field (pasted from Dev Mode "Copy Settings as JSON")
+  let settings: Record<string, unknown> = {};
+  try {
+    const raw = (primary.settings_json as string) || "{}";
+    settings = JSON.parse(raw);
+  } catch {
+    // Invalid JSON — use defaults
+  }
+
+  const autoplay = (settings.autoplay as boolean) ?? true;
+  const autoRotate = (settings.autoRotate as boolean) ?? false;
+  const bgColor = (settings.backgroundColor as string) || "#191919";
+  const transparentBg = (settings.transparentBackground as boolean) ?? true;
+  const enableZoom = (settings.enableZoom as boolean) ?? false;
+  const simpleMaterialsEnabled = (settings.simpleMaterials as boolean) ?? true;
+  const ambientLightIntensity = (settings.ambientLightIntensity as number) ?? undefined;
+  const ambientLightColor = (settings.ambientLightColor as string) ?? undefined;
+  const directLightIntensity = (settings.directLightIntensity as number) ?? undefined;
+  const directLightColor = (settings.directLightColor as string) ?? undefined;
+  const exposureValue = (settings.exposure as number) ?? undefined;
+  const highlightColorValue = (settings.highlightColor as string) ?? undefined;
+  const animationModeValue = (settings.animationMode as AnimationMode) ?? undefined;
+  const animationSpeedValue = (settings.animationSpeed as number) ?? undefined;
 
   // Build annotation map from repeater items
   const items = (slice.items ?? []) as Array<Record<string, unknown>>;
@@ -89,10 +106,18 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
           autoplay={autoplay}
           autoRotate={autoRotate}
           backgroundColor={bgColor}
+          transparentBackground={transparentBg}
           enableZoom={enableZoom}
-          showControls={showControls}
           devMode={devModeEnabled}
           simpleMaterials={simpleMaterialsEnabled}
+          {...(ambientLightIntensity !== undefined && { ambientLightIntensity })}
+          {...(ambientLightColor !== undefined && { ambientLightColor })}
+          {...(directLightIntensity !== undefined && { directLightIntensity })}
+          {...(directLightColor !== undefined && { directLightColor })}
+          {...(exposureValue !== undefined && { exposure: exposureValue })}
+          {...(highlightColorValue !== undefined && { highlightColor: highlightColorValue })}
+          {...(animationModeValue !== undefined && { animationMode: animationModeValue })}
+          {...(animationSpeedValue !== undefined && { animationSpeed: animationSpeedValue })}
           annotations={annotations}
           className="rounded-2xl"
         />

@@ -21,62 +21,12 @@
             "default_value": true
           }
         },
-        "model_url": {
-          "type": "Text",
-          "config": {
-            "label": "Model URL (fallback)",
-            "placeholder": "Path to .glb or .gltf file, e.g. /models/molecule.glb"
-          }
-        },
         "model_file": {
           "type": "Link",
           "config": {
             "label": "3D Model File",
             "placeholder": "Upload a .glb or .gltf file",
             "select": "media"
-          }
-        },
-        "autoplay": {
-          "type": "Boolean",
-          "config": {
-            "label": "Autoplay Animation",
-            "placeholder_false": "false",
-            "placeholder_true": "true",
-            "default_value": true
-          }
-        },
-        "auto_rotate": {
-          "type": "Boolean",
-          "config": {
-            "label": "Auto Rotate",
-            "placeholder_false": "false",
-            "placeholder_true": "true",
-            "default_value": false
-          }
-        },
-        "background_color": {
-          "type": "Text",
-          "config": {
-            "label": "Background Color",
-            "placeholder": "#191919"
-          }
-        },
-        "enable_zoom": {
-          "type": "Boolean",
-          "config": {
-            "label": "Enable Scroll Zoom",
-            "placeholder_false": "false",
-            "placeholder_true": "true",
-            "default_value": true
-          }
-        },
-        "show_controls": {
-          "type": "Boolean",
-          "config": {
-            "label": "Show Controls",
-            "placeholder_false": "false",
-            "placeholder_true": "true",
-            "default_value": true
           }
         },
         "dev_mode": {
@@ -88,13 +38,11 @@
             "default_value": false
           }
         },
-        "simple_materials": {
-          "type": "Boolean",
+        "settings_json": {
+          "type": "Text",
           "config": {
-            "label": "Simple Materials (remove baked shadows)",
-            "placeholder_false": "false",
-            "placeholder_true": "true",
-            "default_value": false
+            "label": "Settings JSON (paste from Dev Mode)",
+            "placeholder": "{}"
           }
         }
       },

@@ -425,6 +425,8 @@ export function DevPanel({
               type="button"
               onClick={() => {
                 const settings = {
+                  autoplay: true,
+                  autoRotate: devAutoRotate,
                   transparentBackground: devTransparentBg,
                   backgroundColor: devBgColor,
                   ambientLightIntensity: devAmbientIntensity,
@@ -432,11 +434,12 @@ export function DevPanel({
                   directLightIntensity: devDirectIntensity,
                   directLightColor: devDirectColor,
                   exposure: devExposure,
-                  autoRotate: devAutoRotate,
                   enableZoom: devEnableZoom,
                   simpleMaterials: devSimpleMaterials,
                   highlightColor: devHighlightColor,
                   animationMode: devAnimMode,
+                  animationSpeed: devAnimSpeed,
+                  devMode: false,
                 };
                 copyToClipboard(JSON.stringify(settings, null, 2));
               }}
