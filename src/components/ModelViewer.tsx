@@ -1121,7 +1121,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             </div>
           )}
 
-          {/* Play / Pause auto-rotate button */}
+          {/* Auto-rotate toggle button */}
           <button
             type="button"
             onClick={() => {
@@ -1131,19 +1131,10 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               controls.autoRotate = next;
               setIsPlaying(next);
             }}
-            className="flex items-center justify-center w-10 h-10 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 rounded-full cursor-pointer border border-gray-200/50 transition-all shadow-lg"
-            aria-label={isPlaying ? "Pause rotation" : "Play rotation"}
+            className="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-4 py-2.5 rounded-full cursor-pointer border border-gray-200/50 transition-all shadow-lg"
+            aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
           >
-            {isPlaying ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7L8 5z" />
-              </svg>
-            )}
+            {isPlaying ? "Auto Rotate Off" : "Auto Rotate On"}
           </button>
         </div>
       )}
