@@ -115,6 +115,16 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
   }, [isMobile, getFrameUrl, getFrameUrlMobile, preloadCount]);
 
   useEffect(() => {
+    const url = isMobile ? getFrameUrlMobile(0) : getFrameUrl(0);
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = url;
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [isMobile, getFrameUrl, getFrameUrlMobile]);
+
+  useEffect(() => {
     if (!overlayFading || !preloadReady || !overlayRef.current) return;
     const el = overlayRef.current;
     gsap.to(el, {
@@ -179,7 +189,7 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
         style={{ height: sectionHeight }}
         {...sectionProps}
       >
-        <div className="sticky top-0 left-0 w-full h-screen">
+        <div className="sticky top-0 left-0 w-full h-screen bg-neutral-900">
           {children}
           {(!preloadReady || overlayFading) && (
             <div
