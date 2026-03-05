@@ -9,7 +9,21 @@ import {
   useMemo,
 } from "react";
 import { ScrollSequenceContext } from "./ScrollSequenceContext";
-import type { ScrollSequenceConfig } from "./types";
+import type { ScrollSequenceConfig, ScrollSequenceContextValue } from "./types";
+
+const MOBILE_BREAKPOINT = 768;
+
+function buildGetFrameUrl(
+  basePath: string,
+  totalFrames: number,
+  framePadding: number,
+  fileExtension: string
+): (index: number) => string {
+  return (index: number) => {
+    const i = Math.max(0, Math.min(Math.floor(index), totalFrames - 1));
+    return `${basePath}${String(i).padStart(framePadding, "0")}.${fileExtension}`;
+  };
+}
 
 export interface ScrollSequenceEngineProps {
   config: ScrollSequenceConfig;
@@ -17,15 +31,6 @@ export interface ScrollSequenceEngineProps {
   className?: string;
   /** Pass-through props for the outer section (e.g. data-slice-type). */
   sectionProps?: React.ComponentPropsWithoutRef<"section"> & Record<string, unknown>;
-}
-
-function buildGetFrameUrl(config: ScrollSequenceConfig): (index: number) => string {
-  const pad = config.framePadding ?? 5;
-  const ext = config.fileExtension ?? "webp";
-  return (index: number) => {
-    const i = Math.max(0, Math.min(Math.floor(index), config.totalFrames - 1));
-    return `${config.basePath}${String(i).padStart(pad, "0")}.${ext}`;
-  };
 }
 
 const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
@@ -37,11 +42,39 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
   const [frameIndex, setFrameIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  const pad = config.framePadding ?? 5;
+  const ext = config.fileExtension ?? "webp";
 
   const getFrameUrl = useMemo(
-    () => buildGetFrameUrl(config),
-    [config.basePath, config.totalFrames, config.framePadding, config.fileExtension]
+    () =>
+      buildGetFrameUrl(
+        config.basePath,
+        config.totalFrames,
+        pad,
+        ext
+      ),
+    [config.basePath, config.totalFrames, pad, ext]
   );
+
+  const getFrameUrlMobile = useMemo(
+    () =>
+      buildGetFrameUrl(
+        config.basePathMobile ?? config.basePath,
+        config.totalFrames,
+        pad,
+        ext
+      ),
+    [config.basePathMobile, config.basePath, config.totalFrames, pad, ext]
+  );
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -80,8 +113,10 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
       frameIndex,
       totalFrames: config.totalFrames,
       getFrameUrl,
+      getFrameUrlMobile,
+      isMobile,
     }),
-    [progress, frameIndex, config.totalFrames, getFrameUrl]
+    [progress, frameIndex, config.totalFrames, getFrameUrl, getFrameUrlMobile, isMobile]
   );
 
   const sectionHeight = `calc(100vh + ${(config.totalFrames - 1) * config.pixelsPerFrame}px)`;

@@ -5,6 +5,8 @@ export interface ScrollSequenceConfig {
   pixelsPerFrame: number;
   /** URL prefix including trailing separator (e.g. "/scrollytelling/v1/81010_Sanavia_Explainer_251124_"). */
   basePath: string;
+  /** Optional mobile image path (e.g. "/scrollytelling/v1-mobile/81010_Sanavia_Explainer_251124_"). Used when viewport is narrow. */
+  basePathMobile?: string;
   /** Zero-pad frame number to this many digits (default 5). */
   framePadding?: number;
   /** File extension (default "webp"). */
@@ -17,8 +19,12 @@ export interface ScrollSequenceContextValue {
   /** Current frame index 0 … totalFrames-1. */
   frameIndex: number;
   totalFrames: number;
-  /** Build frame URL for a given index. */
+  /** Build frame URL for a given index (desktop). */
   getFrameUrl: (index: number) => string;
+  /** Build frame URL for mobile, or same as getFrameUrl if no mobile path. */
+  getFrameUrlMobile: (index: number) => string;
+  /** True when viewport is considered mobile (narrow). */
+  isMobile: boolean;
 }
 
 import type { ReactNode } from "react";

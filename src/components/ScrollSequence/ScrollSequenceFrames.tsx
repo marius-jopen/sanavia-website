@@ -4,25 +4,28 @@ import { FC, useEffect } from "react";
 import { useScrollSequence } from "./ScrollSequenceContext";
 
 const ScrollSequenceFrames: FC = () => {
-  const { frameIndex, totalFrames, getFrameUrl } = useScrollSequence();
+  const { frameIndex, totalFrames, getFrameUrl, getFrameUrlMobile, isMobile } = useScrollSequence();
+  const getUrl = isMobile ? getFrameUrlMobile : getFrameUrl;
 
   useEffect(() => {
     [frameIndex - 1, frameIndex, frameIndex + 1].forEach((i) => {
       if (i < 0 || i >= totalFrames) return;
       const img = new Image();
-      img.src = getFrameUrl(i);
+      img.src = getUrl(i);
     });
-  }, [frameIndex, totalFrames, getFrameUrl]);
+  }, [frameIndex, totalFrames, getUrl]);
 
   return (
-    <img
-      key={frameIndex}
-      src={getFrameUrl(frameIndex)}
-      alt=""
-      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-      draggable={false}
-      fetchPriority="high"
-    />
+    <div className="absolute inset-0 flex items-center justify-center">
+      <img
+        key={`${frameIndex}-${isMobile ? "m" : "d"}`}
+        src={getUrl(frameIndex)}
+        alt=""
+        className="w-full h-full object-cover object-center pointer-events-none"
+        draggable={false}
+        fetchPriority="high"
+      />
+    </div>
   );
 };
 
