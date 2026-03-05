@@ -24,6 +24,7 @@ const CONFIG: ScrollSequenceConfig = {
   totalFrames: 975,
   pixelsPerFrame: 16,
   /** Use every Nth frame. 1 = all frames; 4 = every 4th (less data, still looks good). */
+  /** ANIMATION IS 24fps */
   frameStep: 4,
 };
 
