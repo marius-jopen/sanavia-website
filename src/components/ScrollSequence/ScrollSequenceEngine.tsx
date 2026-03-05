@@ -19,11 +19,18 @@ function buildGetFrameUrl(
   basePath: string,
   totalFrames: number,
   framePadding: number,
-  fileExtension: string
-): (index: number) => string {
-  return (index: number) => {
-    const i = Math.max(0, Math.min(Math.floor(index), totalFrames - 1));
-    return `${basePath}${String(i).padStart(framePadding, "0")}.${fileExtension}`;
+  fileExtension: string,
+  frameStep: number
+): (frameIndex: number) => string {
+  return (frameIndex: number) => {
+    const imageIndex =
+      frameStep <= 1
+        ? Math.max(0, Math.min(Math.floor(frameIndex), totalFrames - 1))
+        : Math.min(
+            Math.floor(frameIndex / frameStep) * frameStep,
+            totalFrames - 1
+          );
+    return `${basePath}${String(imageIndex).padStart(framePadding, "0")}.${fileExtension}`;
   };
 }
 
@@ -54,27 +61,45 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
 
   const pad = config.framePadding ?? 5;
   const ext = config.fileExtension ?? "webp";
+  const frameStep = Math.max(1, config.frameStep ?? 1);
+
+  const fullBasePath = useMemo(() => {
+    const base = config.basePath.startsWith("/") ? config.basePath : `/${config.basePath}`;
+    return config.cdnBaseUrl
+      ? `${config.cdnBaseUrl.replace(/\/$/, "")}${base}`
+      : config.basePath;
+  }, [config.cdnBaseUrl, config.basePath]);
+
+  const fullBasePathMobile = useMemo(() => {
+    const path = config.basePathMobile ?? config.basePath;
+    const base = path.startsWith("/") ? path : `/${path}`;
+    return config.cdnBaseUrl
+      ? `${config.cdnBaseUrl.replace(/\/$/, "")}${base}`
+      : path;
+  }, [config.cdnBaseUrl, config.basePathMobile, config.basePath]);
 
   const getFrameUrl = useMemo(
     () =>
       buildGetFrameUrl(
-        config.basePath,
+        fullBasePath,
         config.totalFrames,
         pad,
-        ext
+        ext,
+        frameStep
       ),
-    [config.basePath, config.totalFrames, pad, ext]
+    [fullBasePath, config.totalFrames, pad, ext, frameStep]
   );
 
   const getFrameUrlMobile = useMemo(
     () =>
       buildGetFrameUrl(
-        config.basePathMobile ?? config.basePath,
+        fullBasePathMobile,
         config.totalFrames,
         pad,
-        ext
+        ext,
+        frameStep
       ),
-    [config.basePathMobile, config.basePath, config.totalFrames, pad, ext]
+    [fullBasePathMobile, config.totalFrames, pad, ext, frameStep]
   );
 
   useEffect(() => {

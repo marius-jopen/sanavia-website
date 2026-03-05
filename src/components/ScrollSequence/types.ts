@@ -7,12 +7,16 @@ export interface ScrollSequenceConfig {
   basePath: string;
   /** Optional mobile image path (e.g. "/scrollytelling/v1-mobile/81010_Sanavia_Explainer_251124_"). Used when viewport is narrow. */
   basePathMobile?: string;
+  /** Optional CDN base URL (e.g. "https://sanavia.b-cdn.net"). When set, prepended to basePath and basePathMobile. */
+  cdnBaseUrl?: string;
   /** Zero-pad frame number to this many digits (default 5). */
   framePadding?: number;
   /** File extension (default "webp"). */
   fileExtension?: string;
   /** Number of frames to preload before allowing scroll (default 200). */
   preloadCount?: number;
+  /** Use every Nth frame only (1 = all, 2 = every 2nd, halves data). */
+  frameStep?: number;
 }
 
 export interface ScrollSequenceContextValue {
