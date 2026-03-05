@@ -18,13 +18,14 @@ const ScrollSequenceFrames: FC = () => {
 
   const getUrl = mounted && isMobile ? getFrameUrlMobile : getFrameUrl;
 
+  const PRELOAD_RADIUS = 10;
   useEffect(() => {
     if (!mounted) return;
-    [frameIndex - 1, frameIndex, frameIndex + 1].forEach((i) => {
-      if (i < 0 || i >= totalFrames) return;
+    for (let i = frameIndex - PRELOAD_RADIUS; i <= frameIndex + PRELOAD_RADIUS; i++) {
+      if (i < 0 || i >= totalFrames) continue;
       const img = new Image();
       img.src = getUrl(i);
-    });
+    }
   }, [mounted, frameIndex, totalFrames, getUrl]);
 
   useEffect(() => {
@@ -64,6 +65,7 @@ const ScrollSequenceFrames: FC = () => {
         alt=""
         className={IMG_CLASS}
         draggable={false}
+        decoding="async"
         fetchPriority="high"
         style={{
           position: "absolute",
@@ -76,6 +78,7 @@ const ScrollSequenceFrames: FC = () => {
         alt=""
         className={IMG_CLASS}
         draggable={false}
+        decoding="async"
         style={{
           position: "absolute",
           inset: 0,

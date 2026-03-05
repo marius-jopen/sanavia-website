@@ -164,6 +164,9 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
     const section = sectionRef.current;
     if (!section) return;
 
+    let rafId = 0;
+    let lastFrameIndex = -1;
+
     const update = () => {
       const rect = section.getBoundingClientRect();
       const scrollHeight = section.scrollHeight;
@@ -173,6 +176,7 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
       if (scrollable <= 0) {
         setProgress(0);
         setFrameIndex(0);
+        lastFrameIndex = 0;
         return;
       }
 
@@ -180,15 +184,30 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
       const p = Math.max(0, Math.min(1, scrollTop / scrollable));
       const newIndex = Math.floor(p * (config.totalFrames - 1));
       setProgress(p);
-      setFrameIndex(preloadReadyRef.current ? newIndex : 0);
+
+      if (preloadReadyRef.current && newIndex !== lastFrameIndex) {
+        lastFrameIndex = newIndex;
+        setFrameIndex(newIndex);
+      } else if (!preloadReadyRef.current) {
+        setFrameIndex(0);
+      }
+    };
+
+    const onScrollOrResize = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        update();
+      });
     };
 
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
     return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
     };
   }, [config.totalFrames]);
 

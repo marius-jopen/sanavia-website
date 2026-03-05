@@ -16,12 +16,15 @@ type SectionProps = ComponentPropsWithoutRef<"section"> & Record<string, unknown
 const CONFIG: ScrollSequenceConfig = {
   basePath: "/scrollytelling/v1/81010_Sanavia_Explainer_251124_",
   basePathMobile: "/scrollytelling/v1-mobile/81010_Sanavia_Explainer_251124_",
-  /** Bunny CDN: Pull Zone hostname; images are served from here when set. */
-  cdnBaseUrl: "https://sanavia.b-cdn.net",
+  /** Bunny CDN only in production (locally: same-origin = no latency). */
+  cdnBaseUrl:
+    typeof process !== "undefined" && process.env.NODE_ENV === "production"
+      ? "https://sanavia.b-cdn.net"
+      : undefined,
   totalFrames: 975,
   pixelsPerFrame: 16,
-  /** 2 = every 2nd frame (~half the images/data). */
-  frameStep: 2,
+  /** 1 = all frames (smooth). 2 = every 2nd frame (less data, can feel choppy). */
+  frameStep: 1,
 };
 
 const EXAMPLE_STEPS: Array<{ start: number; end: number; title: string; text: string }> = [
