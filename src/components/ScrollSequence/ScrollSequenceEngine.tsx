@@ -49,6 +49,8 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
   const [overlayFading, setOverlayFading] = useState(false);
   const preloadRunRef = useRef(0);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const preloadReadyRef = useRef(false);
+  preloadReadyRef.current = preloadReady;
 
   const pad = config.framePadding ?? 5;
   const ext = config.fileExtension ?? "webp";
@@ -82,8 +84,11 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  const isProduction =
+    typeof process !== "undefined" && process.env.NODE_ENV === "production";
   const preloadCount = Math.min(
-    config.preloadCount ?? DEFAULT_PRELOAD_COUNT,
+    config.preloadCount ??
+      (isProduction ? config.totalFrames : DEFAULT_PRELOAD_COUNT),
     config.totalFrames
   );
 
@@ -138,8 +143,9 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
 
       const scrollTop = -rect.top;
       const p = Math.max(0, Math.min(1, scrollTop / scrollable));
+      const newIndex = Math.floor(p * (config.totalFrames - 1));
       setProgress(p);
-      setFrameIndex(Math.floor(p * (config.totalFrames - 1)));
+      setFrameIndex(preloadReadyRef.current ? newIndex : 0);
     };
 
     update();
@@ -163,9 +169,7 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
     [progress, frameIndex, config.totalFrames, getFrameUrl, getFrameUrlMobile, isMobile]
   );
 
-  const sectionHeight = preloadReady
-    ? `calc(100vh + ${(config.totalFrames - 1) * config.pixelsPerFrame}px)`
-    : "100vh";
+  const sectionHeight = `calc(100vh + ${(config.totalFrames - 1) * config.pixelsPerFrame}px)`;
 
   return (
     <ScrollSequenceContext.Provider value={contextValue}>
