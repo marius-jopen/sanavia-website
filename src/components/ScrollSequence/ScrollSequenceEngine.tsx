@@ -8,10 +8,12 @@ import {
   useState,
   useMemo,
 } from "react";
+import { gsap } from "gsap";
 import { ScrollSequenceContext } from "./ScrollSequenceContext";
 import type { ScrollSequenceConfig, ScrollSequenceContextValue } from "./types";
 
 const MOBILE_BREAKPOINT = 768;
+const DEFAULT_PRELOAD_COUNT = 200;
 
 function buildGetFrameUrl(
   basePath: string,
@@ -43,6 +45,10 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
   const [progress, setProgress] = useState(0);
   const [frameIndex, setFrameIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [preloadReady, setPreloadReady] = useState(false);
+  const [overlayFading, setOverlayFading] = useState(false);
+  const preloadRunRef = useRef(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const pad = config.framePadding ?? 5;
   const ext = config.fileExtension ?? "webp";
@@ -75,6 +81,44 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  const preloadCount = Math.min(
+    config.preloadCount ?? DEFAULT_PRELOAD_COUNT,
+    config.totalFrames
+  );
+
+  useEffect(() => {
+    setPreloadReady(false);
+    const run = ++preloadRunRef.current;
+    const getUrl = isMobile ? getFrameUrlMobile : getFrameUrl;
+    let settled = 0;
+
+    const onSettled = () => {
+      settled++;
+      if (settled >= preloadCount && run === preloadRunRef.current) {
+        setPreloadReady(true);
+        setOverlayFading(true);
+      }
+    };
+
+    for (let i = 0; i < preloadCount; i++) {
+      const img = new Image();
+      img.onload = onSettled;
+      img.onerror = onSettled;
+      img.src = getUrl(i);
+    }
+  }, [isMobile, getFrameUrl, getFrameUrlMobile, preloadCount]);
+
+  useEffect(() => {
+    if (!overlayFading || !preloadReady || !overlayRef.current) return;
+    const el = overlayRef.current;
+    gsap.to(el, {
+      opacity: 0,
+      duration: 0.6,
+      ease: "power2.out",
+      onComplete: () => setOverlayFading(false),
+    });
+  }, [overlayFading, preloadReady]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -119,7 +163,9 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
     [progress, frameIndex, config.totalFrames, getFrameUrl, getFrameUrlMobile, isMobile]
   );
 
-  const sectionHeight = `calc(100vh + ${(config.totalFrames - 1) * config.pixelsPerFrame}px)`;
+  const sectionHeight = preloadReady
+    ? `calc(100vh + ${(config.totalFrames - 1) * config.pixelsPerFrame}px)`
+    : "100vh";
 
   return (
     <ScrollSequenceContext.Provider value={contextValue}>
@@ -129,7 +175,24 @@ const ScrollSequenceEngine: FC<ScrollSequenceEngineProps> = ({
         style={{ height: sectionHeight }}
         {...sectionProps}
       >
-        <div className="sticky top-0 left-0 w-full h-screen">{children}</div>
+        <div className="sticky top-0 left-0 w-full h-screen">
+          {children}
+          {(!preloadReady || overlayFading) && (
+            <div
+              ref={overlayRef}
+              className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 backdrop-blur-xl"
+              style={overlayFading ? { pointerEvents: "none" } : undefined}
+              aria-hidden="true"
+            >
+              <div
+                className="h-10 w-10 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                role="img"
+                aria-label="Loading"
+              />
+              <span className="text-sm text-white">Loading…</span>
+            </div>
+          )}
+        </div>
       </section>
     </ScrollSequenceContext.Provider>
   );

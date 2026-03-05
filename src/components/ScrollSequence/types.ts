@@ -11,6 +11,8 @@ export interface ScrollSequenceConfig {
   framePadding?: number;
   /** File extension (default "webp"). */
   fileExtension?: string;
+  /** Number of frames to preload before allowing scroll (default 200). */
+  preloadCount?: number;
 }
 
 export interface ScrollSequenceContextValue {
