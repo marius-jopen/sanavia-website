@@ -1,89 +1,125 @@
 "use client";
 
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useScrollSequence } from "./ScrollSequenceContext";
 
-const IMG_CLASS = "w-full h-full object-cover object-center pointer-events-none";
+const PRELOAD_COUNT = 200;
+
+/** Draw image to canvas preserving aspect ratio (cover: fill canvas, no stretch). */
+function drawImageCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  canvasWidth: number,
+  canvasHeight: number
+) {
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (iw <= 0 || ih <= 0) return;
+  const scale = Math.max(canvasWidth / iw, canvasHeight / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  const dx = (canvasWidth - dw) / 2;
+  const dy = (canvasHeight - dh) / 2;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  ctx.drawImage(img, 0, 0, iw, ih, dx, dy, dw, dh);
+}
 
 const ScrollSequenceFrames: FC = () => {
-  const { frameIndex, totalFrames, getFrameUrl, getFrameUrlMobile, isMobile } = useScrollSequence();
-  const [mounted, setMounted] = useState(false);
-  const [visibleWhich, setVisibleWhich] = useState(0);
-  const displayedFrameRef = useRef<number>(-1);
-  const img0Ref = useRef<HTMLImageElement>(null);
-  const img1Ref = useRef<HTMLImageElement>(null);
-  const loadingFrameRef = useRef<number | null>(null);
+  const {
+    frameIndex,
+    totalFrames,
+    getFrameUrl,
+    getFrameUrlMobile,
+    isMobile,
+  } = useScrollSequence();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 1, height: 1 });
+  const imagesRef = useRef<Map<number, HTMLImageElement>>(new Map());
+  const lastDrawnRef = useRef<number>(-1);
+  const currentFrameRef = useRef<number>(frameIndex);
+  currentFrameRef.current = frameIndex;
 
-  useEffect(() => setMounted(true), []);
+  const getUrl = isMobile ? getFrameUrlMobile : getFrameUrl;
 
-  const getUrl = mounted && isMobile ? getFrameUrlMobile : getFrameUrl;
-
-  const PRELOAD_RADIUS = 10;
-  useEffect(() => {
-    if (!mounted) return;
-    for (let i = frameIndex - PRELOAD_RADIUS; i <= frameIndex + PRELOAD_RADIUS; i++) {
-      if (i < 0 || i >= totalFrames) continue;
-      const img = new Image();
-      img.src = getUrl(i);
-    }
-  }, [mounted, frameIndex, totalFrames, getUrl]);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    const alreadyShowing = displayedFrameRef.current === frameIndex;
-    if (alreadyShowing) return;
-
-    const hidden = 1 - visibleWhich;
-    const hiddenImg = hidden === 0 ? img0Ref.current : img1Ref.current;
-    if (!hiddenImg) return;
-
-    const url = getUrl(frameIndex);
-    const targetFrame = frameIndex;
-
-    const onLoad = () => {
-      if (loadingFrameRef.current !== targetFrame) return;
-      displayedFrameRef.current = targetFrame;
-      setVisibleWhich(hidden);
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const updateSize = () => {
+      if (el) {
+        const w = el.clientWidth || 1;
+        const h = el.clientHeight || 1;
+        setCanvasSize({ width: w, height: h });
+      }
     };
+    const ro = new ResizeObserver(updateSize);
+    ro.observe(el);
+    updateSize();
+    return () => ro.disconnect();
+  }, []);
 
-    if (hiddenImg.complete && hiddenImg.src === url) {
-      onLoad();
+  useEffect(() => {
+    const end = Math.min(PRELOAD_COUNT, totalFrames);
+    for (let i = 0; i < end; i++) {
+      if (imagesRef.current.has(i)) continue;
+      const src = getUrl(i);
+      const img = new Image();
+      img.src = src;
+      imagesRef.current.set(i, img);
+    }
+  }, [totalFrames, getUrl]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx || canvas.width !== canvasSize.width || canvas.height !== canvasSize.height) return;
+
+    const w = canvasSize.width;
+    const h = canvasSize.height;
+
+    let img = imagesRef.current.get(frameIndex);
+    if (img?.complete && img.naturalWidth > 0) {
+      lastDrawnRef.current = frameIndex;
+      drawImageCover(ctx, img, w, h);
       return;
     }
 
-    loadingFrameRef.current = targetFrame;
-    hiddenImg.onload = onLoad;
-    hiddenImg.onerror = onLoad;
-    hiddenImg.src = url;
-  }, [mounted, frameIndex, getUrl, visibleWhich]);
+    if (!img) {
+      img = new Image();
+      imagesRef.current.set(frameIndex, img);
+    }
+
+    const targetFrame = frameIndex;
+    const onLoad = () => {
+      if (currentFrameRef.current !== targetFrame) return;
+      const canvas2 = canvasRef.current;
+      const ctx2 = canvas2?.getContext("2d");
+      if (!canvas2 || !ctx2) return;
+      lastDrawnRef.current = targetFrame;
+      drawImageCover(ctx2, img!, canvas2.width, canvas2.height);
+    };
+
+    if (img.src !== getUrl(targetFrame)) {
+      img.onload = onLoad;
+      img.onerror = onLoad;
+      img.src = getUrl(targetFrame);
+    }
+  }, [frameIndex, canvasSize, getUrl]);
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-neutral-900">
-      <img
-        ref={img0Ref}
-        alt=""
-        className={IMG_CLASS}
-        draggable={false}
-        decoding="async"
-        fetchPriority="high"
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: visibleWhich === 0 ? 1 : 0,
-        }}
-      />
-      <img
-        ref={img1Ref}
-        alt=""
-        className={IMG_CLASS}
-        draggable={false}
-        decoding="async"
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: visibleWhich === 1 ? 1 : 0,
-        }}
+    <div
+      ref={containerRef}
+      className="absolute inset-0 flex items-center justify-center bg-neutral-900"
+    >
+      <canvas
+        ref={canvasRef}
+        width={canvasSize.width}
+        height={canvasSize.height}
+        className="w-full h-full object-cover object-center pointer-events-none block"
+        style={{ display: "block" }}
+        aria-hidden
       />
     </div>
   );

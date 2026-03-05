@@ -24,7 +24,7 @@ const CONFIG: ScrollSequenceConfig = {
   totalFrames: 975,
   pixelsPerFrame: 16,
   /** 1 = all frames (smooth). 2 = every 2nd frame (less data, can feel choppy). */
-  frameStep: 1,
+  frameStep: 2,
 };
 
 const EXAMPLE_STEPS: Array<{ start: number; end: number; title: string; text: string }> = [
