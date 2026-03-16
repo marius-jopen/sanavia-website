@@ -6,6 +6,7 @@ export interface AnnotationPopupProps {
   activeAnnotation: MeshAnnotation | null;
   annotationRef: React.RefObject<HTMLDivElement | null>;
   closeAnnotation: () => void;
+  className?: string;
 }
 
 export function AnnotationPopup({
@@ -13,13 +14,14 @@ export function AnnotationPopup({
   activeAnnotation,
   annotationRef,
   closeAnnotation,
+  className = "absolute top-4 left-4 z-30 max-w-sm",
 }: AnnotationPopupProps) {
   if (!showAnnotation && !activeAnnotation) return null;
 
   return (
     <div
       ref={annotationRef}
-      className="absolute top-4 left-4 z-30 max-w-sm"
+      className={className}
       style={{ opacity: 0 }}
     >
       <div className="bg-white rounded-2xl  overflow-hidden">

@@ -52,6 +52,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   const primary = slice.primary as Record<string, unknown>;
   const modelFile = primary.model_file as { url?: string } | undefined;
   const modelUrl = modelFile?.url || "";
+  const moleculeTitle = (primary.title as string) || "";
   const devModeEnabled = (primary.dev_mode as boolean) ?? false;
 
   // Parse the settings JSON field (pasted from Dev Mode "Copy Settings as JSON")
@@ -108,6 +109,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
       <div className="relative mx-auto md:w-full rounded-2xl overflow-hidden">
         <ModelViewer
           modelUrl={modelUrl}
+          title={moleculeTitle}
           autoplay={autoplay}
           autoRotate={autoRotate}
           backgroundColor={bgColor}

@@ -14,10 +14,12 @@ import { getDepth } from "./utils";
 import { DevPanel } from "./DevPanel";
 import { AnnotationPopup } from "./AnnotationPopup";
 import { BottomControls } from "./BottomControls";
+import { TopLeftElements } from "./TopLeftElements";
 import { LoadingOverlay, ErrorOverlay } from "./Overlays";
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
   modelUrl,
+  title,
   autoplay = true,
   autoRotate = false,
   backgroundColor = "#191919",
@@ -1028,22 +1030,31 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         />
       )}
 
-      {/* ─── ANNOTATION POPUP ─── */}
-      <AnnotationPopup
-        showAnnotation={showAnnotation}
-        activeAnnotation={activeAnnotation}
-        annotationRef={annotationRef}
-        closeAnnotation={closeAnnotation}
-      />
+      {/* ─── TOP-LEFT: ELEMENTS (EPITOPES) + ANNOTATION POPUP ─── */}
+      <div className="absolute top-4 left-4 z-30 flex flex-col gap-3">
+        {!isLoading && !error && (
+          <TopLeftElements
+            title={title}
+            annotations={annotations}
+            activeAnnotation={activeAnnotation}
+            open={elementsOpen}
+            setOpen={setElementsOpen}
+            onSelect={handleElementSelect}
+            onCloseAnnotation={closeAnnotation}
+          />
+        )}
+        <AnnotationPopup
+          showAnnotation={showAnnotation}
+          activeAnnotation={activeAnnotation}
+          annotationRef={annotationRef}
+          closeAnnotation={closeAnnotation}
+          className="relative max-w-sm"
+        />
+      </div>
 
       {/* ─── BOTTOM-LEFT CONTROLS ─── */}
       {!isLoading && !error && (
         <BottomControls
-          annotations={annotations}
-          elementsOpen={elementsOpen}
-          setElementsOpen={setElementsOpen}
-          handleElementSelect={handleElementSelect}
-          activeAnnotation={activeAnnotation}
           controlsRef={controlsRef}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}

@@ -12,6 +12,13 @@
       "description": "Default",
       "imageUrl": "",
       "primary": {
+        "title": {
+          "type": "Text",
+          "config": {
+            "label": "Title",
+            "placeholder": "Title of the molecule (shown top-left)"
+          }
+        },
         "visible": {
           "type": "Boolean",
           "config": {
