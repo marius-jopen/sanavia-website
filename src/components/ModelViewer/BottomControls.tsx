@@ -5,12 +5,16 @@ export interface BottomControlsProps {
   controlsRef: React.RefObject<OrbitControls | null>;
   isPlaying: boolean;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  onShake: () => void;
+  isShaken: boolean;
 }
 
 export function BottomControls({
   controlsRef,
   isPlaying,
   setIsPlaying,
+  onShake,
+  isShaken,
 }: BottomControlsProps) {
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -34,6 +38,14 @@ export function BottomControls({
                 aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
               >
                 {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
+              </button>
+              <button
+                type="button"
+                onClick={onShake}
+                className="rounded-xl border border-gray-200/80 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-800 shadow-sm transition-colors hover:bg-gray-50"
+                aria-label={isShaken ? "Reassemble molecule" : "Shake molecule apart"}
+              >
+                {isShaken ? "Reassemble" : "Shake"}
               </button>
             </div>
             <button
