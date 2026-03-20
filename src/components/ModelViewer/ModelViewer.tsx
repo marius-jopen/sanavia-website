@@ -290,8 +290,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           const std = mat as THREE.MeshStandardMaterial;
           const simple = new THREE.MeshStandardMaterial({
             color: new THREE.Color(assignedColor),
-            roughness: std.roughness ?? 0.6,
-            metalness: 0.0,
+            roughness: 0.35,
+            metalness: 0.15,
+            envMapIntensity: 1.2,
             transparent: std.transparent,
             opacity: std.opacity,
             side: std.side,
