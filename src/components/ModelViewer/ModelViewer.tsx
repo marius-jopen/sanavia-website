@@ -129,6 +129,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   // Elements dropdown state
   const [elementsOpen, setElementsOpen] = useState(false);
 
+  // Shake / explode state
+  const [isShaken, setIsShaken] = useState(false);
+  const shakeAnimatingRef = useRef(false);
+  const originalTransforms = useRef<Map<string, { position: THREE.Vector3; rotation: THREE.Euler }>>(new Map());
+
   // ── Highlight helpers — apply/restore based on blend mode ──
 
   const applyHighlight = useCallback(
@@ -889,6 +894,237 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     setDevAnimPlaying(false);
   }, []);
 
+  // ── Shake / Explode handler ──
+  const handleShake = useCallback(() => {
+    const model = modelGroupRef.current;
+    if (!model || shakeAnimatingRef.current) return;
+    shakeAnimatingRef.current = true;
+
+    // Find the actual sub-objects to explode. The GLB hierarchy is typically:
+    // Scene → GroupNode → [Atoms_Epitope, bonds, mtl, ...]
+    // We need the deepest group's children that have meshes, not the top-level single group.
+    // GLTFLoader creates Object3D (not Group), so we check for non-mesh nodes with children.
+    let target: THREE.Object3D = model;
+    while (
+      target.children.length === 1 &&
+      !(target.children[0] as THREE.Mesh).isMesh
+    ) {
+      target = target.children[0];
+    }
+
+    // Only pick children that actually contain geometry (skip empty nodes like "mtl")
+    const children = target.children.filter((c) => {
+      if (!c.visible) return false;
+      let hasMesh = false;
+      c.traverse((node) => {
+        if ((node as THREE.Mesh).isMesh) hasMesh = true;
+      });
+      return hasMesh;
+    });
+
+    if (children.length === 0) {
+      shakeAnimatingRef.current = false;
+      return;
+    }
+
+    if (!isShaken) {
+      // Save original transforms and explode
+      originalTransforms.current.clear();
+
+      children.forEach((child) => {
+        originalTransforms.current.set(child.uuid, {
+          position: child.position.clone(),
+          rotation: child.rotation.clone(),
+        });
+      });
+
+      // Compute bounding box in LOCAL space of the target parent
+      // (children positions are in this local space, which may be scaled)
+      const localBox = new THREE.Box3();
+      children.forEach((child) => {
+        const cBox = new THREE.Box3().setFromObject(child);
+        // Convert world-space box corners into target's local space
+        const min = target.worldToLocal(cBox.min.clone());
+        const max = target.worldToLocal(cBox.max.clone());
+        localBox.expandByPoint(min);
+        localBox.expandByPoint(max);
+      });
+      const localCenter = localBox.getCenter(new THREE.Vector3());
+      const localSize = localBox.getSize(new THREE.Vector3());
+      const localMaxDim = Math.max(localSize.x, localSize.y, localSize.z);
+
+      // Calculate outward directions from center for each child
+      children.forEach((child, i) => {
+        // Direction from local center to child's local position
+        const dir = child.position.clone().sub(localCenter);
+
+        // If the child overlaps the center, spread evenly
+        if (dir.length() < 0.001) {
+          dir.set(
+            Math.cos((i * Math.PI * 2) / children.length),
+            Math.random() * 0.5 - 0.25,
+            Math.sin((i * Math.PI * 2) / children.length),
+          );
+        }
+        dir.normalize();
+
+        // Add chaotic randomness so they don't fly in perfectly symmetric directions
+        dir.x += (Math.random() - 0.5) * 0.5;
+        dir.y += (Math.random() - 0.5) * 0.5;
+        dir.z += (Math.random() - 0.5) * 0.5;
+        dir.normalize();
+
+        // Half the previous distance
+        const distance = localMaxDim * (1.5 + Math.random() * 1.0);
+
+        const targetPos = child.position
+          .clone()
+          .add(dir.multiplyScalar(distance));
+
+        // Heavy chaotic spin — multiple full rotations
+        const targetRot = {
+          x: child.rotation.x + (Math.random() - 0.5) * Math.PI * 6,
+          y: child.rotation.y + (Math.random() - 0.5) * Math.PI * 6,
+          z: child.rotation.z + (Math.random() - 0.5) * Math.PI * 6,
+        };
+
+        const duration = 3.0 + Math.random() * 1.0;
+
+        gsap.to(child.position, {
+          x: targetPos.x,
+          y: targetPos.y,
+          z: targetPos.z,
+          duration,
+          ease: "power1.out",
+        });
+
+        gsap.to(child.rotation, {
+          x: targetRot.x,
+          y: targetRot.y,
+          z: targetRot.z,
+          duration,
+          ease: "none",
+          onComplete:
+            i === 0
+              ? () => {
+                  shakeAnimatingRef.current = false;
+                }
+              : undefined,
+        });
+
+        // Fade out opacity as pieces fly away
+        child.traverse((node) => {
+          if ((node as THREE.Mesh).isMesh) {
+            const mesh = node as THREE.Mesh;
+            const materials = Array.isArray(mesh.material)
+              ? mesh.material
+              : [mesh.material];
+            materials.forEach((mat) => {
+              mat.transparent = true;
+              mat.needsUpdate = true;
+              gsap.to(mat, {
+                opacity: 0,
+                duration,
+                ease: "power1.in",
+                onUpdate: () => {
+                  mat.needsUpdate = true;
+                },
+              });
+            });
+          }
+        });
+      });
+
+      setIsShaken(true);
+    } else {
+      // Reassemble — animate back to original positions
+      children.forEach((child, i) => {
+        const orig = originalTransforms.current.get(child.uuid);
+        if (!orig) return;
+
+        const duration = 1.2 + Math.random() * 0.3;
+
+        gsap.to(child.position, {
+          x: orig.position.x,
+          y: orig.position.y,
+          z: orig.position.z,
+          duration,
+          ease: "power2.inOut",
+        });
+
+        gsap.to(child.rotation, {
+          x: orig.rotation.x,
+          y: orig.rotation.y,
+          z: orig.rotation.z,
+          duration,
+          ease: "power2.inOut",
+          onComplete:
+            i === 0
+              ? () => {
+                  shakeAnimatingRef.current = false;
+                }
+              : undefined,
+        });
+
+        // Fade back in
+        child.traverse((node) => {
+          if ((node as THREE.Mesh).isMesh) {
+            const mesh = node as THREE.Mesh;
+            const materials = Array.isArray(mesh.material)
+              ? mesh.material
+              : [mesh.material];
+            materials.forEach((mat) => {
+              mat.transparent = true;
+              mat.needsUpdate = true;
+              gsap.to(mat, {
+                opacity: 1,
+                duration,
+                ease: "power2.inOut",
+                onUpdate: () => {
+                  mat.needsUpdate = true;
+                },
+              });
+            });
+          }
+        });
+      });
+
+      setIsShaken(false);
+    }
+  }, [isShaken]);
+
+  // ── Device shake detection (mobile) ──
+  useEffect(() => {
+    let lastShakeTime = 0;
+    let lastX = 0, lastY = 0, lastZ = 0;
+    const SHAKE_THRESHOLD = 25;
+    const SHAKE_COOLDOWN = 2000;
+
+    const onDeviceMotion = (e: DeviceMotionEvent) => {
+      const acc = e.accelerationIncludingGravity;
+      if (!acc || acc.x == null || acc.y == null || acc.z == null) return;
+
+      const deltaX = Math.abs(acc.x - lastX);
+      const deltaY = Math.abs(acc.y - lastY);
+      const deltaZ = Math.abs(acc.z - lastZ);
+
+      if (deltaX + deltaY + deltaZ > SHAKE_THRESHOLD) {
+        const now = Date.now();
+        if (now - lastShakeTime > SHAKE_COOLDOWN) {
+          lastShakeTime = now;
+          handleShake();
+        }
+      }
+
+      lastX = acc.x;
+      lastY = acc.y;
+      lastZ = acc.z;
+    };
+
+    window.addEventListener("devicemotion", onDeviceMotion);
+    return () => window.removeEventListener("devicemotion", onDeviceMotion);
+  }, [handleShake]);
+
   // ── Select element from Elements dropdown ──
   const handleElementSelect = useCallback(
     (annotation: MeshAnnotation) => {
@@ -1058,6 +1294,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           controlsRef={controlsRef}
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
+          onShake={handleShake}
+          isShaken={isShaken}
         />
       )}
     </div>
