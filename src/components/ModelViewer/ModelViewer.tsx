@@ -1031,7 +1031,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       )}
 
       {/* ─── TOP-LEFT: ELEMENTS (EPITOPES) + ANNOTATION POPUP ─── */}
-      <div className="absolute top-4 left-4 z-30 flex flex-col gap-3">
+      <div className="absolute top-4 left-4 right-4 z-30 flex flex-col gap-3">
         {!isLoading && !error && (
           <TopLeftElements
             title={title}

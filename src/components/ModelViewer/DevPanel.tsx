@@ -292,14 +292,18 @@ export function DevPanel({
       <button
         type="button"
         onClick={() => setDevPanelOpen((v: boolean) => !v)}
-        className="absolute top-2.5 right-2.5 z-40 bg-white/90 hover:bg-white text-gray-600 text-[10px] font-mono px-2.5 py-1 rounded-md cursor-pointer backdrop-blur-sm border border-gray-200/50 shadow-sm transition-colors"
+        className={`absolute top-4 right-4 z-40 flex items-center justify-center rounded-full px-5 py-2.5 text-base font-medium transition-all border border-transparent cursor-pointer ${
+          devPanelOpen
+            ? "bg-gray-800 text-white hover:bg-gray-700"
+            : "bg-white text-gray-800 hover:bg-white/30 hover:backdrop-blur-sm hover:border-white"
+        }`}
       >
         {devPanelOpen ? "Close" : "Dev"}
       </button>
 
       {/* Panel */}
       {devPanelOpen && (
-        <div className="absolute top-10 right-2.5 z-40 w-64 max-h-[calc(100%-48px)] overflow-y-auto bg-white/95 backdrop-blur-md text-gray-700 text-[10px] font-mono rounded-lg border border-gray-200/50 shadow-xl scrollbar-thin">
+        <div className="absolute top-16 right-4 z-40 w-64 max-h-[calc(100%-80px)] overflow-y-auto bg-white/80 backdrop-blur-md text-gray-700 text-[10px] font-mono rounded-2xl border border-transparent scrollbar-thin">
           {/* ── Inspector ── */}
           <Section title="Inspector" defaultOpen={!!selectedObject}>
             {selectedObject ? (

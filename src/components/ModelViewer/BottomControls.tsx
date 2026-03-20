@@ -7,6 +7,9 @@ export interface BottomControlsProps {
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+const pillDefault =
+  "whitespace-nowrap rounded-full px-5 py-2.5 text-base font-medium border border-transparent bg-white text-gray-800 transition-all hover:bg-white/30 hover:backdrop-blur-sm hover:border-white";
+
 export function BottomControls({
   controlsRef,
   isPlaying,
@@ -17,48 +20,46 @@ export function BottomControls({
   return (
     <div className="absolute bottom-4 left-4 z-30 flex items-end gap-2">
       <div className="relative">
-        {/* Dropdown panel (opens upward) */}
+        {/* Dropdown pills (opens upward) */}
         {panelOpen && (
-          <div className="absolute bottom-full left-0 mb-2 min-w-[180px] rounded-2xl border border-gray-200/60 bg-white/95 p-3 shadow-xl backdrop-blur-sm">
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const controls = controlsRef.current;
-                  if (!controls) return;
-                  const next = !controls.autoRotate;
-                  controls.autoRotate = next;
-                  setIsPlaying(next);
-                }}
-                className="rounded-xl border border-gray-200/80 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-800 shadow-sm transition-colors hover:bg-gray-50"
-                aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
-              >
-                {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
-              </button>
-            </div>
+          <div className="absolute bottom-full left-0 mb-2 flex flex-col items-start gap-2">
             <button
               type="button"
-              onClick={() => setPanelOpen(false)}
-              className="mt-3 flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white transition-colors hover:bg-gray-700"
-              aria-label="Close menu"
+              onClick={() => {
+                const controls = controlsRef.current;
+                if (!controls) return;
+                const next = !controls.autoRotate;
+                controls.autoRotate = next;
+                setIsPlaying(next);
+              }}
+              className={pillDefault}
+              aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
             </button>
           </div>
         )}
 
-        {/* Circular + button */}
+        {/* Circular +/× button */}
         <button
           type="button"
           onClick={() => setPanelOpen((prev) => !prev)}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-gray-900 shadow-lg transition-all hover:bg-gray-50 border border-gray-200/50"
+          className={`flex h-12 w-12 items-center justify-center rounded-full border border-transparent transition-all ${
+            panelOpen
+              ? "bg-gray-800 text-white hover:bg-gray-700"
+              : "bg-white text-gray-900 hover:bg-white/30 hover:backdrop-blur-sm hover:border-white"
+          }`}
           aria-label={panelOpen ? "Close menu" : "Open menu"}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          {panelOpen ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          )}
         </button>
       </div>
     </div>
