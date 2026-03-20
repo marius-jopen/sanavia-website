@@ -7,6 +7,9 @@ export interface BottomControlsProps {
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   onShake: () => void;
   isShaken: boolean;
+  isMobile: boolean;
+  motionPermission: "unknown" | "granted" | "denied" | "not-needed";
+  onRequestMotionPermission: () => void;
 }
 
 const pillDefault =
@@ -18,6 +21,9 @@ export function BottomControls({
   setIsPlaying,
   onShake,
   isShaken,
+  isMobile,
+  motionPermission,
+  onRequestMotionPermission,
 }: BottomControlsProps) {
   const [open, setOpen] = useState(false);
 
@@ -41,14 +47,49 @@ export function BottomControls({
             {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
           </button>
 
-          <button
-            type="button"
-            onClick={onShake}
-            className={pillDefault}
-            aria-label={isShaken ? "Reassemble molecule" : "Shake molecule apart"}
-          >
-            {isShaken ? "Reassemble" : "Shake"}
-          </button>
+          {/* Desktop: show Shake/Reassemble button */}
+          {!isMobile && (
+            <button
+              type="button"
+              onClick={onShake}
+              className={pillDefault}
+              aria-label={isShaken ? "Reassemble molecule" : "Shake molecule apart"}
+            >
+              {isShaken ? "Reassemble" : "Shake"}
+            </button>
+          )}
+
+          {/* Mobile: Enable Shake → (hidden when active & not shaken) → Reassemble after shake */}
+          {isMobile && motionPermission === "unknown" && (
+            <button
+              type="button"
+              onClick={onRequestMotionPermission}
+              className={pillDefault}
+              aria-label="Enable device shake detection"
+            >
+              Enable Shake
+            </button>
+          )}
+          {isMobile && (motionPermission === "granted" || motionPermission === "not-needed") && isShaken && (
+            <button
+              type="button"
+              onClick={onShake}
+              className={pillDefault}
+              aria-label="Reassemble molecule"
+            >
+              Reassemble
+            </button>
+          )}
+          {isMobile && motionPermission === "denied" && (
+            <button
+              type="button"
+              onClick={onRequestMotionPermission}
+              className={pillDefault}
+              aria-label="Retry enabling device shake"
+            >
+              Shake Denied — Retry
+            </button>
+          )}
         </>
       )}
 

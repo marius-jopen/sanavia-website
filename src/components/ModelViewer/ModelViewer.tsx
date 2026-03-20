@@ -1103,15 +1103,38 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const handleShakeRef = useRef(handleShake);
   handleShakeRef.current = handleShake;
 
+  // motionPermission: "unknown" (not yet asked), "granted", "denied", "not-needed" (Android/desktop)
+  const [motionPermission, setMotionPermission] = useState<"unknown" | "granted" | "denied" | "not-needed">("unknown");
+  const [isMobile, setIsMobile] = useState(false);
+  const motionCleanupRef = useRef<(() => void) | null>(null);
+
+  // Detect mobile + whether permission API exists
   useEffect(() => {
+    const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    setIsMobile(mobile);
+    if (!mobile) return;
+
+    const DME = DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<string>;
+    };
+    const needsPermission = typeof DME.requestPermission === "function";
+
+    if (!needsPermission) {
+      // Android — no permission needed, start listening right away
+      setMotionPermission("not-needed");
+    }
+  }, []);
+
+  // Start listening to devicemotion once permission is granted or not needed
+  useEffect(() => {
+    if (motionPermission !== "granted" && motionPermission !== "not-needed") return;
+
     let lastShakeTime = 0;
     let lastX = 0, lastY = 0, lastZ = 0;
-    let listening = false;
     const SHAKE_THRESHOLD = 15;
     const SHAKE_COOLDOWN = 2000;
 
     const onDeviceMotion = (e: DeviceMotionEvent) => {
-      // Prefer acceleration (no gravity) for cleaner shake data, fall back to accelerationIncludingGravity
       const acc = e.acceleration ?? e.accelerationIncludingGravity;
       if (!acc || acc.x == null || acc.y == null || acc.z == null) return;
 
@@ -1132,49 +1155,37 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       lastZ = acc.z;
     };
 
-    const startListening = () => {
-      if (listening) return;
-      listening = true;
-      window.addEventListener("devicemotion", onDeviceMotion);
-    };
-
-    // iOS 13+ requires requestPermission() called from a user gesture.
-    // IMPORTANT: never call requestPermission() outside a gesture — it poisons
-    // the permission state on some iOS versions and subsequent calls also fail.
-    const DME = DeviceMotionEvent as unknown as {
-      requestPermission?: () => Promise<string>;
-    };
-    const needsPermission = typeof DME.requestPermission === "function";
-
-    if (!needsPermission) {
-      // Android / desktop — just attach immediately
-      startListening();
-    }
-
-    // For iOS: request permission on first user gesture
-    const onUserGesture = async () => {
-      if (!needsPermission || listening) return;
-      try {
-        const result = await DME.requestPermission!();
-        if (result === "granted") {
-          startListening();
-        }
-      } catch {
-        // Permission denied or dialog dismissed
-      }
-    };
-
-    if (needsPermission) {
-      window.addEventListener("touchstart", onUserGesture, { once: true });
-      window.addEventListener("click", onUserGesture, { once: true });
-    }
+    window.addEventListener("devicemotion", onDeviceMotion);
+    motionCleanupRef.current = () => window.removeEventListener("devicemotion", onDeviceMotion);
 
     return () => {
       window.removeEventListener("devicemotion", onDeviceMotion);
-      window.removeEventListener("touchstart", onUserGesture);
-      window.removeEventListener("click", onUserGesture);
-      listening = false;
+      motionCleanupRef.current = null;
     };
+  }, [motionPermission]);
+
+  // Called from the "Enable Shake" button — must be triggered by user gesture
+  const requestMotionPermission = useCallback(async () => {
+    const DME = DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<string>;
+    };
+
+    if (typeof DME.requestPermission === "function") {
+      // iOS — must be called during a user gesture (tap/click)
+      try {
+        const result = await DME.requestPermission();
+        if (result === "granted") {
+          setMotionPermission("granted");
+        } else {
+          setMotionPermission("denied");
+        }
+      } catch {
+        setMotionPermission("denied");
+      }
+    } else {
+      // Android / others — no permission needed
+      setMotionPermission("not-needed");
+    }
   }, []);
 
   // ── Select element from Elements dropdown ──
@@ -1260,7 +1271,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   return (
     <div
       className={`relative w-full overflow-hidden border-2 border-white ${className || ""}`}
-      style={{ aspectRatio: "16 / 9" }}
+      style={{ aspectRatio: isMobile ? "4 / 5" : "16 / 9" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -1273,8 +1284,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       {/* Error overlay */}
       {error && <ErrorOverlay error={error} />}
 
-      {/* ─── DEV MODE PANEL ─── */}
-      {devMode && !isLoading && !error && (
+      {/* ─── DEV MODE PANEL (hidden on mobile) ─── */}
+      {devMode && !isMobile && !isLoading && !error && (
         <DevPanel
           devPanelOpen={devPanelOpen}
           setDevPanelOpen={setDevPanelOpen}
@@ -1349,6 +1360,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           setIsPlaying={setIsPlaying}
           onShake={handleShake}
           isShaken={isShaken}
+          isMobile={isMobile}
+          motionPermission={motionPermission}
+          onRequestMotionPermission={requestMotionPermission}
         />
       )}
     </div>
