@@ -21,7 +21,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   modelUrl,
   title,
   autoplay = true,
-  autoRotate = false,
+  autoRotate = true,
   backgroundColor = "#191919",
   transparentBackground = true,
   ambientLightIntensity = 1.65,
@@ -362,7 +362,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     controls.screenSpacePanning = true;
     controls.enableZoom = devEnableZoom;
     controls.autoRotate = devAutoRotate;
-    controls.autoRotateSpeed = 2.0;
+    controls.autoRotateSpeed = 0.5;
     controlsRef.current = controls;
 
     // ── Lights ──
@@ -654,9 +654,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     renderer.domElement.addEventListener("pointerup", onPointerUp);
     renderer.domElement.addEventListener("pointermove", onPointerMove);
 
+    // ── Sync GSAP with our render loop so tweens update even without autoRotate ──
+    gsap.ticker.remove(gsap.updateRoot);
+
     // ── Render loop ──
     const animate = () => {
       frameRef.current = requestAnimationFrame(animate);
+      gsap.updateRoot(performance.now() / 1000);
       const delta = clock.getDelta();
 
       if (mixerRef.current) {
@@ -718,6 +722,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     return () => {
       resizeObserver.disconnect();
       cancelAnimationFrame(frameRef.current);
+      gsap.ticker.add(gsap.updateRoot); // restore GSAP's default ticker
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
       renderer.domElement.removeEventListener("pointerup", onPointerUp);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
@@ -1094,14 +1099,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   }, [isShaken]);
 
   // ── Device shake detection (mobile) ──
+  const handleShakeRef = useRef(handleShake);
+  handleShakeRef.current = handleShake;
+
   useEffect(() => {
     let lastShakeTime = 0;
     let lastX = 0, lastY = 0, lastZ = 0;
-    const SHAKE_THRESHOLD = 25;
+    let listening = false;
+    const SHAKE_THRESHOLD = 15;
     const SHAKE_COOLDOWN = 2000;
 
     const onDeviceMotion = (e: DeviceMotionEvent) => {
-      const acc = e.accelerationIncludingGravity;
+      // Prefer acceleration (no gravity) for cleaner shake data, fall back to accelerationIncludingGravity
+      const acc = e.acceleration ?? e.accelerationIncludingGravity;
       if (!acc || acc.x == null || acc.y == null || acc.z == null) return;
 
       const deltaX = Math.abs(acc.x - lastX);
@@ -1112,7 +1122,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         const now = Date.now();
         if (now - lastShakeTime > SHAKE_COOLDOWN) {
           lastShakeTime = now;
-          handleShake();
+          handleShakeRef.current();
         }
       }
 
@@ -1121,9 +1131,50 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       lastZ = acc.z;
     };
 
-    window.addEventListener("devicemotion", onDeviceMotion);
-    return () => window.removeEventListener("devicemotion", onDeviceMotion);
-  }, [handleShake]);
+    const startListening = () => {
+      if (listening) return;
+      listening = true;
+      window.addEventListener("devicemotion", onDeviceMotion);
+    };
+
+    // iOS 13+ requires requestPermission() called from a user gesture.
+    // IMPORTANT: never call requestPermission() outside a gesture — it poisons
+    // the permission state on some iOS versions and subsequent calls also fail.
+    const DME = DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<string>;
+    };
+    const needsPermission = typeof DME.requestPermission === "function";
+
+    if (!needsPermission) {
+      // Android / desktop — just attach immediately
+      startListening();
+    }
+
+    // For iOS: request permission on first user gesture
+    const onUserGesture = async () => {
+      if (!needsPermission || listening) return;
+      try {
+        const result = await DME.requestPermission!();
+        if (result === "granted") {
+          startListening();
+        }
+      } catch {
+        // Permission denied or dialog dismissed
+      }
+    };
+
+    if (needsPermission) {
+      window.addEventListener("touchstart", onUserGesture, { once: true });
+      window.addEventListener("click", onUserGesture, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener("devicemotion", onDeviceMotion);
+      window.removeEventListener("touchstart", onUserGesture);
+      window.removeEventListener("click", onUserGesture);
+      listening = false;
+    };
+  }, []);
 
   // ── Select element from Elements dropdown ──
   const handleElementSelect = useCallback(
