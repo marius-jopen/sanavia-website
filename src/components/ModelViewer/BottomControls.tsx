@@ -5,6 +5,8 @@ export interface BottomControlsProps {
   controlsRef: React.RefObject<OrbitControls | null>;
   isPlaying: boolean;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  onShake: () => void;
+  isShaken: boolean;
 }
 
 const pill =
@@ -14,6 +16,8 @@ export function BottomControls({
   controlsRef,
   isPlaying,
   setIsPlaying,
+  onShake,
+  isShaken,
 }: BottomControlsProps) {
   const [open, setOpen] = useState(false);
 
@@ -59,6 +63,18 @@ export function BottomControls({
           aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
         >
           {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
+        </button>
+      )}
+
+      {/* Shake pill — appears next to auto rotate when open */}
+      {open && (
+        <button
+          type="button"
+          onClick={onShake}
+          className={pill}
+          aria-label={isShaken ? "Reassemble molecule" : "Shake molecule apart"}
+        >
+          {isShaken ? "Reassemble" : "Shake"}
         </button>
       )}
     </div>
