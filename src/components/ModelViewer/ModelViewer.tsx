@@ -1108,11 +1108,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const motionCleanupRef = useRef<(() => void) | null>(null);
 
-  // Detect mobile + whether permission API exists
+  // Detect mobile layout via screen width (responsive, works with browser resize)
   useEffect(() => {
-    const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    setIsMobile(mobile);
-    if (!mobile) return;
+    const mq = window.matchMedia("(max-width: 768px)");
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    onChange(mq);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Detect device motion permission (user-agent based, only on actual mobile devices)
+  useEffect(() => {
+    const isDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (!isDevice) return;
 
     const DME = DeviceMotionEvent as unknown as {
       requestPermission?: () => Promise<string>;
