@@ -11,6 +11,12 @@ export interface TopLeftElementsProps {
   onCloseAnnotation: () => void;
 }
 
+const pill =
+  "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-gray-200 bg-white/90 px-5 py-2.5 text-sm font-medium text-gray-900 transition-colors hover:bg-white/60 cursor-pointer";
+
+const darkCircle =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700";
+
 export function TopLeftElements({
   title: moleculeTitle,
   annotations,
@@ -21,75 +27,75 @@ export function TopLeftElements({
   onCloseAnnotation,
 }: TopLeftElementsProps) {
   const hasEpitopes = annotations.length > 0;
-  const showTopLeft = moleculeTitle || hasEpitopes;
-  if (!showTopLeft) return null;
+  if (!moleculeTitle && !hasEpitopes) return null;
 
   const label = moleculeTitle || "Elements";
 
   return (
-    <div className="absolute top-4 left-4 z-30 flex flex-col gap-2">
-      {/* Top row: title pill + circular + button */}
-      <div className="flex items-center gap-2">
-        {/* Title pill (molecule name) */}
-        <span className="rounded-full border border-gray-200/60 bg-white/95 px-4 py-2.5 text-sm font-medium text-gray-800 shadow-lg backdrop-blur-sm">
-          {label}
-        </span>
+    <div className="absolute top-4 left-4 z-30" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "max-content" }}>
 
-        {/* Circular + button — toggles epitope list (only when there are epitopes) */}
+      {/* Row 1: title pill + (+ or ×) button */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "max-content" }}>
+        <span className={pill}>{label}</span>
+
         {hasEpitopes && (
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-200/50 bg-white shadow-lg transition-all hover:bg-gray-50"
             aria-expanded={open}
             aria-label={open ? "Close epitopes" : "Open epitopes"}
+            className={open ? darkCircle : `${pill} !px-0 w-9 justify-center`}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            {open ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            )}
           </button>
         )}
       </div>
 
-      {/* Epitope pills (when + is clicked) */}
+      {/* Rows 2+: shown only when open */}
       {open && hasEpitopes && (
-        <div className="flex flex-col gap-2">
-          {/* Active epitope with close (X) — on top when one is selected */}
+        <>
+          {/* If one is selected: its pill + dark × to deselect */}
           {activeAnnotation && (
-            <div className="flex items-center gap-1.5">
-              <span className="rounded-full border border-gray-200/80 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm">
-                {activeAnnotation.title}
-              </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "max-content" }}>
+              <span className={pill}>{activeAnnotation.title}</span>
               <button
                 type="button"
                 onClick={onCloseAnnotation}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-800 text-white transition-colors hover:bg-gray-700"
+                className={darkCircle}
                 aria-label="Deselect"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
             </div>
           )}
-          {/* Other epitopes as pills in a row */}
-          <div className="flex flex-wrap gap-2">
+
+          {/* All remaining epitopes in one horizontal row */}
+          <div style={{ display: "flex", flexDirection: "row", gap: "8px", flexWrap: "nowrap", width: "max-content" }}>
             {annotations.map((a, i) => {
-              const isActive = activeAnnotation?.meshName === a.meshName;
-              if (isActive) return null;
+              if (activeAnnotation?.meshName === a.meshName) return null;
               return (
                 <button
                   key={`${a.meshName}-${i}`}
                   type="button"
                   onClick={() => onSelect(a)}
-                  className="rounded-full border border-gray-200/80 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm transition-colors hover:bg-gray-50"
+                  className={pill}
                 >
                   {a.title || a.meshName}
                 </button>
               );
             })}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
