@@ -68,7 +68,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   }
 
   const autoplay = (settings.autoplay as boolean) ?? true;
-  const autoRotate = (settings.autoRotate as boolean) ?? false;
+  const autoRotate = (settings.autoRotate as boolean) ?? true;
   const bgColor = (settings.backgroundColor as string) || "#191919";
   const transparentBg = (settings.transparentBackground as boolean) ?? true;
   const enableZoom = (settings.enableZoom as boolean) ?? false;

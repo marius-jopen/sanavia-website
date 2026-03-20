@@ -21,7 +21,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   modelUrl,
   title,
   autoplay = true,
-  autoRotate = false,
+  autoRotate = true,
   backgroundColor = "#191919",
   transparentBackground = true,
   ambientLightIntensity = 0.5,
@@ -362,7 +362,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     controls.screenSpacePanning = true;
     controls.enableZoom = devEnableZoom;
     controls.autoRotate = devAutoRotate;
-    controls.autoRotateSpeed = 2.0;
+    controls.autoRotateSpeed = 0.5;
     controlsRef.current = controls;
 
     // ── Lights ──
@@ -654,9 +654,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     renderer.domElement.addEventListener("pointerup", onPointerUp);
     renderer.domElement.addEventListener("pointermove", onPointerMove);
 
+    // ── Sync GSAP with our render loop so tweens update even without autoRotate ──
+    gsap.ticker.remove(gsap.updateRoot);
+
     // ── Render loop ──
     const animate = () => {
       frameRef.current = requestAnimationFrame(animate);
+      gsap.updateRoot(performance.now() / 1000);
       const delta = clock.getDelta();
 
       if (mixerRef.current) {
@@ -718,6 +722,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     return () => {
       resizeObserver.disconnect();
       cancelAnimationFrame(frameRef.current);
+      gsap.ticker.add(gsap.updateRoot); // restore GSAP's default ticker
       renderer.domElement.removeEventListener("pointerdown", onPointerDown);
       renderer.domElement.removeEventListener("pointerup", onPointerUp);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
