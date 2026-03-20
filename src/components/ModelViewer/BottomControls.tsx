@@ -22,7 +22,36 @@ export function BottomControls({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
+    <div className="absolute bottom-4 left-4 z-30 flex flex-col items-start gap-2">
+      {/* Pills stacked vertically above the button */}
+      {open && (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              const controls = controlsRef.current;
+              if (!controls) return;
+              const next = !controls.autoRotate;
+              controls.autoRotate = next;
+              setIsPlaying(next);
+            }}
+            className={pillDefault}
+            aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
+          >
+            {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
+          </button>
+
+          <button
+            type="button"
+            onClick={onShake}
+            className={pillDefault}
+            aria-label={isShaken ? "Reassemble molecule" : "Shake molecule apart"}
+          >
+            {isShaken ? "Reassemble" : "Shake"}
+          </button>
+        </>
+      )}
+
       {/* Circular +/× button */}
       <button
         type="button"
@@ -44,36 +73,6 @@ export function BottomControls({
           </svg>
         )}
       </button>
-
-      {/* Auto Rotate pill — appears next to the button when open */}
-      {open && (
-        <button
-          type="button"
-          onClick={() => {
-            const controls = controlsRef.current;
-            if (!controls) return;
-            const next = !controls.autoRotate;
-            controls.autoRotate = next;
-            setIsPlaying(next);
-          }}
-          className={pillDefault}
-          aria-label={isPlaying ? "Turn off auto rotate" : "Turn on auto rotate"}
-        >
-          {isPlaying ? "Auto Rotate Off" : "Auto Rotate"}
-        </button>
-      )}
-
-      {/* Shake pill — appears next to auto rotate when open */}
-      {open && (
-        <button
-          type="button"
-          onClick={onShake}
-          className={pillDefault}
-          aria-label={isShaken ? "Reassemble molecule" : "Shake molecule apart"}
-        >
-          {isShaken ? "Reassemble" : "Shake"}
-        </button>
-      )}
     </div>
   );
 }

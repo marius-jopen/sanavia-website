@@ -24,15 +24,15 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   autoRotate = false,
   backgroundColor = "#191919",
   transparentBackground = true,
-  ambientLightIntensity = 0.5,
+  ambientLightIntensity = 1.65,
   ambientLightColor = "#FFFFFF",
   directLightIntensity = 1.5,
   directLightColor = "#FFFFFF",
-  exposure = 1.0,
+  exposure = 0.5,
   enableZoom = false,
   simpleMaterials = true,
-  highlightColor = "#ff0000",
-  highlightBlendMode = "screen",
+  highlightColor = "#fff700",
+  highlightBlendMode = "normal",
   highlightOpacity = 1.0,
   animationMode = "ramp",
   animationSpeed = 1.0,
@@ -1197,8 +1197,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       // Open annotation popup
       setActiveAnnotation(annotation);
 
-      // Close the elements dropdown
-      setElementsOpen(false);
+      // Open the elements dropdown to show the selection
+      setElementsOpen(true);
     },
     [],
   );
@@ -1263,6 +1263,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           devAnimSpeed={devAnimSpeed}
           setDevAnimSpeed={setDevAnimSpeed}
           sceneGraph={sceneGraph}
+          annotations={annotations}
         />
       )}
 

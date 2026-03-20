@@ -65,43 +65,23 @@ export function TopLeftElements({
         )}
       </div>
 
-      {/* Rows 2+: shown only when open */}
+      {/* Row 2: All epitopes in one horizontal row */}
       {open && hasEpitopes && (
-        <>
-          {/* If one is selected: its pill + dark × to deselect */}
-          {activeAnnotation && (
-            <div className="flex items-center gap-2">
-              <span className={pillActive}>{activeAnnotation.title}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          {annotations.map((a, i) => {
+            const isActive = activeAnnotation?.meshName === a.meshName;
+            return (
               <button
+                key={`${a.meshName}-${i}`}
                 type="button"
-                onClick={onCloseAnnotation}
-                className={darkCircle}
-                aria-label="Deselect"
+                onClick={() => (isActive ? onCloseAnnotation() : onSelect(a))}
+                className={isActive ? pillActive : pillDefault}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
+                {a.title || a.meshName}
               </button>
-            </div>
-          )}
-
-          {/* All remaining epitopes in one horizontal row */}
-          <div className="flex flex-wrap items-center gap-2">
-            {annotations.map((a, i) => {
-              if (activeAnnotation?.meshName === a.meshName) return null;
-              return (
-                <button
-                  key={`${a.meshName}-${i}`}
-                  type="button"
-                  onClick={() => onSelect(a)}
-                  className={pillDefault}
-                >
-                  {a.title || a.meshName}
-                </button>
-              );
-            })}
-          </div>
-        </>
+            );
+          })}
+        </div>
       )}
     </div>
   );
