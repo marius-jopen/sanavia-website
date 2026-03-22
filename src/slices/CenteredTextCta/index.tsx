@@ -1,6 +1,6 @@
 "use client"
 import { FC, useEffect, useRef } from "react";
-import { Content } from "@prismicio/client";
+import { Content, isFilled } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import { PrismicNextLink } from "@prismicio/next";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
@@ -29,7 +29,7 @@ const CenteredTextCta: FC<CenteredTextCtaProps> = ({ slice }) => {
           <PrismicRichText field={slice.primary.headline} />
         </div>
 
-        {slice.primary.cta?.url && (
+        {isFilled.link(slice.primary.cta) && (
           <PrismicNextLink
             field={slice.primary.cta}
             className="bg-white hover:bg-black text-black hover:text-white text-base rounded-full px-8 py-2.5 transition-colors duration-200"

@@ -122,6 +122,9 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
           {...(directLightIntensity !== undefined && { directLightIntensity })}
           {...(directLightColor !== undefined && { directLightColor })}
           {...(exposureValue !== undefined && { exposure: exposureValue })}
+          {...(highlightColorValue !== undefined && { highlightColor: highlightColorValue })}
+          {...(highlightBlendModeValue !== undefined && { highlightBlendMode: highlightBlendModeValue })}
+          {...(highlightOpacityValue !== undefined && { highlightOpacity: highlightOpacityValue })}
           {...(animationModeValue !== undefined && { animationMode: animationModeValue })}
           {...(animationSpeedValue !== undefined && { animationSpeed: animationSpeedValue })}
           annotations={annotations}
