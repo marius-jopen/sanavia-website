@@ -187,6 +187,7 @@ export type HeaderDocument<Lang extends string = string> =
   >;
 
 type PageDocumentDataSlicesSlice =
+  | CenteredTextCtaSlice
   | ScrollytellingSlice
   | MoleculeVieverSlice
   | ContactSlice
@@ -468,6 +469,61 @@ type CardsSliceVariation = CardsSliceDefault;
 export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
 
 /**
+ * Primary content in *CenteredTextCta → Default → Primary*
+ */
+export interface CenteredTextCtaSliceDefaultPrimary {
+  /**
+   * Headline field in *CenteredTextCta → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: centered_text_cta.default.primary.headline
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  headline: prismic.RichTextField;
+
+  /**
+   * Call to Action field in *CenteredTextCta → Default → Primary*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: centered_text_cta.default.primary.cta
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  cta: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Default variation for CenteredTextCta Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Single centered headline text with centered CTA button below.
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CenteredTextCtaSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<CenteredTextCtaSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *CenteredTextCta*
+ */
+type CenteredTextCtaSliceVariation = CenteredTextCtaSliceDefault;
+
+/**
+ * CenteredTextCta Shared Slice
+ *
+ * - **API ID**: `centered_text_cta`
+ * - **Description**: *None*
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CenteredTextCtaSlice = prismic.SharedSlice<
+  "centered_text_cta",
+  CenteredTextCtaSliceVariation
+>;
+
+/**
  * Primary content in *Contact → Default → Primary*
  */
 export interface ContactSliceDefaultPrimary {
@@ -625,6 +681,17 @@ export interface HeadlineSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#boolean
    */
   keep_layout: prismic.BooleanField;
+
+  /**
+   * White Box field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: headline.default.primary.white_box
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  white_box: prismic.BooleanField;
 }
 
 /**
@@ -1730,6 +1797,10 @@ declare module "@prismicio/client" {
       CardsSliceDefaultPrimary,
       CardsSliceVariation,
       CardsSliceDefault,
+      CenteredTextCtaSlice,
+      CenteredTextCtaSliceDefaultPrimary,
+      CenteredTextCtaSliceVariation,
+      CenteredTextCtaSliceDefault,
       ContactSlice,
       ContactSliceDefaultPrimary,
       ContactSliceVariation,

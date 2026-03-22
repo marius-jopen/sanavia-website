@@ -27,9 +27,26 @@ const Headline: FC<HeadlineProps> = ({ slice }) => {
     return cleanup;
   }, []);
 
+  const whiteBox = slice.primary.white_box ?? false;
+
   // Early return if not visible
   if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
-  
+
+  if (whiteBox) {
+    return (
+      <section ref={sectionRef} className="w-full mb-4 px-4">
+        <div className={`${alignment} pt-12 pb-4 px-8 headline bg-white rounded-2xl overflow-hidden`}>
+          <div className={`md:mb-8 ${headlineWidth} text-gray-800`}>
+            <PrismicRichText field={slice.primary.headline} />
+          </div>
+          <div className={`${subHeadlineWidth} text-gray-500 pt-6 md:pt-0`}>
+            <PrismicRichText field={slice.primary.sub_headline} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section ref={sectionRef} className={`${alignment} pt-4 pb-4 px-8 headline`}>
       <div className={`md:mb-8 ${headlineWidth} text-gray-800`}>
