@@ -658,6 +658,108 @@ export type HeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Primary content in *MoleculeViever → Default → Primary*
+ */
+export interface MoleculeVieverSliceDefaultPrimary {
+  /**
+   * Title field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Title of the molecule (shown top-left)
+   * - **API ID Path**: molecule_viever.default.primary.title
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  title: prismic.KeyTextField;
+
+  /**
+   * Visible field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: molecule_viever.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
+   * 3D Model File field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Link to Media
+   * - **Placeholder**: Upload a .glb or .gltf file
+   * - **API ID Path**: molecule_viever.default.primary.model_file
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  model_file: prismic.LinkToMediaField<prismic.FieldState, never>;
+
+  /**
+   * Developer Mode field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: molecule_viever.default.primary.dev_mode
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  dev_mode: prismic.BooleanField;
+
+  /**
+   * Settings JSON (paste from Dev Mode) field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: {}
+   * - **API ID Path**: molecule_viever.default.primary.settings_json
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  settings_json: prismic.KeyTextField;
+}
+
+/**
+ * Primary content in *MoleculeViever → Items*
+ */
+export interface MoleculeVieverSliceDefaultItem {
+  /**
+   * Mesh Name field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: e.g. antibodyActiveLighter
+   * - **API ID Path**: molecule_viever.items[].mesh_name
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  mesh_name: prismic.KeyTextField;
+
+  /**
+   * Mesh Color field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Color
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.items[].mesh_color
+   * - **Documentation**: https://prismic.io/docs/field#color
+   */
+  mesh_color: prismic.ColorField;
+
+  /**
+   * Info Title field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Title shown in the popup
+   * - **API ID Path**: molecule_viever.items[].info_title
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  info_title: prismic.KeyTextField;
+
+  /**
+   * Info Text field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Description shown when this mesh is clicked
+   * - **API ID Path**: molecule_viever.items[].info_text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  info_text: prismic.RichTextField;
+}
+
+/**
  * Default variation for MoleculeViever Slice
  *
  * - **API ID**: `default`
@@ -666,8 +768,8 @@ export type HeadlineSlice = prismic.SharedSlice<
  */
 export type MoleculeVieverSliceDefault = prismic.SharedSliceVariation<
   "default",
-  Record<string, never>,
-  never
+  Simplify<MoleculeVieverSliceDefaultPrimary>,
+  Simplify<MoleculeVieverSliceDefaultItem>
 >;
 
 /**
@@ -1550,6 +1652,17 @@ export interface VideoSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#boolean
    */
   autoplay: prismic.BooleanField;
+
+  /**
+   * Full Width field in *Video → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: video.default.primary.full_width
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  full_width: prismic.BooleanField;
 }
 
 /**
@@ -1629,6 +1742,8 @@ declare module "@prismicio/client" {
       HeadlineSliceVariation,
       HeadlineSliceDefault,
       MoleculeVieverSlice,
+      MoleculeVieverSliceDefaultPrimary,
+      MoleculeVieverSliceDefaultItem,
       MoleculeVieverSliceVariation,
       MoleculeVieverSliceDefault,
       PopButtonSlice,
