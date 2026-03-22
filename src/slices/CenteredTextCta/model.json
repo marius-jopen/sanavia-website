@@ -14,8 +14,10 @@
         "headline": {
           "type": "StructuredText",
           "config": {
-            "multi": "heading2,strong,em",
-            "label": "Headline"
+            "label": "Headline",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "heading2,strong,em,heading1,heading3,paragraph,heading4,heading5,heading6"
           }
         },
         "cta": {
@@ -27,7 +29,8 @@
             "select": null
           }
         }
-      }
+      },
+      "items": {}
     }
   ]
 }

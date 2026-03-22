@@ -7,16 +7,16 @@
 				"__TYPE__": "StructuredTextContent",
 				"value": [
 					{
-						"type": "heading2",
+						"type": "paragraph",
 						"content": {
-							"text": "Determine"
+							"text": "Consectetur voluptate labore cillum veniam duis magna laboris sit fugiat et excepteur anim. Ex deserunt sit ipsum commodo occaecat mollit aute qui proident consequat. Commodo elit officia qui ut et excepteur pariatur quis Lorem cupidatat laboris irure."
 						}
 					}
 				]
 			},
 			"cta": {
-				"__TYPE__": "LinkContent",
 				"key": "b87c8f9b-c6f6-46ad-a323-301be8ea20a8",
+				"__TYPE__": "LinkContent",
 				"value": {
 					"__TYPE__": "ExternalLink",
 					"url": "https://prismic.io",
