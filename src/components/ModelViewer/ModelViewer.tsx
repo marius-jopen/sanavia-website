@@ -19,6 +19,8 @@ import { LoadingOverlay, ErrorOverlay } from "./Overlays";
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
   modelUrl,
+  compareModelUrl,
+  compareAnnotations = [],
   title,
   autoplay = true,
   autoRotate = true,
@@ -55,6 +57,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const ambientRef = useRef<THREE.AmbientLight | null>(null);
   const directRef = useRef<THREE.DirectionalLight | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
+  const compareGroupRef = useRef<THREE.Group | null>(null);
+  const compareMixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const compareActionsRef = useRef<THREE.AnimationAction[]>([]);
+  const maxCompareClipDurationRef = useRef(1);
+  const dragStateRef = useRef<{ active: boolean; target: THREE.Group | null; lastX: number; lastY: number }>({ active: false, target: null, lastX: 0, lastY: 0 });
+  const mirrorHighlight = useRef<{
+    mesh: THREE.Mesh;
+    originalEmissive: THREE.Color;
+    originalColor: THREE.Color;
+  } | null>(null);
+  const isCompareRef = useRef(!!compareModelUrl);
+  isCompareRef.current = !!compareModelUrl;
+  const isMobileRef = useRef(false);
 
   // Raycasting refs
   const raycasterRef = useRef<THREE.Raycaster | null>(null);
@@ -65,6 +80,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     originalColor: THREE.Color;
   } | null>(null);
   const hoverHighlight = useRef<{
+    mesh: THREE.Mesh;
+    originalEmissive: THREE.Color;
+    originalColor: THREE.Color;
+  } | null>(null);
+  const mirrorHoverHighlight = useRef<{
     mesh: THREE.Mesh;
     originalEmissive: THREE.Color;
     originalColor: THREE.Color;
@@ -85,6 +105,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const annotationRef = useRef<HTMLDivElement>(null);
   const annotationsRef = useRef<MeshAnnotation[]>(annotations);
   annotationsRef.current = annotations;
+  const compareAnnotationsRef = useRef<MeshAnnotation[]>(compareAnnotations);
+  compareAnnotationsRef.current = compareAnnotations;
 
   // Dev mode state
   const devModeRef = useRef(devMode);
@@ -112,6 +134,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [devSimpleMaterials, setDevSimpleMaterials] = useState(simpleMaterials);
   const originalMaterials = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
   const [sceneGraph, setSceneGraph] = useState<string[]>([]);
+  const [compareSceneGraph, setCompareSceneGraph] = useState<string[]>([]);
 
   // Animation dev state
   const [devAnimPlaying, setDevAnimPlaying] = useState(autoplay);
@@ -364,6 +387,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     controls.enableZoom = devEnableZoom;
     controls.autoRotate = devAutoRotate;
     controls.autoRotateSpeed = 0.5;
+    // In compare mode, we handle rotation per-model manually
+    if (compareModelUrl) {
+      controls.enableRotate = false;
+      controls.autoRotate = false;
+    }
     controlsRef.current = controls;
 
     // ── Lights ──
@@ -394,91 +422,180 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
     setIsLoading(true);
     setError(null);
+    let disposed = false;
 
-    loader.load(
-      modelUrl,
-      (gltf) => {
-        const model = gltf.scene;
+    const loadGLTF = (url: string): Promise<{ scene: THREE.Group; animations: THREE.AnimationClip[] }> =>
+      new Promise((resolve, reject) => {
+        loader.load(
+          url,
+          (gltf) => resolve(gltf),
+          (progress) => {
+            if (progress.total > 0) {
+              setLoadProgress(Math.round((progress.loaded / progress.total) * 100));
+            }
+          },
+          reject,
+        );
+      });
 
-        // ── Auto-frame: centre model and fit to camera ──
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
+    const setupModel = (gltf: { scene: THREE.Group; animations: THREE.AnimationClip[] }) => {
+      const model = gltf.scene;
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
 
-        model.position.sub(center); // centre at origin
+      const pivot = new THREE.Group();
+      pivot.add(model);
 
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.fov * (Math.PI / 180);
-        const cameraZ = (maxDim / (2 * Math.tan(fov / 2))) * 0.9;
+      const names: string[] = [];
+      model.traverse((node) => {
+        const indent = "  ".repeat(getDepth(node, model));
+        const type = (node as THREE.Mesh).isMesh ? "Mesh" : node.type;
+        names.push(`${indent}${type}: "${node.name || "(unnamed)"}"`);
+      });
 
-        camera.position.set(0, size.y * 0.15, cameraZ);
-        camera.near = cameraZ / 100;
-        camera.far = cameraZ * 100;
-        camera.updateProjectionMatrix();
+      applySimpleMaterials(model);
 
-        controls.target.set(0, 0, 0);
-        controls.update();
+      let mixer: THREE.AnimationMixer | null = null;
+      let actions: THREE.AnimationAction[] = [];
+      const clips = gltf.animations;
+      if (clips && clips.length > 0) {
+        mixer = new THREE.AnimationMixer(model);
+        actions = clips.map((clip) => mixer!.clipAction(clip));
+        if (autoplay) {
+          actions.forEach((a) => {
+            a.loop = THREE.LoopRepeat;
+            a.clampWhenFinished = false;
+            a.play();
+          });
+        }
+      }
 
-        scene.add(model);
-        modelGroupRef.current = model;
+      return { model, pivot, size, names, mixer, actions, clips };
+    };
 
-        // ── Build scene graph ──
-        const names: string[] = [];
-        model.traverse((node) => {
-          const indent = "  ".repeat(getDepth(node, model));
-          const type = (node as THREE.Mesh).isMesh
-            ? "Mesh"
-            : node.type;
-          names.push(`${indent}${type}: "${node.name || "(unnamed)"}"`);
-        });
-        setSceneGraph(names);
+    (async () => {
+      try {
+        const gltf1 = await loadGLTF(modelUrl);
+        if (disposed) return;
+        const r1 = setupModel(gltf1);
 
-        // ── Apply simple materials immediately on load ──
-        applySimpleMaterials(model);
+        scene.add(r1.pivot);
+        modelGroupRef.current = r1.pivot;
+        setSceneGraph(r1.names);
 
-        // ── Animations ──
-        const clips = gltf.animations;
-        if (clips && clips.length > 0) {
+        if (r1.mixer) {
+          mixerRef.current = r1.mixer;
+          actionsRef.current = r1.actions;
           setHasAnimations(true);
-          maxClipDurationRef.current = Math.max(...clips.map((c) => c.duration));
+          maxClipDurationRef.current = Math.max(...r1.clips.map((c) => c.duration));
+          setDevAnimPlaying(autoplay);
+        }
 
-          const mixer = new THREE.AnimationMixer(model);
-          mixerRef.current = mixer;
+        if (compareModelUrl) {
+          const gltf2 = await loadGLTF(compareModelUrl);
+          if (disposed) return;
+          const r2 = setupModel(gltf2);
 
-          const actions = clips.map((clip) => mixer.clipAction(clip));
-          actionsRef.current = actions;
+          scene.add(r2.pivot);
+          compareGroupRef.current = r2.pivot;
+          setCompareSceneGraph(r2.names);
 
-          if (autoplay) {
-            actions.forEach((a) => {
-              a.loop = THREE.LoopRepeat;
-              a.clampWhenFinished = false;
-              a.play();
-            });
-            setDevAnimPlaying(true);
+          if (r2.mixer) {
+            compareMixerRef.current = r2.mixer;
+            compareActionsRef.current = r2.actions;
+            maxCompareClipDurationRef.current = Math.max(...r2.clips.map((c) => c.duration));
           }
+
+          // Position side by side (desktop) or stacked (mobile)
+          const mobile = isMobileRef.current;
+          if (mobile) {
+            const gap = -Math.max(r1.size.y, r2.size.y) * 0.08;
+            r1.pivot.position.y = r1.size.y / 2 + gap;
+            r2.pivot.position.y = -(r2.size.y / 2);
+          } else {
+            const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
+            r1.pivot.position.x = -(r1.size.x / 2 + gap / 2);
+            r2.pivot.position.x = r2.size.x / 2 + gap / 2;
+          }
+
+          // Frame camera for both models
+          const combinedBox = new THREE.Box3()
+            .setFromObject(r1.pivot)
+            .union(new THREE.Box3().setFromObject(r2.pivot));
+          const combinedSize = combinedBox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(combinedSize.x, combinedSize.y, combinedSize.z);
+          const fov = camera.fov * (Math.PI / 180);
+          const camMultiplier = isMobileRef.current ? 1.1 : 0.75;
+          const cameraZ = (maxDim / (2 * Math.tan(fov / 2))) * camMultiplier;
+          camera.position.set(0, combinedSize.y * 0.05, cameraZ);
+          camera.near = cameraZ / 100;
+          camera.far = cameraZ * 100;
+          camera.updateProjectionMatrix();
+          controls.target.set(0, 0, 0);
+          controls.update();
+        } else {
+          // Single model: frame camera
+          const box = new THREE.Box3().setFromObject(r1.pivot);
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fov = camera.fov * (Math.PI / 180);
+          const cameraZ = (maxDim / (2 * Math.tan(fov / 2))) * 0.9;
+          camera.position.set(0, size.y * 0.15, cameraZ);
+          camera.near = cameraZ / 100;
+          camera.far = cameraZ * 100;
+          camera.updateProjectionMatrix();
+          controls.target.set(0, 0, 0);
+          controls.update();
         }
 
         setIsLoading(false);
-      },
-      (progress) => {
-        if (progress.total > 0) {
-          setLoadProgress(Math.round((progress.loaded / progress.total) * 100));
-        }
-      },
-      (err) => {
+      } catch (err) {
+        if (disposed) return;
         console.error("Error loading 3D model:", err);
         setError("Failed to load 3D model");
         setIsLoading(false);
-      },
-    );
+      }
+    })();
 
     // ── Raycasting click handler (dev mode + annotation popups) ──
     const onPointerDown = (e: PointerEvent) => {
       pointerDownPos.current = { x: e.clientX, y: e.clientY };
+
+      // In compare mode, detect which model to drag-rotate
+      if (isCompareRef.current) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+          ((e.clientX - rect.left) / rect.width) * 2 - 1,
+          -((e.clientY - rect.top) / rect.height) * 2 + 1,
+        );
+        raycaster.setFromCamera(mouse, camera);
+        const targets = [modelGroupRef.current, compareGroupRef.current].filter(Boolean) as THREE.Group[];
+        const allChildren = targets.flatMap((g) => [...g.children]);
+        const intersects = raycaster.intersectObjects(allChildren, true);
+        if (intersects.length > 0) {
+          let targetGroup: THREE.Group | null = null;
+          let cur: THREE.Object3D | null = intersects[0].object;
+          while (cur) {
+            if (cur === modelGroupRef.current || cur === compareGroupRef.current) {
+              targetGroup = cur as THREE.Group;
+              break;
+            }
+            cur = cur.parent;
+          }
+          dragStateRef.current = { active: true, target: targetGroup, lastX: e.clientX, lastY: e.clientY };
+        }
+      }
     };
 
     const onPointerUp = (e: PointerEvent) => {
-      const hasAnnotations = annotationsRef.current.length > 0;
+      // End drag in compare mode
+      if (dragStateRef.current.active) {
+        dragStateRef.current = { active: false, target: null, lastX: 0, lastY: 0 };
+      }
+
+      const hasAnnotations = annotationsRef.current.length > 0 || compareAnnotationsRef.current.length > 0;
       if (!devModeRef.current && !hasAnnotations) return;
 
       const dx = e.clientX - pointerDownPos.current.x;
@@ -493,25 +610,34 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
       raycaster.setFromCamera(mouse, camera);
 
-      if (!modelGroupRef.current) return;
-      const intersects = raycaster.intersectObjects(
-        modelGroupRef.current.children,
-        true,
-      );
+      const rayTargets = [modelGroupRef.current, compareGroupRef.current].filter(Boolean) as THREE.Group[];
+      if (rayTargets.length === 0) return;
+      const allChildren = rayTargets.flatMap((g) => [...g.children]);
+      const intersects = raycaster.intersectObjects(allChildren, true);
 
-      // Restore previous click highlight
+      // Restore previous click highlights (both primary and mirror)
       if (previousHighlight.current) {
         const mat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
         restoreHighlight(mat, previousHighlight.current.originalEmissive, previousHighlight.current.originalColor);
         previousHighlight.current = null;
       }
+      if (mirrorHighlight.current) {
+        const mMat = mirrorHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        restoreHighlight(mMat, mirrorHighlight.current.originalEmissive, mirrorHighlight.current.originalColor);
+        mirrorHighlight.current = null;
+      }
 
-      // Clear hover highlight — restore its true original first
+      // Clear hover highlights — restore their true originals first
       // so that the click highlight captures the correct base color
       if (hoverHighlight.current) {
         const hMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
         restoreHighlight(hMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
         hoverHighlight.current = null;
+      }
+      if (mirrorHoverHighlight.current) {
+        const mhMat = mirrorHoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        restoreHighlight(mhMat, mirrorHoverHighlight.current.originalEmissive, mirrorHoverHighlight.current.originalColor);
+        mirrorHoverHighlight.current = null;
       }
 
       if (intersects.length > 0) {
@@ -520,7 +646,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         // Collect ALL names from the hit mesh up through the parent chain
         const hitNames: string[] = [];
         let current: THREE.Object3D | null = hit;
-        while (current && current !== modelGroupRef.current) {
+        while (current && current !== modelGroupRef.current && current !== compareGroupRef.current) {
           if (current.name) hitNames.push(current.name);
           current = current.parent;
         }
@@ -530,7 +656,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         previousHighlight.current = captureHighlightState(hit);
         applyHighlight(mat, highlightColorRef.current, false);
 
-        // ── Annotation popup ──
+        // ── Annotation popup (always use primary annotations — mesh names are shared) ──
         if (hasAnnotations && hitNames.length > 0) {
           const match = annotationsRef.current.find((a) =>
             hitNames.some(
@@ -539,6 +665,47 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           );
 
           setActiveAnnotation(match ?? null);
+
+          // ── Mirror highlight: highlight same mesh on the OTHER model ──
+          if (match && compareGroupRef.current && modelGroupRef.current) {
+            // Determine which model was hit
+            let hitGroup: THREE.Object3D | null = null;
+            let walk: THREE.Object3D | null = hit;
+            while (walk) {
+              if (walk === modelGroupRef.current || walk === compareGroupRef.current) {
+                hitGroup = walk;
+                break;
+              }
+              walk = walk.parent;
+            }
+            const otherGroup = hitGroup === modelGroupRef.current ? compareGroupRef.current : modelGroupRef.current;
+
+            // Find matching mesh in the other model
+            let otherMesh: THREE.Mesh | null = null;
+            otherGroup.traverse((node) => {
+              if (otherMesh) return;
+              let cur: THREE.Object3D | null = node;
+              while (cur && cur !== otherGroup) {
+                if (cur.name && (
+                  cur.name === match.meshName ||
+                  cur.name.startsWith(match.meshName) ||
+                  match.meshName.startsWith(cur.name)
+                )) {
+                  // Find the first mesh inside this node
+                  if ((node as THREE.Mesh).isMesh) {
+                    otherMesh = node as THREE.Mesh;
+                  }
+                  return;
+                }
+                cur = cur.parent;
+              }
+            });
+
+            if (otherMesh) {
+              mirrorHighlight.current = captureHighlightState(otherMesh);
+              applyHighlight((otherMesh as THREE.Mesh).material as THREE.MeshStandardMaterial, highlightColorRef.current, false);
+            }
+          }
         }
 
         // ── Dev mode inspector ──
@@ -583,7 +750,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         return;
       }
 
-      const hasAnnotations = annotationsRef.current.length > 0;
+      const hasAnnotations = annotationsRef.current.length > 0 || compareAnnotationsRef.current.length > 0;
       if (!devModeRef.current && !hasAnnotations) {
         renderer.domElement.style.cursor = "";
         return;
@@ -597,11 +764,10 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
       raycaster.setFromCamera(hoverMouse, camera);
 
-      if (!modelGroupRef.current) return;
-      const intersects = raycaster.intersectObjects(
-        modelGroupRef.current.children,
-        true,
-      );
+      const hoverTargets = [modelGroupRef.current, compareGroupRef.current].filter(Boolean) as THREE.Group[];
+      if (hoverTargets.length === 0) return;
+      const hoverChildren = hoverTargets.flatMap((g) => [...g.children]);
+      const intersects = raycaster.intersectObjects(hoverChildren, true);
 
       if (intersects.length > 0) {
         const hit = intersects[0].object as THREE.Mesh;
@@ -615,11 +781,16 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           return;
         }
 
-        // Restore previous hover
+        // Restore previous hover + mirror hover
         if (hoverHighlight.current) {
           const prevMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
           restoreHighlight(prevMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
           hoverHighlight.current = null;
+        }
+        if (mirrorHoverHighlight.current) {
+          const mhMat = mirrorHoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+          restoreHighlight(mhMat, mirrorHoverHighlight.current.originalEmissive, mirrorHoverHighlight.current.originalColor);
+          mirrorHoverHighlight.current = null;
         }
 
         // Apply hover highlight (animated)
@@ -627,19 +798,83 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         hoverHighlight.current = captureHighlightState(hit);
         applyHighlight(mat, highlightColorRef.current, true);
 
+        // Mirror hover: find matching mesh on the other model
+        if (isCompareRef.current && compareGroupRef.current && modelGroupRef.current) {
+          // Determine which model was hovered
+          let hitGroup: THREE.Object3D | null = null;
+          let walk: THREE.Object3D | null = hit;
+          while (walk) {
+            if (walk === modelGroupRef.current || walk === compareGroupRef.current) {
+              hitGroup = walk; break;
+            }
+            walk = walk.parent;
+          }
+          const otherGroup = hitGroup === modelGroupRef.current ? compareGroupRef.current : modelGroupRef.current;
+
+          // Collect names from hit through parent chain
+          const hitNames: string[] = [];
+          let cur: THREE.Object3D | null = hit;
+          while (cur && cur !== hitGroup) {
+            if (cur.name) hitNames.push(cur.name);
+            cur = cur.parent;
+          }
+
+          // Find matching annotation by name
+          const matchAnn = annotationsRef.current.find((a) =>
+            hitNames.some((n) => n === a.meshName || n.startsWith(a.meshName) || a.meshName.startsWith(n))
+          );
+
+          if (matchAnn) {
+            let otherMesh: THREE.Mesh | null = null;
+            otherGroup.traverse((node) => {
+              if (otherMesh) return;
+              let c: THREE.Object3D | null = node;
+              while (c && c !== otherGroup) {
+                if (c.name && (c.name === matchAnn.meshName || c.name.startsWith(matchAnn.meshName) || matchAnn.meshName.startsWith(c.name))) {
+                  if ((node as THREE.Mesh).isMesh) otherMesh = node as THREE.Mesh;
+                  return;
+                }
+                c = c.parent;
+              }
+            });
+            if (otherMesh && otherMesh !== previousHighlight.current?.mesh && otherMesh !== mirrorHighlight.current?.mesh) {
+              mirrorHoverHighlight.current = captureHighlightState(otherMesh);
+              applyHighlight((otherMesh as THREE.Mesh).material as THREE.MeshStandardMaterial, highlightColorRef.current, true);
+            }
+          }
+        }
+
         renderer.domElement.style.cursor = "pointer";
       } else {
-        // Restore hover highlight
+        // Restore hover highlight + mirror hover
         if (hoverHighlight.current) {
           const prevMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
           restoreHighlight(prevMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
           hoverHighlight.current = null;
+        }
+        if (mirrorHoverHighlight.current) {
+          const mhMat = mirrorHoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+          restoreHighlight(mhMat, mirrorHoverHighlight.current.originalEmissive, mirrorHoverHighlight.current.originalColor);
+          mirrorHoverHighlight.current = null;
         }
         renderer.domElement.style.cursor = "";
       }
     };
 
     const onPointerMove = (e: PointerEvent) => {
+      // Handle drag rotation in compare mode (quaternion-based for full 360°)
+      if (dragStateRef.current.active && dragStateRef.current.target) {
+        const deltaX = e.clientX - dragStateRef.current.lastX;
+        const deltaY = e.clientY - dragStateRef.current.lastY;
+        const target = dragStateRef.current.target;
+        const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), deltaX * 0.01);
+        const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), deltaY * 0.01);
+        target.quaternion.premultiply(qX).premultiply(qY);
+        dragStateRef.current.lastX = e.clientX;
+        dragStateRef.current.lastY = e.clientY;
+        return;
+      }
+
       pendingHoverEvent = e;
       if (hoverThrottleId !== null) return;
       hoverThrottleId = setTimeout(() => {
@@ -703,6 +938,49 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         }
       }
 
+      // ── Compare mode: per-model auto-rotation + compare mixer ──
+      if (isCompareRef.current) {
+        const rotSpeed = ((2 * Math.PI) / 60) * 0.5 * delta;
+        const autoRotQ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotSpeed);
+        if (modelGroupRef.current && !(dragStateRef.current.active && dragStateRef.current.target === modelGroupRef.current)) {
+          modelGroupRef.current.quaternion.premultiply(autoRotQ);
+        }
+        if (compareGroupRef.current && !(dragStateRef.current.active && dragStateRef.current.target === compareGroupRef.current)) {
+          compareGroupRef.current.quaternion.premultiply(autoRotQ);
+        }
+
+        if (compareMixerRef.current) {
+          const speed = devAnimSpeedRef.current;
+          const mode = animModeRef.current;
+          if (mode !== "ramp" && devAnimPlayingRef.current) {
+            const duration = maxCompareClipDurationRef.current || 1;
+            const t = animTimeAccum.current;
+            let mappedTime: number;
+            switch (mode) {
+              case "boomerang": {
+                const phase = (t % (duration * 2)) / duration;
+                const linear = phase <= 1 ? phase : 2 - phase;
+                mappedTime = (3 * linear * linear - 2 * linear * linear * linear) * duration;
+                break;
+              }
+              case "sinus":
+                mappedTime = ((Math.sin((t / duration) * Math.PI * 2 - Math.PI / 2) + 1) / 2) * duration;
+                break;
+              case "triangle": {
+                const triPhase = (t % (duration * 2)) / duration;
+                mappedTime = (triPhase <= 1 ? triPhase : 2 - triPhase) * duration;
+                break;
+              }
+              default:
+                mappedTime = t % duration;
+            }
+            compareMixerRef.current.setTime(mappedTime);
+          } else {
+            compareMixerRef.current.update(delta * speed);
+          }
+        }
+      }
+
       controls.update();
       renderer.render(scene, camera);
     };
@@ -721,6 +999,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
     // ── Cleanup ──
     return () => {
+      disposed = true;
       resizeObserver.disconnect();
       cancelAnimationFrame(frameRef.current);
       gsap.ticker.add(gsap.updateRoot); // restore GSAP's default ticker
@@ -735,8 +1014,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         container.removeChild(renderer.domElement);
       }
 
-      if (modelGroupRef.current) {
-        modelGroupRef.current.traverse((node) => {
+      const disposeGroup = (group: THREE.Group | null) => {
+        if (!group) return;
+        group.traverse((node) => {
           const mesh = node as THREE.Mesh;
           if (mesh.geometry) mesh.geometry.dispose();
           if (mesh.material) {
@@ -744,14 +1024,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             mats.forEach((m) => m.dispose());
           }
         });
-      }
+      };
+      disposeGroup(modelGroupRef.current);
+      disposeGroup(compareGroupRef.current);
+      compareGroupRef.current = null;
+      compareMixerRef.current = null;
+      compareActionsRef.current = [];
 
       dracoLoader.dispose();
       envTexture.dispose();
     };
     // Re-initialise only when the model URL changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modelUrl]);
+  }, [modelUrl, compareModelUrl]);
 
   // ── Reactive updates (dev state is always the source of truth) ──
 
@@ -776,7 +1061,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   }, [devBgColor, devTransparentBg]);
 
   useEffect(() => {
-    if (controlsRef.current) controlsRef.current.autoRotate = devAutoRotate;
+    if (controlsRef.current && !isCompareRef.current) controlsRef.current.autoRotate = devAutoRotate;
   }, [devAutoRotate]);
 
   useEffect(() => {
@@ -797,6 +1082,15 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     const model = modelGroupRef.current;
     if (!model) return;
     applySimpleMaterials(model);
+    // Also apply to compare model if present
+    const compareModel = compareGroupRef.current;
+    if (compareModel) {
+      compareModel.traverse((child) => {
+        if (child instanceof THREE.Group || child.children.length > 0) {
+          applySimpleMaterials(child as THREE.Group);
+        }
+      });
+    }
   }, [applySimpleMaterials]);
 
   // ── Annotation popup animation ──
@@ -865,11 +1159,23 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       previousHighlight.current = null;
     }
 
-    // Restore hover highlight
+    // Restore mirror highlight
+    if (mirrorHighlight.current) {
+      const mMat = mirrorHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+      restoreHighlight(mMat, mirrorHighlight.current.originalEmissive, mirrorHighlight.current.originalColor);
+      mirrorHighlight.current = null;
+    }
+
+    // Restore hover highlight + mirror hover
     if (hoverHighlight.current) {
       const mat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
       restoreHighlight(mat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
       hoverHighlight.current = null;
+    }
+    if (mirrorHoverHighlight.current) {
+      const mhMat = mirrorHoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+      restoreHighlight(mhMat, mirrorHoverHighlight.current.originalEmissive, mirrorHoverHighlight.current.originalColor);
+      mirrorHoverHighlight.current = null;
     }
   }, [restoreHighlight]);
 
@@ -1111,7 +1417,10 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   // Detect mobile layout via screen width (responsive, works with browser resize)
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
-    const onChange = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(e.matches);
+      isMobileRef.current = e.matches;
+    };
     onChange(mq);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
@@ -1199,70 +1508,86 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   // ── Select element from Elements dropdown ──
   const handleElementSelect = useCallback(
     (annotation: MeshAnnotation) => {
-      const root = modelGroupRef.current;
-      if (!root) return;
+      const roots = [modelGroupRef.current, compareGroupRef.current].filter(Boolean) as THREE.Object3D[];
+      if (roots.length === 0) return;
 
-      // Restore hover highlight to true original first
+      // Restore all previous highlights
       if (hoverHighlight.current) {
         const hMat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
         restoreHighlight(hMat, hoverHighlight.current.originalEmissive, hoverHighlight.current.originalColor);
         hoverHighlight.current = null;
       }
-
-      // Restore previous click highlight
+      if (mirrorHoverHighlight.current) {
+        const mhMat = mirrorHoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        restoreHighlight(mhMat, mirrorHoverHighlight.current.originalEmissive, mirrorHoverHighlight.current.originalColor);
+        mirrorHoverHighlight.current = null;
+      }
       if (previousHighlight.current) {
         const prevMat = previousHighlight.current.mesh.material as THREE.MeshStandardMaterial;
         restoreHighlight(prevMat, previousHighlight.current.originalEmissive, previousHighlight.current.originalColor);
         previousHighlight.current = null;
       }
-
-      // Find the matching 3D object by annotation meshName
-      let matchedNode: THREE.Object3D | null = null;
-
-      // Try direct children first
-      for (const child of root.children) {
-        if (
-          child.name === annotation.meshName ||
-          child.name.startsWith(annotation.meshName) ||
-          annotation.meshName.startsWith(child.name)
-        ) {
-          matchedNode = child;
-          break;
-        }
+      if (mirrorHighlight.current) {
+        const mMat = mirrorHighlight.current.mesh.material as THREE.MeshStandardMaterial;
+        restoreHighlight(mMat, mirrorHighlight.current.originalEmissive, mirrorHighlight.current.originalColor);
+        mirrorHighlight.current = null;
       }
 
-      // Fallback: traverse entire tree
-      if (!matchedNode) {
-        root.traverse((node) => {
+      // Find and highlight matching mesh in EACH model root
+      let highlightedFirst = false;
+      for (const r of roots) {
+        let matchedNode: THREE.Object3D | null = null;
+
+        // Try direct children first
+        for (const child of r.children) {
           if (
-            !matchedNode &&
-            (node.name === annotation.meshName ||
-              node.name.startsWith(annotation.meshName) ||
-              annotation.meshName.startsWith(node.name))
+            child.name === annotation.meshName ||
+            child.name.startsWith(annotation.meshName) ||
+            annotation.meshName.startsWith(child.name)
           ) {
-            matchedNode = node;
+            matchedNode = child;
+            break;
           }
-        });
-      }
+        }
 
-      if (!matchedNode) return;
+        // Fallback: traverse entire tree
+        if (!matchedNode) {
+          r.traverse((node) => {
+            if (
+              !matchedNode &&
+              (node.name === annotation.meshName ||
+                node.name.startsWith(annotation.meshName) ||
+                annotation.meshName.startsWith(node.name))
+            ) {
+              matchedNode = node;
+            }
+          });
+        }
 
-      // Highlight the first mesh found in the matched node
-      let targetMesh: THREE.Mesh | null = null;
-      if ((matchedNode as THREE.Mesh).isMesh) {
-        targetMesh = matchedNode as THREE.Mesh;
-      } else {
-        matchedNode.traverse((child) => {
-          if (!targetMesh && (child as THREE.Mesh).isMesh) {
-            targetMesh = child as THREE.Mesh;
+        if (!matchedNode) continue;
+
+        // Find first mesh in matched node
+        let targetMesh: THREE.Mesh | null = null;
+        if ((matchedNode as THREE.Mesh).isMesh) {
+          targetMesh = matchedNode as THREE.Mesh;
+        } else {
+          matchedNode.traverse((child) => {
+            if (!targetMesh && (child as THREE.Mesh).isMesh) {
+              targetMesh = child as THREE.Mesh;
+            }
+          });
+        }
+
+        if (targetMesh) {
+          const tMat = (targetMesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
+          if (!highlightedFirst) {
+            previousHighlight.current = captureHighlightState(targetMesh);
+            highlightedFirst = true;
+          } else {
+            mirrorHighlight.current = captureHighlightState(targetMesh);
           }
-        });
-      }
-
-      if (targetMesh) {
-        const mat = (targetMesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
-        previousHighlight.current = captureHighlightState(targetMesh);
-        applyHighlight(mat, highlightColorRef.current, false);
+          applyHighlight(tMat, highlightColorRef.current, false);
+        }
       }
 
       // Open annotation popup
@@ -1279,7 +1604,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   return (
     <div
       className={`relative w-full overflow-hidden border-2 border-white ${className || ""}`}
-      style={{ aspectRatio: isMobile ? "4 / 5" : "16 / 9" }}
+      style={{ aspectRatio: isMobile ? (compareModelUrl ? "3 / 5" : "4 / 5") : "16 / 9" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -1333,7 +1658,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           setDevAnimMode={setDevAnimMode}
           devAnimSpeed={devAnimSpeed}
           setDevAnimSpeed={setDevAnimSpeed}
-          sceneGraph={sceneGraph}
+          sceneGraph={compareSceneGraph.length > 0 ? [...sceneGraph, "── Compare Model ──", ...compareSceneGraph] : sceneGraph}
           annotations={annotations}
         />
       )}
