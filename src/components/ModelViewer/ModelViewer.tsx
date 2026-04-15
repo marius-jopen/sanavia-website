@@ -517,13 +517,19 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             maxCompareClipDurationRef.current = Math.max(...r2.clips.map((c) => c.duration));
           }
 
-          // Position side by side on all viewports
+          // Position side by side (desktop) or stacked (mobile)
           const mobile = isMobileRef.current;
           const comparePosR1 = new THREE.Vector3();
           const comparePosR2 = new THREE.Vector3();
-          const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
-          comparePosR1.set(-(r1.size.x / 2 + gap / 2), 0, 0);
-          comparePosR2.set(r2.size.x / 2 + gap / 2, 0, 0);
+          if (mobile) {
+            const gapY = -Math.max(r1.size.y, r2.size.y) * 0.08;
+            comparePosR1.set(0, r1.size.y / 2 + gapY, 0);
+            comparePosR2.set(0, -(r2.size.y / 2), 0);
+          } else {
+            const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
+            comparePosR1.set(-(r1.size.x / 2 + gap / 2), 0, 0);
+            comparePosR2.set(r2.size.x / 2 + gap / 2, 0, 0);
+          }
 
           // Compute compare framing
           r1.pivot.position.copy(comparePosR1);
