@@ -517,19 +517,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             maxCompareClipDurationRef.current = Math.max(...r2.clips.map((c) => c.duration));
           }
 
-          // Position side by side (desktop) or stacked (mobile)
+          // Position side by side on all viewports
           const mobile = isMobileRef.current;
           const comparePosR1 = new THREE.Vector3();
           const comparePosR2 = new THREE.Vector3();
-          if (mobile) {
-            const gap = -Math.max(r1.size.y, r2.size.y) * 0.08;
-            comparePosR1.set(0, r1.size.y / 2 + gap, 0);
-            comparePosR2.set(0, -(r2.size.y / 2), 0);
-          } else {
-            const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
-            comparePosR1.set(-(r1.size.x / 2 + gap / 2), 0, 0);
-            comparePosR2.set(r2.size.x / 2 + gap / 2, 0, 0);
-          }
+          const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
+          comparePosR1.set(-(r1.size.x / 2 + gap / 2), 0, 0);
+          comparePosR2.set(r2.size.x / 2 + gap / 2, 0, 0);
 
           // Compute compare framing
           r1.pivot.position.copy(comparePosR1);
@@ -1687,7 +1681,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   return (
     <div
       className={`relative w-full overflow-hidden border-2 border-white ${className || ""}`}
-      style={{ aspectRatio: isMobile ? (compareModelUrl && compareMode ? "9 / 16" : "4 / 5") : "16 / 9" }}
+      style={{ aspectRatio: isMobile ? (compareModelUrl && compareMode ? "1 / 2" : "3 / 5") : "16 / 9" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
