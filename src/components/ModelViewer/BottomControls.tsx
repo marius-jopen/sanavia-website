@@ -10,6 +10,9 @@ export interface BottomControlsProps {
   isMobile: boolean;
   motionPermission: "unknown" | "granted" | "denied" | "not-needed";
   onRequestMotionPermission: () => void;
+  hasCompare?: boolean;
+  compareMode?: boolean;
+  onToggleCompareMode?: () => void;
 }
 
 const pillDefault =
@@ -24,6 +27,9 @@ export function BottomControls({
   isMobile,
   motionPermission,
   onRequestMotionPermission,
+  hasCompare = false,
+  compareMode = false,
+  onToggleCompareMode,
 }: BottomControlsProps) {
   const [open, setOpen] = useState(false);
 
@@ -32,6 +38,16 @@ export function BottomControls({
       {/* Pills stacked vertically above the button */}
       {open && (
         <>
+          {hasCompare && onToggleCompareMode && (
+            <button
+              type="button"
+              onClick={onToggleCompareMode}
+              className={pillDefault}
+              aria-label={compareMode ? "Show single model" : "Show comparison mode"}
+            >
+              {compareMode ? "Single View" : "Competitor Comparison Mode"}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {

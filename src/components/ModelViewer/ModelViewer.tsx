@@ -67,9 +67,17 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     originalEmissive: THREE.Color;
     originalColor: THREE.Color;
   } | null>(null);
+  const [compareMode, setCompareMode] = useState(true);
+  const compareModeRef = useRef(true);
+  compareModeRef.current = compareMode;
   const isCompareRef = useRef(!!compareModelUrl);
-  isCompareRef.current = !!compareModelUrl;
+  isCompareRef.current = !!compareModelUrl && compareMode;
   const isMobileRef = useRef(false);
+  const framingRef = useRef<{
+    single: { modelPos: THREE.Vector3; camPos: THREE.Vector3; target: THREE.Vector3; near: number; far: number };
+    compare: { modelPos: THREE.Vector3; comparePos: THREE.Vector3; camPos: THREE.Vector3; target: THREE.Vector3; near: number; far: number };
+  } | null>(null);
+  const isPlayingRef = useRef(autoRotate);
 
   // Raycasting refs
   const raycasterRef = useRef<THREE.Raycaster | null>(null);
@@ -96,6 +104,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [loadProgress, setLoadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(autoRotate);
+  isPlayingRef.current = isPlaying;
   const [hasAnimations, setHasAnimations] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -510,30 +519,71 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
           // Position side by side (desktop) or stacked (mobile)
           const mobile = isMobileRef.current;
+          const comparePosR1 = new THREE.Vector3();
+          const comparePosR2 = new THREE.Vector3();
           if (mobile) {
             const gap = -Math.max(r1.size.y, r2.size.y) * 0.08;
-            r1.pivot.position.y = r1.size.y / 2 + gap;
-            r2.pivot.position.y = -(r2.size.y / 2);
+            comparePosR1.set(0, r1.size.y / 2 + gap, 0);
+            comparePosR2.set(0, -(r2.size.y / 2), 0);
           } else {
             const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
-            r1.pivot.position.x = -(r1.size.x / 2 + gap / 2);
-            r2.pivot.position.x = r2.size.x / 2 + gap / 2;
+            comparePosR1.set(-(r1.size.x / 2 + gap / 2), 0, 0);
+            comparePosR2.set(r2.size.x / 2 + gap / 2, 0, 0);
           }
 
-          // Frame camera for both models
+          // Compute compare framing
+          r1.pivot.position.copy(comparePosR1);
+          r2.pivot.position.copy(comparePosR2);
           const combinedBox = new THREE.Box3()
             .setFromObject(r1.pivot)
             .union(new THREE.Box3().setFromObject(r2.pivot));
           const combinedSize = combinedBox.getSize(new THREE.Vector3());
           const maxDim = Math.max(combinedSize.x, combinedSize.y, combinedSize.z);
           const fov = camera.fov * (Math.PI / 180);
-          const camMultiplier = isMobileRef.current ? 1.1 : 0.75;
+          const camMultiplier = mobile ? 1.1 : 0.75;
           const cameraZ = (maxDim / (2 * Math.tan(fov / 2))) * camMultiplier;
-          camera.position.set(0, combinedSize.y * 0.05, cameraZ);
-          camera.near = cameraZ / 100;
-          camera.far = cameraZ * 100;
+          const compareFraming = {
+            modelPos: comparePosR1.clone(),
+            comparePos: comparePosR2.clone(),
+            camPos: new THREE.Vector3(0, combinedSize.y * 0.05, cameraZ),
+            target: new THREE.Vector3(0, 0, 0),
+            near: cameraZ / 100,
+            far: cameraZ * 100,
+          };
+
+          // Compute single framing (r1 at origin)
+          r1.pivot.position.set(0, 0, 0);
+          const singleBox = new THREE.Box3().setFromObject(r1.pivot);
+          const singleSize = singleBox.getSize(new THREE.Vector3());
+          const singleMaxDim = Math.max(singleSize.x, singleSize.y, singleSize.z);
+          const singleCamZ = (singleMaxDim / (2 * Math.tan(fov / 2))) * 0.9;
+          const singleFraming = {
+            modelPos: new THREE.Vector3(0, 0, 0),
+            camPos: new THREE.Vector3(0, singleSize.y * 0.15, singleCamZ),
+            target: new THREE.Vector3(0, 0, 0),
+            near: singleCamZ / 100,
+            far: singleCamZ * 100,
+          };
+
+          framingRef.current = { single: singleFraming, compare: compareFraming };
+
+          // Apply current compare mode
+          const startInCompare = compareModeRef.current;
+          const f = startInCompare ? compareFraming : singleFraming;
+          r1.pivot.position.copy(f.modelPos);
+          if (startInCompare) {
+            r2.pivot.position.copy(compareFraming.comparePos);
+            r2.pivot.visible = true;
+          } else {
+            r2.pivot.visible = false;
+          }
+          camera.position.copy(f.camPos);
+          camera.near = f.near;
+          camera.far = f.far;
           camera.updateProjectionMatrix();
-          controls.target.set(0, 0, 0);
+          controls.target.copy(f.target);
+          controls.enableRotate = !startInCompare;
+          if (!startInCompare) controls.autoRotate = isPlayingRef.current;
           controls.update();
         } else {
           // Single model: frame camera
@@ -1063,6 +1113,39 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   useEffect(() => {
     if (controlsRef.current && !isCompareRef.current) controlsRef.current.autoRotate = devAutoRotate;
   }, [devAutoRotate]);
+
+  useEffect(() => {
+    if (!compareModelUrl) return;
+    const f = framingRef.current;
+    const cam = cameraRef.current;
+    const controls = controlsRef.current;
+    const model = modelGroupRef.current;
+    const compare = compareGroupRef.current;
+    if (!f || !cam || !controls || !model || !compare) return;
+    if (compareMode) {
+      model.position.copy(f.compare.modelPos);
+      compare.position.copy(f.compare.comparePos);
+      compare.visible = true;
+      cam.position.copy(f.compare.camPos);
+      cam.near = f.compare.near;
+      cam.far = f.compare.far;
+      cam.updateProjectionMatrix();
+      controls.target.copy(f.compare.target);
+      controls.enableRotate = false;
+      controls.autoRotate = false;
+    } else {
+      model.position.copy(f.single.modelPos);
+      compare.visible = false;
+      cam.position.copy(f.single.camPos);
+      cam.near = f.single.near;
+      cam.far = f.single.far;
+      cam.updateProjectionMatrix();
+      controls.target.copy(f.single.target);
+      controls.enableRotate = true;
+      controls.autoRotate = isPlayingRef.current;
+    }
+    controls.update();
+  }, [compareMode, compareModelUrl]);
 
   useEffect(() => {
     if (controlsRef.current) controlsRef.current.enableZoom = devEnableZoom;
@@ -1696,6 +1779,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           isMobile={isMobile}
           motionPermission={motionPermission}
           onRequestMotionPermission={requestMotionPermission}
+          hasCompare={!!compareModelUrl}
+          compareMode={compareMode}
+          onToggleCompareMode={() => setCompareMode((v) => !v)}
         />
       )}
     </div>

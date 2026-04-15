@@ -725,6 +725,51 @@ export type HeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Item in *MoleculeViever → Default → Primary → Compare*
+ */
+export interface MoleculeVieverSliceDefaultPrimaryCompareItem {
+  /**
+   * Mesh Name field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].mesh_name
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  mesh_name: prismic.KeyTextField;
+
+  /**
+   * Mesh Color field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Color
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].mesh_color
+   * - **Documentation**: https://prismic.io/docs/field#color
+   */
+  mesh_color: prismic.ColorField;
+
+  /**
+   * Info Title field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].info_title
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  info_title: prismic.KeyTextField;
+
+  /**
+   * Info Text field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].info_text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  info_text: prismic.RichTextField;
+}
+
+/**
  * Primary content in *MoleculeViever → Default → Primary*
  */
 export interface MoleculeVieverSliceDefaultPrimary {
@@ -760,6 +805,16 @@ export interface MoleculeVieverSliceDefaultPrimary {
   model_file: prismic.LinkToMediaField<prismic.FieldState, never>;
 
   /**
+   * 3D Model Compare field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Link to Media
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.3d_model_compare
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  "3d_model_compare": prismic.LinkToMediaField<prismic.FieldState, never>;
+
+  /**
    * Developer Mode field in *MoleculeViever → Default → Primary*
    *
    * - **Field Type**: Boolean
@@ -779,6 +834,18 @@ export interface MoleculeVieverSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#key-text
    */
   settings_json: prismic.KeyTextField;
+
+  /**
+   * Compare field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[]
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  compare: prismic.GroupField<
+    Simplify<MoleculeVieverSliceDefaultPrimaryCompareItem>
+  >;
 }
 
 /**
@@ -1813,6 +1880,7 @@ declare module "@prismicio/client" {
       HeadlineSliceVariation,
       HeadlineSliceDefault,
       MoleculeVieverSlice,
+      MoleculeVieverSliceDefaultPrimaryCompareItem,
       MoleculeVieverSliceDefaultPrimary,
       MoleculeVieverSliceDefaultItem,
       MoleculeVieverSliceVariation,
