@@ -1687,7 +1687,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   return (
     <div
       className={`relative w-full overflow-hidden border-2 border-white ${className || ""}`}
-      style={{ aspectRatio: isMobile ? (compareModelUrl ? "3 / 5" : "4 / 5") : "16 / 9" }}
+      style={{ aspectRatio: isMobile ? (compareModelUrl && compareMode ? "9 / 16" : "4 / 5") : "16 / 9" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
