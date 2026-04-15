@@ -250,13 +250,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   );
 
   // ── Helper: apply or revert simple materials ──
-  const applySimpleMaterials = useCallback((model: THREE.Group) => {
+  const applySimpleMaterials = useCallback((model: THREE.Group, annotationsOverride?: MeshAnnotation[]) => {
     const shouldApply = devSimpleMaterials;
+    const sourceAnnotations = annotationsOverride ?? annotationsRef.current;
 
     if (shouldApply) {
       // Build a map: meshName → color from annotations
       const annotationColorMap = new Map<string, string>();
-      annotationsRef.current.forEach((a) => {
+      sourceAnnotations.forEach((a) => {
         if (a.color) annotationColorMap.set(a.meshName, a.color);
       });
 
@@ -449,7 +450,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         );
       });
 
-    const setupModel = (gltf: { scene: THREE.Group; animations: THREE.AnimationClip[] }) => {
+    const setupModel = (gltf: { scene: THREE.Group; animations: THREE.AnimationClip[] }, modelAnnotations: MeshAnnotation[]) => {
       const model = gltf.scene;
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
@@ -466,7 +467,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         names.push(`${indent}${type}: "${node.name || "(unnamed)"}"`);
       });
 
-      applySimpleMaterials(model);
+      applySimpleMaterials(model, modelAnnotations);
 
       let mixer: THREE.AnimationMixer | null = null;
       let actions: THREE.AnimationAction[] = [];
@@ -490,7 +491,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       try {
         const gltf1 = await loadGLTF(modelUrl);
         if (disposed) return;
-        const r1 = setupModel(gltf1);
+        const r1 = setupModel(gltf1, annotationsRef.current);
 
         scene.add(r1.pivot);
         modelGroupRef.current = r1.pivot;
@@ -507,7 +508,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         if (compareModelUrl) {
           const gltf2 = await loadGLTF(compareModelUrl);
           if (disposed) return;
-          const r2 = setupModel(gltf2);
+          const r2 = setupModel(gltf2, compareAnnotationsRef.current);
 
           scene.add(r2.pivot);
           compareGroupRef.current = r2.pivot;
@@ -1165,17 +1166,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   // ── Re-apply simple materials when toggled from dev panel ──
   useEffect(() => {
     const model = modelGroupRef.current;
-    if (!model) return;
-    applySimpleMaterials(model);
-    // Also apply to compare model if present
+    if (model) applySimpleMaterials(model, annotationsRef.current);
     const compareModel = compareGroupRef.current;
-    if (compareModel) {
-      compareModel.traverse((child) => {
-        if (child instanceof THREE.Group || child.children.length > 0) {
-          applySimpleMaterials(child as THREE.Group);
-        }
-      });
-    }
+    if (compareModel) applySimpleMaterials(compareModel, compareAnnotationsRef.current);
   }, [applySimpleMaterials]);
 
   // ── Annotation popup animation ──
