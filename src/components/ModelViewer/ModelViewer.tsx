@@ -72,7 +72,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   compareModeRef.current = compareMode;
   const isCompareRef = useRef(!!compareModelUrl);
   isCompareRef.current = !!compareModelUrl && compareMode;
-  const isMobileRef = useRef(false);
+  const isMobileRef = useRef(
+    typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches,
+  );
   const framingRef = useRef<{
     single: { modelPos: THREE.Vector3; camPos: THREE.Vector3; target: THREE.Vector3; near: number; far: number };
     compare: { modelPos: THREE.Vector3; comparePos: THREE.Vector3; camPos: THREE.Vector3; target: THREE.Vector3; near: number; far: number };
@@ -1494,7 +1496,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   // motionPermission: "unknown" (not yet asked), "granted", "denied", "not-needed" (Android/desktop)
   const [motionPermission, setMotionPermission] = useState<"unknown" | "granted" | "denied" | "not-needed">("unknown");
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches,
+  );
   const motionCleanupRef = useRef<(() => void) | null>(null);
 
   // Detect mobile layout via screen width (responsive, works with browser resize)
