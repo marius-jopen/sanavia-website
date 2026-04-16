@@ -3,6 +3,7 @@ import Navigation from "./Navigation";
 import Logo from "./Logo";
 import Socials from "./Socials";
 import BottomText from "./BottomText";
+import AccessibilityButton from "./AccessibilityButton";
 
 type FooterProps = {
   data: Content.HeaderDocumentData;
@@ -24,6 +25,8 @@ export default function Footer({ data }: FooterProps) {
         </div>
 
         <Socials socials={data.socials} />
+
+        <AccessibilityButton />
 
         <BottomText text={data.footer_bottom_line} />
       </div>
