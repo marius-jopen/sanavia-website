@@ -14,7 +14,14 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sanavia.bio";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Sanavia",
+    template: "%s – Sanavia",
+  },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",

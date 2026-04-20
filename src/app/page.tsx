@@ -31,12 +31,15 @@ export default async function Home() {
 export async function generateMetadata(): Promise<Metadata> {
   const client = createClient();
   const home = await client.getByUID("page", "home");
+  const pageTitle = asText(home.data.title);
+  const metaTitle = home.data.meta_title;
 
   return {
-    title: asText(home.data.title),
+    title: metaTitle ? { absolute: metaTitle } : pageTitle || undefined,
     description: home.data.meta_description,
+    alternates: { canonical: "/" },
     openGraph: {
-      title: home.data.meta_title ?? undefined,
+      title: metaTitle ?? pageTitle ?? undefined,
       images: [{ url: home.data.meta_image.url ?? "" }],
     },
   };
