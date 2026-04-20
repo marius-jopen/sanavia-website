@@ -2,6 +2,7 @@ import { FC } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 
 // Helper type to add visible field to slice primary
 type WithVisible<T> = T & { visible?: boolean };
@@ -26,7 +27,7 @@ const SmallText: FC<SmallTextProps> = ({ slice }) => {
       data-slice-variation={slice.variation}
     >
       <div className="mx-auto px-4  max-w-screen-sm text-box">
-        <PrismicRichText field={slice.primary.richtext} />
+        <PrismicRichText field={slice.primary.richtext} components={richTextComponents} />
       </div>
     </section>
   );

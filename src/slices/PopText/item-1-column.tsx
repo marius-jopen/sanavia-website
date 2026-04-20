@@ -1,5 +1,6 @@
 import Button from '@/components/Button';
 import { PrismicRichText } from '@prismicio/react';
+import { richTextComponents } from "@/components/richTextComponents";
 import VideoBasic from "../../components/VideoBasic";
 
 import React from 'react';
@@ -35,7 +36,7 @@ const Item1Column: React.FC<Item1ColumnProps> = (props) => {
 
         {props.richtext && props.richtext.length > 0 && (
             <div className="text-neutral-500">
-                <PrismicRichText field={props.richtext} />
+                <PrismicRichText field={props.richtext} components={richTextComponents} />
             </div>
         )}
 

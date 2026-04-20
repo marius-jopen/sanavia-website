@@ -4,6 +4,7 @@ import { Content, isFilled } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import { PrismicNextLink } from "@prismicio/next";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
+import { richTextComponents } from "@/components/richTextComponents";
 
 /**
  * Props for `CenteredTextCta`.
@@ -26,7 +27,7 @@ const CenteredTextCta: FC<CenteredTextCtaProps> = ({ slice }) => {
     <section ref={sectionRef} className="w-full mb-4 px-4">
       <div className="border-2 border-white rounded-2xl overflow-hidden md:px-8 py-16 flex flex-col items-center gap-10">
         <div className="text-center md:w-8/12 mx-auto">
-          <PrismicRichText field={slice.primary.headline} />
+          <PrismicRichText field={slice.primary.headline} components={richTextComponents} />
         </div>
 
         {isFilled.link(slice.primary.cta) && (

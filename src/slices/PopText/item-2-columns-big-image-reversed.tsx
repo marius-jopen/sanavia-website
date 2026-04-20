@@ -1,4 +1,5 @@
 import { PrismicRichText } from '@prismicio/react';
+import { richTextComponents } from "@/components/richTextComponents";
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField, BooleanField } from '@prismicio/client';
 import Button from '@/components/Button';
@@ -37,7 +38,7 @@ const Item2ColumnsBigImageReversed: React.FC<Item2ColumnsBigImageReversedProps> 
 
         {props.richtext && props.richtext.length > 0 && (
           <div className=' text-neutral-500'>
-            <PrismicRichText field={props.richtext} />
+            <PrismicRichText field={props.richtext} components={richTextComponents} />
           </div>
         )}
         

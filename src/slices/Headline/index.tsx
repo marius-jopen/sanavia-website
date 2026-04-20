@@ -3,6 +3,7 @@ import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
+import { richTextComponents } from "@/components/richTextComponents";
 
 // Helper type to add visible field to slice primary
 type WithVisible<T> = T & { visible?: boolean };
@@ -37,10 +38,10 @@ const Headline: FC<HeadlineProps> = ({ slice }) => {
       <section ref={sectionRef} className="w-full mb-4 px-4">
         <div className={`${alignment} pt-12 pb-4 px-8 headline bg-white rounded-2xl overflow-hidden`}>
           <div className={`md:mb-8 ${headlineWidth} text-gray-800`}>
-            <PrismicRichText field={slice.primary.headline} />
+            <PrismicRichText field={slice.primary.headline} components={richTextComponents} />
           </div>
           <div className={`${subHeadlineWidth} text-gray-500 pt-6 md:pt-0`}>
-            <PrismicRichText field={slice.primary.sub_headline} />
+            <PrismicRichText field={slice.primary.sub_headline} components={richTextComponents} />
           </div>
         </div>
       </section>
@@ -50,11 +51,11 @@ const Headline: FC<HeadlineProps> = ({ slice }) => {
   return (
     <section ref={sectionRef} className={`${alignment} pt-4 pb-4 px-8 headline`}>
       <div className={`md:mb-8 ${headlineWidth} text-gray-800`}>
-        <PrismicRichText field={slice.primary.headline} />
+        <PrismicRichText field={slice.primary.headline} components={richTextComponents} />
       </div>
 
       <div className={`${subHeadlineWidth} text-gray-500 pt-6 md:pt-0`}>
-        <PrismicRichText field={slice.primary.sub_headline} />
+        <PrismicRichText field={slice.primary.sub_headline} components={richTextComponents} />
       </div>
     </section>
   );

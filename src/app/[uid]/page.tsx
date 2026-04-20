@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const { uid } = await params;
   const client = createClient();
   const page = await client.getByUID("page", uid).catch(() => notFound());
-  
+
   // Fetch settings data for components that need it (like Grid)
   const settings = await client.getSingle("header");
 
@@ -28,8 +28,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     }
   };
 
-  // <SliceZone> renders the page's slices with enhanced components
-  return <SliceZone slices={page.data.slices} components={enhancedComponents} />;
+  const pageHeading = page.data.meta_title || asText(page.data.title) || uid;
+
+  return (
+    <>
+      <h1 className="sr-only">{pageHeading}</h1>
+      <SliceZone slices={page.data.slices} components={enhancedComponents} />
+    </>
+  );
 }
 
 export async function generateMetadata({

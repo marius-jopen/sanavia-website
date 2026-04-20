@@ -11,7 +11,7 @@ import { Content } from "@prismicio/client";
 export default async function Home() {
   const client = createClient();
   const home = await client.getByUID("page", "home");
-  
+
   // Fetch settings data for components that need it (like Grid)
   const settings = await client.getSingle("header");
 
@@ -24,8 +24,14 @@ export default async function Home() {
     }
   };
 
-  // <SliceZone> renders the page's slices with enhanced components
-  return <SliceZone slices={home.data.slices} components={enhancedComponents} />;
+  const pageHeading = home.data.meta_title || asText(home.data.title) || "Sanavia";
+
+  return (
+    <>
+      <h1 className="sr-only">{pageHeading}</h1>
+      <SliceZone slices={home.data.slices} components={enhancedComponents} />
+    </>
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -5,6 +5,7 @@ import Script from "next/script";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 
@@ -122,7 +123,7 @@ const Contact: FC<ContactProps> = ({ slice }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 pb-2">
             <div className="flex flex-col justify-between">
               <div className="text-gray-700 text-base md:text-2xl leading-relaxed">
-                <PrismicRichText field={slice.primary.text_1} />
+                <PrismicRichText field={slice.primary.text_1} components={richTextComponents} />
               </div>
 
               <Button
@@ -136,7 +137,7 @@ const Contact: FC<ContactProps> = ({ slice }) => {
 
             <div className="flex flex-col justify-between">
               <div className="text-gray-700 text-base md:text-2xl leading-relaxed">
-                <PrismicRichText field={slice.primary.text_2} />
+                <PrismicRichText field={slice.primary.text_2} components={richTextComponents} />
               </div>
 
               <Button

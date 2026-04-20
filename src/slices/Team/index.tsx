@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import VideoMinimal, { VideoMinimalHandle } from "@/components/VideoMinimal";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
@@ -151,7 +152,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
                   <div className={`pt-2 pb-2 text-2xl ${item.teaser ? 'mb-0' : 'mb-2'}`}>{item.headline}</div>
                 )}
                 <div className="text-gray-600 text-base">
-                  <PrismicRichText field={item.richtext} />
+                  <PrismicRichText field={item.richtext} components={richTextComponents} />
                 </div>
                 {/* {item.teaser && (
                   <div className="px-6  text-base text-gray-500 mb-2">
@@ -195,7 +196,7 @@ const Team: FC<TeamProps> = ({ slice, enableStagger = true, enableAnimation = tr
             )}
             {selectedItem.richtext && (
               <div className="text-gray-600 text-base">
-                <PrismicRichText field={selectedItem.richtext} />
+                <PrismicRichText field={selectedItem.richtext} components={richTextComponents} />
               </div>
             )}
             {/* LinkedIn icon – always visible in modal, left-aligned below text */}

@@ -4,6 +4,7 @@ import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import dynamic from "next/dynamic";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
 import type { MeshAnnotation, AnimationMode, HighlightBlendMode } from "../../components/ModelViewer";
@@ -92,7 +93,10 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
       meshName: item.mesh_name as string,
       title: (item.info_title as string) || (item.mesh_name as string),
       content: item.info_text ? (
-        <PrismicRichText field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]} />
+        <PrismicRichText
+          field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]}
+          components={richTextComponents}
+        />
       ) : null,
       color: (item.mesh_color as string) || undefined,
     }));
@@ -109,7 +113,10 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
       meshName: item.mesh_name as string,
       title: (item.info_title as string) || (item.mesh_name as string),
       content: item.info_text ? (
-        <PrismicRichText field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]} />
+        <PrismicRichText
+          field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]}
+          components={richTextComponents}
+        />
       ) : null,
       color: (item.mesh_color as string) || undefined,
     }));
