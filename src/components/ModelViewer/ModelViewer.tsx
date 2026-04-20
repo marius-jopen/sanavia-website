@@ -89,6 +89,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     originalEmissive: THREE.Color;
     originalColor: THREE.Color;
   } | null>(null);
+  const extraPillHighlights = useRef<
+    Array<{ mesh: THREE.Mesh; originalEmissive: THREE.Color; originalColor: THREE.Color }>
+  >([]);
   const hoverHighlight = useRef<{
     mesh: THREE.Mesh;
     originalEmissive: THREE.Color;
@@ -682,6 +685,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         restoreHighlight(mMat, mirrorHighlight.current.originalEmissive, mirrorHighlight.current.originalColor);
         mirrorHighlight.current = null;
       }
+      for (const h of extraPillHighlights.current) {
+        const em = h.mesh.material as THREE.MeshStandardMaterial;
+        restoreHighlight(em, h.originalEmissive, h.originalColor);
+      }
+      extraPillHighlights.current = [];
 
       // Clear hover highlights — restore their true originals first
       // so that the click highlight captures the correct base color
@@ -1249,6 +1257,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       mirrorHighlight.current = null;
     }
 
+    // Restore any extra pill-click highlights (prefix match selected >2 meshes)
+    for (const h of extraPillHighlights.current) {
+      const em = h.mesh.material as THREE.MeshStandardMaterial;
+      restoreHighlight(em, h.originalEmissive, h.originalColor);
+    }
+    extraPillHighlights.current = [];
+
     // Restore hover highlight + mirror hover
     if (hoverHighlight.current) {
       const mat = hoverHighlight.current.mesh.material as THREE.MeshStandardMaterial;
@@ -1617,62 +1632,51 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         restoreHighlight(mMat, mirrorHighlight.current.originalEmissive, mirrorHighlight.current.originalColor);
         mirrorHighlight.current = null;
       }
+      for (const h of extraPillHighlights.current) {
+        const em = h.mesh.material as THREE.MeshStandardMaterial;
+        restoreHighlight(em, h.originalEmissive, h.originalColor);
+      }
+      extraPillHighlights.current = [];
 
-      // Find and highlight matching mesh in EACH model root
-      let highlightedFirst = false;
+      // Collect matching meshes across each root. Prefix match supports e.g.
+      // "antibodyActive" selecting both antibodyActiveDarker + antibodyActiveLighter.
+      // Require a non-empty node name so unnamed pivots don't match everything
+      // via the reverse startsWith check.
+      const matchedMeshes: THREE.Mesh[] = [];
+      const seen = new Set<string>();
       for (const r of roots) {
-        let matchedNode: THREE.Object3D | null = null;
+        r.traverse((node) => {
+          if (!node.name) return;
+          const matches =
+            node.name === annotation.meshName ||
+            node.name.startsWith(annotation.meshName) ||
+            annotation.meshName.startsWith(node.name);
+          if (!matches) return;
 
-        // Try direct children first
-        for (const child of r.children) {
-          if (
-            child.name === annotation.meshName ||
-            child.name.startsWith(annotation.meshName) ||
-            annotation.meshName.startsWith(child.name)
-          ) {
-            matchedNode = child;
-            break;
-          }
-        }
-
-        // Fallback: traverse entire tree
-        if (!matchedNode) {
-          r.traverse((node) => {
-            if (
-              !matchedNode &&
-              (node.name === annotation.meshName ||
-                node.name.startsWith(annotation.meshName) ||
-                annotation.meshName.startsWith(node.name))
-            ) {
-              matchedNode = node;
-            }
-          });
-        }
-
-        if (!matchedNode) continue;
-
-        // Find first mesh in matched node
-        let targetMesh: THREE.Mesh | null = null;
-        if ((matchedNode as THREE.Mesh).isMesh) {
-          targetMesh = matchedNode as THREE.Mesh;
-        } else {
-          matchedNode.traverse((child) => {
-            if (!targetMesh && (child as THREE.Mesh).isMesh) {
-              targetMesh = child as THREE.Mesh;
-            }
-          });
-        }
-
-        if (targetMesh) {
-          const tMat = (targetMesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
-          if (!highlightedFirst) {
-            previousHighlight.current = captureHighlightState(targetMesh);
-            highlightedFirst = true;
+          let targetMesh: THREE.Mesh | null = null;
+          if ((node as THREE.Mesh).isMesh) {
+            targetMesh = node as THREE.Mesh;
           } else {
-            mirrorHighlight.current = captureHighlightState(targetMesh);
+            node.traverse((child) => {
+              if (!targetMesh && (child as THREE.Mesh).isMesh) {
+                targetMesh = child as THREE.Mesh;
+              }
+            });
           }
-          applyHighlight(tMat, highlightColorRef.current, false);
-        }
+          if (targetMesh && !seen.has(targetMesh.uuid)) {
+            seen.add(targetMesh.uuid);
+            matchedMeshes.push(targetMesh);
+          }
+        });
+      }
+
+      for (let i = 0; i < matchedMeshes.length; i++) {
+        const mesh = matchedMeshes[i];
+        const state = captureHighlightState(mesh);
+        if (i === 0) previousHighlight.current = state;
+        else if (i === 1) mirrorHighlight.current = state;
+        else extraPillHighlights.current.push(state);
+        applyHighlight(mesh.material as THREE.MeshStandardMaterial, highlightColorRef.current, false);
       }
 
       // Open annotation popup
@@ -1753,7 +1757,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         {!isLoading && !error && (
           <TopLeftElements
             title={title}
-            annotations={annotations}
+            annotations={compareModelUrl && compareAnnotations.length > 0 ? compareAnnotations : annotations}
             activeAnnotation={activeAnnotation}
             open={elementsOpen}
             setOpen={setElementsOpen}
