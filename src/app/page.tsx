@@ -24,7 +24,7 @@ export default async function Home() {
     }
   };
 
-  const pageHeading = home.data.meta_title || asText(home.data.title) || "Sanavia";
+  const pageHeading = asText(home.data.title) || home.data.meta_title || "Sanavia";
 
   return (
     <>
@@ -38,15 +38,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const client = createClient();
   const home = await client.getByUID("page", "home");
   const pageTitle = asText(home.data.title);
-  const metaTitle = home.data.meta_title;
+  const seoTitle = home.data.meta_title || pageTitle || undefined;
+  const ogImage = home.data.meta_image.url;
 
   return {
-    title: metaTitle ? { absolute: metaTitle } : pageTitle || undefined,
-    description: home.data.meta_description,
+    title: seoTitle,
+    description: home.data.meta_description || undefined,
     alternates: { canonical: "/" },
     openGraph: {
-      title: metaTitle ?? pageTitle ?? undefined,
-      images: [{ url: home.data.meta_image.url ?? "" }],
+      title: seoTitle,
+      images: ogImage ? [{ url: ogImage }] : undefined,
     },
   };
 }

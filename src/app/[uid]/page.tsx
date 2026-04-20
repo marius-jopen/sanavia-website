@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     }
   };
 
-  const pageHeading = page.data.meta_title || asText(page.data.title) || uid;
+  const pageHeading = asText(page.data.title) || page.data.meta_title || uid;
 
   return (
     <>
@@ -47,15 +47,16 @@ export async function generateMetadata({
   const client = createClient();
   const page = await client.getByUID("page", uid).catch(() => notFound());
   const pageTitle = asText(page.data.title);
-  const metaTitle = page.data.meta_title;
+  const seoTitle = page.data.meta_title || pageTitle || undefined;
+  const ogImage = page.data.meta_image.url;
 
   return {
-    title: metaTitle ? { absolute: metaTitle } : pageTitle || undefined,
-    description: page.data.meta_description,
+    title: seoTitle,
+    description: page.data.meta_description || undefined,
     alternates: { canonical: `/${uid}` },
     openGraph: {
-      title: metaTitle ?? pageTitle ?? undefined,
-      images: [{ url: page.data.meta_image.url ?? "" }],
+      title: seoTitle,
+      images: ogImage ? [{ url: ogImage }] : undefined,
     },
   };
 }
