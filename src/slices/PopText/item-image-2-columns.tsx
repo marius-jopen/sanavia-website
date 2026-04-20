@@ -36,7 +36,7 @@ const ItemImage2Columns: React.FC<ItemImage2ColumnsProps> = (props) => {
         )}
 
         <div className='flex justify-end w-full'>
-          <Button className="mt-4" field={props.button} />
+          <Button className="mt-4" field={props.button} context={props.headline || undefined} />
         </div>
       </div>
 

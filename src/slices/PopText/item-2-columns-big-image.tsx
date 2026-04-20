@@ -43,7 +43,7 @@ const Item2ColumnsBigImage: React.FC<Item2ColumnsBigImageProps> = (props) => {
         )}
         
         <div className='flex justify-center w-full'>
-            <Button className="mt-4" field={props.button} />
+            <Button className="mt-4" field={props.button} context={props.headline || undefined} />
         </div>
       </div>
     </div>
