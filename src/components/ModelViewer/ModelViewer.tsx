@@ -526,12 +526,12 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           const comparePosR2 = new THREE.Vector3();
           if (mobile) {
             const gapY = -Math.max(r1.size.y, r2.size.y) * 0.08;
-            comparePosR1.set(0, r1.size.y / 2 + gapY, 0);
-            comparePosR2.set(0, -(r2.size.y / 2), 0);
+            comparePosR1.set(0, -(r1.size.y / 2), 0);
+            comparePosR2.set(0, r2.size.y / 2 + gapY, 0);
           } else {
             const gap = Math.max(r1.size.x, r2.size.x) * 0.3;
-            comparePosR1.set(-(r1.size.x / 2 + gap / 2), 0, 0);
-            comparePosR2.set(r2.size.x / 2 + gap / 2, 0, 0);
+            comparePosR1.set(r1.size.x / 2 + gap / 2, 0, 0);
+            comparePosR2.set(-(r2.size.x / 2 + gap / 2), 0, 0);
           }
 
           // Compute compare framing
@@ -554,9 +554,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
             far: cameraZ * 100,
           };
 
-          // Compute single framing (r1 at origin)
-          r1.pivot.position.set(0, 0, 0);
-          const singleBox = new THREE.Box3().setFromObject(r1.pivot);
+          // Compute single framing (r2 at origin — compare/blue model is the single-view focus)
+          r2.pivot.position.set(0, 0, 0);
+          const singleBox = new THREE.Box3().setFromObject(r2.pivot);
           const singleSize = singleBox.getSize(new THREE.Vector3());
           const singleMaxDim = Math.max(singleSize.x, singleSize.y, singleSize.z);
           const singleCamZ = (singleMaxDim / (2 * Math.tan(fov / 2))) * 0.9;
@@ -573,12 +573,15 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           // Apply current compare mode
           const startInCompare = compareModeRef.current;
           const f = startInCompare ? compareFraming : singleFraming;
-          r1.pivot.position.copy(f.modelPos);
           if (startInCompare) {
+            r1.pivot.position.copy(compareFraming.modelPos);
+            r1.pivot.visible = true;
             r2.pivot.position.copy(compareFraming.comparePos);
             r2.pivot.visible = true;
           } else {
-            r2.pivot.visible = false;
+            r2.pivot.position.copy(singleFraming.modelPos);
+            r2.pivot.visible = true;
+            r1.pivot.visible = false;
           }
           camera.position.copy(f.camPos);
           camera.near = f.near;
@@ -1127,6 +1130,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     if (!f || !cam || !controls || !model || !compare) return;
     if (compareMode) {
       model.position.copy(f.compare.modelPos);
+      model.visible = true;
       compare.position.copy(f.compare.comparePos);
       compare.visible = true;
       cam.position.copy(f.compare.camPos);
@@ -1137,8 +1141,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       controls.enableRotate = false;
       controls.autoRotate = false;
     } else {
-      model.position.copy(f.single.modelPos);
-      compare.visible = false;
+      compare.position.copy(f.single.modelPos);
+      compare.visible = true;
+      model.visible = false;
       cam.position.copy(f.single.camPos);
       cam.near = f.single.near;
       cam.far = f.single.far;
