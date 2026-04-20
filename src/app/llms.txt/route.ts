@@ -3,12 +3,20 @@ import { createClient } from "@/prismicio";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sanavia.bio";
 
+const EXCLUDED_UID_PREFIXES = ["test-"];
+const EXCLUDED_UIDS = new Set(["error"]);
+
 export async function GET() {
   const client = createClient();
   const pages = await client.getAllByType("page");
 
   const homepage = pages.find((p) => p.uid === "home");
-  const otherPages = pages.filter((p) => p.uid !== "home");
+  const otherPages = pages.filter(
+    (p) =>
+      p.uid !== "home" &&
+      !EXCLUDED_UIDS.has(p.uid) &&
+      !EXCLUDED_UID_PREFIXES.some((prefix) => p.uid.startsWith(prefix)),
+  );
 
   const siteTitle = homepage ? asText(homepage.data.title) || "Sanavia" : "Sanavia";
   const siteSummary =
