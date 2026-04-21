@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import VideoMinimal from "@/components/VideoMinimal";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
@@ -133,7 +134,7 @@ const TeamAdvanced: FC<TeamAdvancedProps> = ({ slice, enableStagger = true, enab
             )}
             {selectedItem.richtext && (
               <div className="text-gray-600 text-xl">
-                <PrismicRichText field={selectedItem.richtext} />
+                <PrismicRichText field={selectedItem.richtext} components={richTextComponents} />
               </div>
             )}
           </div>

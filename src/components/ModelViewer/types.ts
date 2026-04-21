@@ -27,6 +27,8 @@ export type HighlightBlendMode = "screen" | "normal" | "multiply" | "difference"
 
 export interface ModelViewerProps {
   modelUrl: string;
+  compareModelUrl?: string;
+  compareAnnotations?: MeshAnnotation[];
   title?: string;
   autoplay?: boolean;
   autoRotate?: boolean;

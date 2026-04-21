@@ -187,6 +187,7 @@ export type HeaderDocument<Lang extends string = string> =
   >;
 
 type PageDocumentDataSlicesSlice =
+  | CenteredTextCtaSlice
   | ScrollytellingSlice
   | MoleculeVieverSlice
   | ContactSlice
@@ -468,6 +469,61 @@ type CardsSliceVariation = CardsSliceDefault;
 export type CardsSlice = prismic.SharedSlice<"cards", CardsSliceVariation>;
 
 /**
+ * Primary content in *CenteredTextCta → Default → Primary*
+ */
+export interface CenteredTextCtaSliceDefaultPrimary {
+  /**
+   * Headline field in *CenteredTextCta → Default → Primary*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: centered_text_cta.default.primary.headline
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  headline: prismic.RichTextField;
+
+  /**
+   * Call to Action field in *CenteredTextCta → Default → Primary*
+   *
+   * - **Field Type**: Link
+   * - **Placeholder**: *None*
+   * - **API ID Path**: centered_text_cta.default.primary.cta
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  cta: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Default variation for CenteredTextCta Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Single centered headline text with centered CTA button below.
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CenteredTextCtaSliceDefault = prismic.SharedSliceVariation<
+  "default",
+  Simplify<CenteredTextCtaSliceDefaultPrimary>,
+  never
+>;
+
+/**
+ * Slice variation for *CenteredTextCta*
+ */
+type CenteredTextCtaSliceVariation = CenteredTextCtaSliceDefault;
+
+/**
+ * CenteredTextCta Shared Slice
+ *
+ * - **API ID**: `centered_text_cta`
+ * - **Description**: *None*
+ * - **Documentation**: https://prismic.io/docs/slice
+ */
+export type CenteredTextCtaSlice = prismic.SharedSlice<
+  "centered_text_cta",
+  CenteredTextCtaSliceVariation
+>;
+
+/**
  * Primary content in *Contact → Default → Primary*
  */
 export interface ContactSliceDefaultPrimary {
@@ -625,6 +681,17 @@ export interface HeadlineSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#boolean
    */
   keep_layout: prismic.BooleanField;
+
+  /**
+   * White Box field in *Headline → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: headline.default.primary.white_box
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  white_box: prismic.BooleanField;
 }
 
 /**
@@ -658,6 +725,175 @@ export type HeadlineSlice = prismic.SharedSlice<
 >;
 
 /**
+ * Item in *MoleculeViever → Default → Primary → Compare*
+ */
+export interface MoleculeVieverSliceDefaultPrimaryCompareItem {
+  /**
+   * Mesh Name field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].mesh_name
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  mesh_name: prismic.KeyTextField;
+
+  /**
+   * Mesh Color field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Color
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].mesh_color
+   * - **Documentation**: https://prismic.io/docs/field#color
+   */
+  mesh_color: prismic.ColorField;
+
+  /**
+   * Info Title field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].info_title
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  info_title: prismic.KeyTextField;
+
+  /**
+   * Info Text field in *MoleculeViever → Default → Primary → Compare*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[].info_text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  info_text: prismic.RichTextField;
+}
+
+/**
+ * Primary content in *MoleculeViever → Default → Primary*
+ */
+export interface MoleculeVieverSliceDefaultPrimary {
+  /**
+   * Title field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Title of the molecule (shown top-left)
+   * - **API ID Path**: molecule_viever.default.primary.title
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  title: prismic.KeyTextField;
+
+  /**
+   * Visible field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: true
+   * - **API ID Path**: molecule_viever.default.primary.visible
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  visible: prismic.BooleanField;
+
+  /**
+   * 3D Model File field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Link to Media
+   * - **Placeholder**: Upload a .glb or .gltf file
+   * - **API ID Path**: molecule_viever.default.primary.model_file
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  model_file: prismic.LinkToMediaField<prismic.FieldState, never>;
+
+  /**
+   * 3D Model Compare field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Link to Media
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.3d_model_compare
+   * - **Documentation**: https://prismic.io/docs/field#link-content-relationship
+   */
+  "3d_model_compare": prismic.LinkToMediaField<prismic.FieldState, never>;
+
+  /**
+   * Developer Mode field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: molecule_viever.default.primary.dev_mode
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  dev_mode: prismic.BooleanField;
+
+  /**
+   * Settings JSON (paste from Dev Mode) field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: {}
+   * - **API ID Path**: molecule_viever.default.primary.settings_json
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  settings_json: prismic.KeyTextField;
+
+  /**
+   * Compare field in *MoleculeViever → Default → Primary*
+   *
+   * - **Field Type**: Group
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.default.primary.compare[]
+   * - **Documentation**: https://prismic.io/docs/field#group
+   */
+  compare: prismic.GroupField<
+    Simplify<MoleculeVieverSliceDefaultPrimaryCompareItem>
+  >;
+}
+
+/**
+ * Primary content in *MoleculeViever → Items*
+ */
+export interface MoleculeVieverSliceDefaultItem {
+  /**
+   * Mesh Name field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: e.g. antibodyActiveLighter
+   * - **API ID Path**: molecule_viever.items[].mesh_name
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  mesh_name: prismic.KeyTextField;
+
+  /**
+   * Mesh Color field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Color
+   * - **Placeholder**: *None*
+   * - **API ID Path**: molecule_viever.items[].mesh_color
+   * - **Documentation**: https://prismic.io/docs/field#color
+   */
+  mesh_color: prismic.ColorField;
+
+  /**
+   * Info Title field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Text
+   * - **Placeholder**: Title shown in the popup
+   * - **API ID Path**: molecule_viever.items[].info_title
+   * - **Documentation**: https://prismic.io/docs/field#key-text
+   */
+  info_title: prismic.KeyTextField;
+
+  /**
+   * Info Text field in *MoleculeViever → Items*
+   *
+   * - **Field Type**: Rich Text
+   * - **Placeholder**: Description shown when this mesh is clicked
+   * - **API ID Path**: molecule_viever.items[].info_text
+   * - **Documentation**: https://prismic.io/docs/field#rich-text-title
+   */
+  info_text: prismic.RichTextField;
+}
+
+/**
  * Default variation for MoleculeViever Slice
  *
  * - **API ID**: `default`
@@ -666,8 +902,8 @@ export type HeadlineSlice = prismic.SharedSlice<
  */
 export type MoleculeVieverSliceDefault = prismic.SharedSliceVariation<
   "default",
-  Record<string, never>,
-  never
+  Simplify<MoleculeVieverSliceDefaultPrimary>,
+  Simplify<MoleculeVieverSliceDefaultItem>
 >;
 
 /**
@@ -1550,6 +1786,17 @@ export interface VideoSliceDefaultPrimary {
    * - **Documentation**: https://prismic.io/docs/field#boolean
    */
   autoplay: prismic.BooleanField;
+
+  /**
+   * Full Width field in *Video → Default → Primary*
+   *
+   * - **Field Type**: Boolean
+   * - **Placeholder**: *None*
+   * - **Default Value**: false
+   * - **API ID Path**: video.default.primary.full_width
+   * - **Documentation**: https://prismic.io/docs/field#boolean
+   */
+  full_width: prismic.BooleanField;
 }
 
 /**
@@ -1617,6 +1864,10 @@ declare module "@prismicio/client" {
       CardsSliceDefaultPrimary,
       CardsSliceVariation,
       CardsSliceDefault,
+      CenteredTextCtaSlice,
+      CenteredTextCtaSliceDefaultPrimary,
+      CenteredTextCtaSliceVariation,
+      CenteredTextCtaSliceDefault,
       ContactSlice,
       ContactSliceDefaultPrimary,
       ContactSliceVariation,
@@ -1629,6 +1880,9 @@ declare module "@prismicio/client" {
       HeadlineSliceVariation,
       HeadlineSliceDefault,
       MoleculeVieverSlice,
+      MoleculeVieverSliceDefaultPrimaryCompareItem,
+      MoleculeVieverSliceDefaultPrimary,
+      MoleculeVieverSliceDefaultItem,
       MoleculeVieverSliceVariation,
       MoleculeVieverSliceDefault,
       PopButtonSlice,

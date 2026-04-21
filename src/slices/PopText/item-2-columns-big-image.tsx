@@ -1,5 +1,6 @@
 import Button from '@/components/Button';
 import { PrismicRichText } from '@prismicio/react';
+import { richTextComponents } from "@/components/richTextComponents";
 import React from 'react';
 import { KeyTextField, RichTextField, ImageField, LinkField, BooleanField } from '@prismicio/client';
 import VideoBasic from "../../components/VideoBasic";
@@ -37,12 +38,12 @@ const Item2ColumnsBigImage: React.FC<Item2ColumnsBigImageProps> = (props) => {
 
         {props.richtext && props.richtext.length > 0 && (
           <div className='text-neutral-500'>
-            <PrismicRichText field={props.richtext} />
+            <PrismicRichText field={props.richtext} components={richTextComponents} />
           </div>
         )}
         
         <div className='flex justify-center w-full'>
-            <Button className="mt-4" field={props.button} />
+            <Button className="mt-4" field={props.button} context={props.headline || undefined} />
         </div>
       </div>
     </div>

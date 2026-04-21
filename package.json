@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "concurrently \"npm:next:dev\" \"npm:slicemachine\" --names \"next,slicemachine\" --prefix-colors blue,magenta",
     "next:dev": "next dev --turbopack",
+    "next:dev:https": "next dev --turbopack --experimental-https",
+    "dev:https": "concurrently \"npm:next:dev:https\" \"npm:slicemachine\" --names \"next,slicemachine\" --prefix-colors blue,magenta",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

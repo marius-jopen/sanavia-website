@@ -1,43 +1,144 @@
 [
-  {
-    "__TYPE__": "SharedSliceContent",
-    "variation": "default",
-    "primary": {
-      "visible": true,
-      "model_url": "/models/molecule.glb",
-      "model_file": {
-        "link_type": "Media"
-      },
-      "autoplay": true,
-      "auto_rotate": false,
-      "background_color": "#191919",
-      "enable_zoom": true,
-      "show_controls": true,
-      "dev_mode": false
-    },
-    "items": [
-      {
-        "mesh_name": "antibodyActiveLighter",
-        "info_title": "Antibody",
-        "info_text": [
-          {
-            "type": "paragraph",
-            "text": "This is the antibody text",
-            "spans": []
-          }
-        ]
-      },
-      {
-        "mesh_name": "Atoms_Epitope",
-        "info_title": "Epitope",
-        "info_text": [
-          {
-            "type": "paragraph",
-            "text": "Good old Epitopes",
-            "spans": []
-          }
-        ]
-      }
-    ]
-  }
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"title": {
+				"__TYPE__": "FieldContent",
+				"value": "bottom",
+				"type": "Text"
+			},
+			"visible": {
+				"__TYPE__": "BooleanContent",
+				"value": true
+			},
+			"model_file": {
+				"key": "071d8a45-3c55-4aa5-81d3-6e1557746b60",
+				"__TYPE__": "LinkContent",
+				"value": {
+					"__TYPE__": "FileLink",
+					"id": "mock_Media_link",
+					"kind": "file",
+					"name": "mock_name",
+					"url": "https://source.unsplash.com/daily",
+					"size": "0"
+				}
+			},
+			"dev_mode": {
+				"__TYPE__": "BooleanContent",
+				"value": false
+			},
+			"settings_json": {
+				"__TYPE__": "FieldContent",
+				"value": "carried",
+				"type": "Text"
+			},
+			"compare": {
+				"__TYPE__": "GroupContentType",
+				"value": [
+					{
+						"__TYPE__": "GroupItemContent",
+						"value": [
+							[
+								"mesh_name",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "same",
+									"type": "Text"
+								}
+							],
+							[
+								"mesh_color",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "#748ca8",
+									"type": "Color"
+								}
+							],
+							[
+								"info_title",
+								{
+									"__TYPE__": "FieldContent",
+									"value": "pick",
+									"type": "Text"
+								}
+							],
+							[
+								"info_text",
+								{
+									"__TYPE__": "StructuredTextContent",
+									"value": [
+										{
+											"type": "paragraph",
+											"content": {
+												"text": "Culpa ut irure dolore exercitation mollit consectetur tempor proident fugiat do. Nulla consequat dolor minim consectetur consequat incididunt nisi non ex ex proident consequat reprehenderit amet laborum. Sunt eu pariatur Lorem cillum incididunt labore adipisicing."
+											}
+										}
+									]
+								}
+							]
+						]
+					}
+				]
+			},
+			"3d_model_compare": {
+				"key": "66a3b13a-5263-42b8-a18a-ce1402b10bd6",
+				"__TYPE__": "LinkContent",
+				"value": {
+					"__TYPE__": "FileLink",
+					"id": "mock_Media_link",
+					"kind": "file",
+					"name": "mock_name",
+					"url": "https://source.unsplash.com/daily",
+					"size": "0",
+					"text": "base"
+				}
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": [
+					[
+						"mesh_name",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "enjoy",
+							"type": "Text"
+						}
+					],
+					[
+						"mesh_color",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "#7c803c",
+							"type": "Color"
+						}
+					],
+					[
+						"info_title",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "clothes",
+							"type": "Text"
+						}
+					],
+					[
+						"info_text",
+						{
+							"__TYPE__": "StructuredTextContent",
+							"value": [
+								{
+									"type": "paragraph",
+									"content": {
+										"text": "Minim nulla proident ipsum occaecat sint commodo nostrud. Quis adipisicing do sint aliquip anim labore ex fugiat. Magna cupidatat nostrud id nisi consequat tempor laborum aute cupidatat tempor nulla."
+									}
+								}
+							]
+						}
+					]
+				]
+			}
+		]
+	}
 ]

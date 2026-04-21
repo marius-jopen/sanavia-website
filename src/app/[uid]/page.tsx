@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const { uid } = await params;
   const client = createClient();
   const page = await client.getByUID("page", uid).catch(() => notFound());
-  
+
   // Fetch settings data for components that need it (like Grid)
   const settings = await client.getSingle("header");
 
@@ -28,8 +28,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     }
   };
 
-  // <SliceZone> renders the page's slices with enhanced components
-  return <SliceZone slices={page.data.slices} components={enhancedComponents} />;
+  const pageHeading = asText(page.data.title) || page.data.meta_title || uid;
+
+  return (
+    <>
+      <h1 className="sr-only">{pageHeading}</h1>
+      <SliceZone slices={page.data.slices} components={enhancedComponents} />
+    </>
+  );
 }
 
 export async function generateMetadata({
@@ -40,13 +46,17 @@ export async function generateMetadata({
   const { uid } = await params;
   const client = createClient();
   const page = await client.getByUID("page", uid).catch(() => notFound());
+  const pageTitle = asText(page.data.title);
+  const seoTitle = page.data.meta_title || pageTitle || undefined;
+  const ogImage = page.data.meta_image.url;
 
   return {
-    title: asText(page.data.title),
-    description: page.data.meta_description,
+    title: seoTitle,
+    description: page.data.meta_description || undefined,
+    alternates: { canonical: `/${uid}` },
     openGraph: {
-      title: page.data.meta_title ?? undefined,
-      images: [{ url: page.data.meta_image.url ?? "" }],
+      title: seoTitle,
+      images: ogImage ? [{ url: ogImage }] : undefined,
     },
   };
 }

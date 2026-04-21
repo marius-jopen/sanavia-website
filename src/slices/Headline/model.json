@@ -59,6 +59,15 @@
             "placeholder_true": "true",
             "default_value": false
           }
+        },
+        "white_box": {
+          "type": "Boolean",
+          "config": {
+            "label": "White Box",
+            "placeholder_false": "false",
+            "placeholder_true": "true",
+            "default_value": false
+          }
         }
       },
       "items": {}

@@ -36,6 +36,15 @@
             "select": "media"
           }
         },
+        "3d_model_compare": {
+          "type": "Link",
+          "config": {
+            "label": "3D Model Compare",
+            "placeholder": "",
+            "select": "media",
+            "allowText": true
+          }
+        },
         "dev_mode": {
           "type": "Boolean",
           "config": {
@@ -50,6 +59,45 @@
           "config": {
             "label": "Settings JSON (paste from Dev Mode)",
             "placeholder": "{}"
+          }
+        },
+        "compare": {
+          "type": "Group",
+          "config": {
+            "label": "Compare",
+            "repeat": true,
+            "fields": {
+              "mesh_name": {
+                "type": "Text",
+                "config": {
+                  "label": "Mesh Name",
+                  "placeholder": ""
+                }
+              },
+              "mesh_color": {
+                "type": "Color",
+                "config": {
+                  "label": "Mesh Color",
+                  "placeholder": ""
+                }
+              },
+              "info_title": {
+                "type": "Text",
+                "config": {
+                  "label": "Info Title",
+                  "placeholder": ""
+                }
+              },
+              "info_text": {
+                "type": "StructuredText",
+                "config": {
+                  "label": "Info Text",
+                  "placeholder": "",
+                  "allowTargetBlank": true,
+                  "multi": "paragraph,strong,hyperlink,em"
+                }
+              }
+            }
           }
         }
       },
@@ -80,7 +128,7 @@
             "label": "Info Text",
             "placeholder": "Description shown when this mesh is clicked",
             "allowTargetBlank": true,
-            "multi": "paragraph,strong,em"
+            "multi": "paragraph,strong,em,hyperlink"
           }
         }
       }

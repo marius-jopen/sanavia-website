@@ -28,9 +28,11 @@ const Video: FC<VideoProps> = ({ slice }) => {
   if (!((slice.primary as WithVisible<typeof slice.primary>).visible ?? true)) return null;
 
 
+  const fullWidth = slice.primary.full_width ?? false;
+
   return (
-    <section ref={sectionRef} className="w-full mb-4 px-4">
-      <div className="relative mx-auto md:w-10/12 rounded-2xl overflow-hidden">
+    <section ref={sectionRef} className={`w-full mb-4 ${fullWidth ? "px-4 " : "px-4"}`}>
+      <div className={`relative mx-auto rounded-2xl overflow-hidden ${fullWidth ? "w-full" : "md:w-10/12"}`}>
         <VideoBasic
           wrapperClasses="rounded-2xl overflow-hidden"
           classes=""

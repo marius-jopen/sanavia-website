@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps, PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import ExpandableSection, { useToggle } from "@/components/ExpandableSection";
 import Item1Column from "./item-1-column";
 import Item2Columns from "./item-2-columns";
@@ -53,7 +54,7 @@ const PopText = ({ slice }: PopTextProps) => {
       <>
       <div className="flex flex-row">
         <div className="bg-white rounded-r-2xl md:rounded-r-full pl-8 pr-8 text-gray-800 mr-3 min-h-20 flex items-center pt-4 md:pt-2 pb-4 md:pb-2">
-          <PrismicRichText field={slice.primary.headline} />
+          <PrismicRichText field={slice.primary.headline} components={richTextComponents} />
         </div>
         
         <div className="flex items-center">

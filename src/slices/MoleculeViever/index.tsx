@@ -4,6 +4,7 @@ import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import dynamic from "next/dynamic";
 import { setupFadeInAnimation } from "../../utils/animations/intersectionAnimations";
 import type { MeshAnnotation, AnimationMode, HighlightBlendMode } from "../../components/ModelViewer";
@@ -68,7 +69,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   }
 
   const autoplay = (settings.autoplay as boolean) ?? true;
-  const autoRotate = (settings.autoRotate as boolean) ?? false;
+  const autoRotate = (settings.autoRotate as boolean) ?? true;
   const bgColor = (settings.backgroundColor as string) || "#191919";
   const transparentBg = (settings.transparentBackground as boolean) ?? true;
   const enableZoom = (settings.enableZoom as boolean) ?? false;
@@ -84,7 +85,7 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
   const animationModeValue = (settings.animationMode as AnimationMode) ?? undefined;
   const animationSpeedValue = (settings.animationSpeed as number) ?? undefined;
 
-  // Build annotation map from repeater items
+  // Build annotation map from repeater items (first model)
   const items = (slice.items ?? []) as Array<Record<string, unknown>>;
   const annotations: MeshAnnotation[] = items
     .filter((item) => item.mesh_name)
@@ -92,7 +93,30 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
       meshName: item.mesh_name as string,
       title: (item.info_title as string) || (item.mesh_name as string),
       content: item.info_text ? (
-        <PrismicRichText field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]} />
+        <PrismicRichText
+          field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]}
+          components={richTextComponents}
+        />
+      ) : null,
+      color: (item.mesh_color as string) || undefined,
+    }));
+
+  // Compare model
+  const compareFile = primary["3d_model_compare"] as { url?: string } | undefined;
+  const compareUrl = compareFile?.url || "";
+
+  // Build annotations for the compare model from the compare group
+  const compareItems = (primary.compare as Array<Record<string, unknown>>) ?? [];
+  const compareAnnotations: MeshAnnotation[] = compareItems
+    .filter((item) => item.mesh_name)
+    .map((item) => ({
+      meshName: item.mesh_name as string,
+      title: (item.info_title as string) || (item.mesh_name as string),
+      content: item.info_text ? (
+        <PrismicRichText
+          field={item.info_text as Parameters<typeof PrismicRichText>[0]["field"]}
+          components={richTextComponents}
+        />
       ) : null,
       color: (item.mesh_color as string) || undefined,
     }));
@@ -109,6 +133,8 @@ const MoleculeViever: FC<MoleculeVieverProps> = ({ slice }) => {
       <div className="relative mx-auto md:w-full rounded-2xl overflow-hidden">
         <ModelViewer
           modelUrl={modelUrl}
+          compareModelUrl={compareUrl || undefined}
+          compareAnnotations={compareAnnotations.length > 0 ? compareAnnotations : undefined}
           title={moleculeTitle}
           autoplay={autoplay}
           autoRotate={autoRotate}

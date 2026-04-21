@@ -27,6 +27,9 @@
         "fieldset": "Slice Zone",
         "config": {
           "choices": {
+            "centered_text_cta": {
+              "type": "SharedSlice"
+            },
             "scrollytelling": {
               "type": "SharedSlice"
             },

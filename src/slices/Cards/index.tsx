@@ -3,6 +3,7 @@ import { FC, useEffect, useRef } from "react";
 import { Content } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
 
 // Helper type to add visible field to slice primary
@@ -62,7 +63,7 @@ const Cards: FC<CardsProps> = ({ slice, enableStagger = true, enableAnimation = 
                 )}
                 {item.text && (
                   <div className="text-sm text-gray-500 text-left pb-4">
-                    <PrismicRichText field={item.text} />
+                    <PrismicRichText field={item.text} components={richTextComponents} />
                   </div>
                 )}
               </div>

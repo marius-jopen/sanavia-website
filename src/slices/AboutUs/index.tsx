@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Content, KeyTextField, ImageField, RichTextField } from "@prismicio/client";
 import { SliceComponentProps } from "@prismicio/react";
 import { PrismicRichText } from "@prismicio/react";
+import { richTextComponents } from "@/components/richTextComponents";
 import VideoBasic from "@/components/VideoBasic";
 import Modal from "@/components/Modal";
 import { setupStaggeredAnimation } from "@/utils/animations/staggerAnimations";
@@ -114,7 +115,7 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
                 )}
                 {item.richtext && (
                   <div className=" text-sm text-gray-500 cursor-pointer text-left">
-                    <PrismicRichText field={item.richtext} />
+                    <PrismicRichText field={item.richtext} components={richTextComponents} />
                   </div>
                 )}
               </div>
@@ -137,7 +138,7 @@ const AboutUs: FC<AboutUsProps> = ({ slice, enableStagger = true, enableAnimatio
             )}
             {selectedItem.richtext && (
               <div className="text-gray-600">
-                <PrismicRichText field={selectedItem.richtext} />
+                <PrismicRichText field={selectedItem.richtext} components={richTextComponents} />
               </div>
             )}
           </div>

@@ -14,7 +14,19 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const SITE_URL =
+  process.env.VERCEL_ENV === "production" && process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://www.sanavia.bio";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Sanavia",
+    template: "%s – Sanavia",
+  },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",

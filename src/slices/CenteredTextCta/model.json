@@ -1,0 +1,36 @@
+{
+  "type": "SharedSlice",
+  "id": "centered_text_cta",
+  "name": "CenteredTextCta",
+  "variations": [
+    {
+      "id": "default",
+      "name": "Default",
+      "description": "Single centered headline text with centered CTA button below.",
+      "version": "initial",
+      "imageUrl": "",
+      "docURL": "...",
+      "primary": {
+        "headline": {
+          "type": "StructuredText",
+          "config": {
+            "label": "Headline",
+            "placeholder": "",
+            "allowTargetBlank": true,
+            "multi": "heading2,strong,em,heading1,heading3,paragraph,heading4,heading5,heading6"
+          }
+        },
+        "cta": {
+          "type": "Link",
+          "config": {
+            "label": "Call to Action",
+            "allowText": true,
+            "repeat": false,
+            "select": null
+          }
+        }
+      },
+      "items": {}
+    }
+  ]
+}
